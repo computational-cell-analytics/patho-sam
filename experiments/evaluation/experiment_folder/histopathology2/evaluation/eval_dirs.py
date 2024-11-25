@@ -8,4 +8,4 @@ def create_eval_directories(path):
             os.makedirs(os.path.join(dataset_path, mode), exist_ok=True)
 
 
-create_eval_directories('/mnt/lustre-grete/usr/u12649/scratch/models/vanilla_sam_eval')
+create_eval_directories('/mnt/lustre-grete/usr/u12649/scratch/models/old_pannuke_sam_eval')

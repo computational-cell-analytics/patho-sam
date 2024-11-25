@@ -8,4 +8,4 @@
 
 source ~/.bashrc
 mamba activate sam2
-python pannuke_finetuning.py -i /mnt/lustre-grete/usr/u12649/scratch/data/pannuke -s /mnt/lustre-grete/usr/u12649/scratch/models/pannuke_sam/n_objects_5 --iterations 100000 -e /mnt/lustre-grete/usr/u12649/scratch/models/pannuke_sam --n_objects 5
+python pannuke_finetuning.py -i /mnt/lustre-grete/usr/u12649/scratch/data/pannuke -s /mnt/lustre-grete/usr/u12649/scratch/models/pannuke_sam/original_config --iterations 50000 --n_objects 10

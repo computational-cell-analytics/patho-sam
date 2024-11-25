@@ -1,318 +1,0 @@
-slurmstepd: error: slurm_get_node_energy: Socket timed out on send/recv operation
-slurmstepd: error: _get_joules_task: can't get info from slurmd
-================================================================================
-JobID = 3467414
-User = u12649, Account = nim00007
-Partition = grete:shared, Nodelist = ggpu104
-================================================================================
-/home/titus.griebel/u12649/torch-em/torch_em/data/segmentation_dataset.py:222: UserWarning: SegmentationDataset could not be deserialized because of missing /scratch/users/u11644/data/pannuke/pannuke_fold_1.h5, images.
-The dataset is deserialized in order to allow loading trained models from a checkpoint.
-But it cannot be used for further training and will throw an error.
-  warnings.warn(msg)
-/home/titus.griebel/u12649/torch-em/torch_em/data/segmentation_dataset.py:235: UserWarning: SegmentationDataset could not be deserialized because of missing /scratch/users/u11644/data/pannuke/pannuke_fold_1.h5, labels/instances.
-The dataset is deserialized in order to allow loading trained models from a checkpoint.
-But it cannot be used for further training and will throw an error.
-  warnings.warn(msg)
-/home/titus.griebel/u12649/torch-em/torch_em/data/segmentation_dataset.py:222: UserWarning: SegmentationDataset could not be deserialized because of missing /scratch/users/u11644/data/pannuke/pannuke_fold_2.h5, images.
-The dataset is deserialized in order to allow loading trained models from a checkpoint.
-But it cannot be used for further training and will throw an error.
-  warnings.warn(msg)
-/home/titus.griebel/u12649/torch-em/torch_em/data/segmentation_dataset.py:235: UserWarning: SegmentationDataset could not be deserialized because of missing /scratch/users/u11644/data/pannuke/pannuke_fold_2.h5, labels/instances.
-The dataset is deserialized in order to allow loading trained models from a checkpoint.
-But it cannot be used for further training and will throw an error.
-  warnings.warn(msg)
-10 10
-196 196
-Run instance segmentation grid-search:   0%|          | 0/10 [00:00<?, ?it/s]
-Compute Image Embeddings 3D:   0%|          | 0/512 [00:00<?, ?it/s][A
-Compute Image Embeddings 3D:   0%|          | 1/512 [00:01<15:49,  1.86s/it][A
-Compute Image Embeddings 3D:   0%|          | 2/512 [00:01<07:00,  1.21it/s][A
-Compute Image Embeddings 3D:   1%|          | 3/512 [00:02<04:13,  2.01it/s][A
-Compute Image Embeddings 3D:   1%|          | 5/512 [00:02<02:15,  3.74it/s][A
-Compute Image Embeddings 3D:   1%|▏         | 7/512 [00:02<01:35,  5.31it/s][A
-Compute Image Embeddings 3D:   2%|▏         | 9/512 [00:02<01:15,  6.66it/s][A
-Compute Image Embeddings 3D:   2%|▏         | 11/512 [00:02<01:04,  7.77it/s][A
-Compute Image Embeddings 3D:   3%|▎         | 13/512 [00:02<00:57,  8.64it/s][A
-Compute Image Embeddings 3D:   3%|▎         | 15/512 [00:03<00:53,  9.30it/s][A
-Compute Image Embeddings 3D:   3%|▎         | 17/512 [00:03<00:50,  9.79it/s][A
-Compute Image Embeddings 3D:   4%|▎         | 19/512 [00:03<00:48, 10.16it/s][A
-Compute Image Embeddings 3D:   4%|▍         | 21/512 [00:03<00:47, 10.42it/s][A
-Compute Image Embeddings 3D:   4%|▍         | 23/512 [00:03<00:46, 10.61it/s][A
-Compute Image Embeddings 3D:   5%|▍         | 25/512 [00:04<00:45, 10.74it/s][A
-Compute Image Embeddings 3D:   5%|▌         | 27/512 [00:04<00:44, 10.84it/s][A
-Compute Image Embeddings 3D:   6%|▌         | 29/512 [00:04<00:44, 10.90it/s][A
-Compute Image Embeddings 3D:   6%|▌         | 31/512 [00:04<00:43, 10.95it/s][A
-Compute Image Embeddings 3D:   6%|▋         | 33/512 [00:04<00:43, 10.99it/s][A
-Compute Image Embeddings 3D:   7%|▋         | 35/512 [00:04<00:43, 11.01it/s][A
-Compute Image Embeddings 3D:   7%|▋         | 37/512 [00:05<00:43, 11.03it/s][A
-Compute Image Embeddings 3D:   8%|▊         | 39/512 [00:05<00:42, 11.04it/s][A
-Compute Image Embeddings 3D:   8%|▊         | 41/512 [00:05<00:42, 11.05it/s][A
-Compute Image Embeddings 3D:   8%|▊         | 43/512 [00:05<00:42, 11.06it/s][A
-Compute Image Embeddings 3D:   9%|▉         | 45/512 [00:05<00:42, 11.06it/s][A
-Compute Image Embeddings 3D:   9%|▉         | 47/512 [00:06<00:42, 11.06it/s][A
-Compute Image Embeddings 3D:  10%|▉         | 49/512 [00:06<00:41, 11.06it/s][A
-Compute Image Embeddings 3D:  10%|▉         | 51/512 [00:06<00:41, 11.07it/s][A
-Compute Image Embeddings 3D:  10%|█         | 53/512 [00:06<00:41, 11.07it/s][A
-Compute Image Embeddings 3D:  11%|█         | 55/512 [00:06<00:41, 11.07it/s][A
-Compute Image Embeddings 3D:  11%|█         | 57/512 [00:06<00:41, 11.07it/s][A
-Compute Image Embeddings 3D:  12%|█▏        | 59/512 [00:07<00:40, 11.07it/s][A
-Compute Image Embeddings 3D:  12%|█▏        | 61/512 [00:07<00:40, 11.07it/s][A
-Compute Image Embeddings 3D:  12%|█▏        | 63/512 [00:07<00:40, 11.07it/s][A
-Compute Image Embeddings 3D:  13%|█▎        | 65/512 [00:07<00:40, 11.07it/s][A
-Compute Image Embeddings 3D:  13%|█▎        | 67/512 [00:07<00:40, 11.07it/s][A
-Compute Image Embeddings 3D:  13%|█▎        | 69/512 [00:08<00:40, 11.07it/s][A
-Compute Image Embeddings 3D:  14%|█▍        | 71/512 [00:08<00:39, 11.07it/s][A
-Compute Image Embeddings 3D:  14%|█▍        | 73/512 [00:08<00:39, 11.07it/s][A
-Compute Image Embeddings 3D:  15%|█▍        | 75/512 [00:08<00:39, 11.07it/s][A
-Compute Image Embeddings 3D:  15%|█▌        | 77/512 [00:08<00:39, 11.07it/s][A
-Compute Image Embeddings 3D:  15%|█▌        | 79/512 [00:08<00:39, 11.07it/s][A
-Compute Image Embeddings 3D:  16%|█▌        | 81/512 [00:09<00:38, 11.07it/s][A
-Compute Image Embeddings 3D:  16%|█▌        | 83/512 [00:09<00:38, 11.07it/s][A
-Compute Image Embeddings 3D:  17%|█▋        | 85/512 [00:09<00:38, 11.07it/s][A
-Compute Image Embeddings 3D:  17%|█▋        | 87/512 [00:09<00:38, 11.07it/s][A
-Compute Image Embeddings 3D:  17%|█▋        | 89/512 [00:09<00:38, 11.07it/s][A
-Compute Image Embeddings 3D:  18%|█▊        | 91/512 [00:10<00:38, 11.07it/s][A
-Compute Image Embeddings 3D:  18%|█▊        | 93/512 [00:10<00:37, 11.07it/s][A
-Compute Image Embeddings 3D:  19%|█▊        | 95/512 [00:10<00:37, 11.07it/s][A
-Compute Image Embeddings 3D:  19%|█▉        | 97/512 [00:10<00:37, 11.07it/s][A
-Compute Image Embeddings 3D:  19%|█▉        | 99/512 [00:10<00:37, 11.07it/s][A
-Compute Image Embeddings 3D:  20%|█▉        | 101/512 [00:10<00:37, 11.07it/s][A
-Compute Image Embeddings 3D:  20%|██        | 103/512 [00:11<00:36, 11.07it/s][A
-Compute Image Embeddings 3D:  21%|██        | 105/512 [00:11<00:36, 11.07it/s][A
-Compute Image Embeddings 3D:  21%|██        | 107/512 [00:11<00:36, 11.07it/s][A
-Compute Image Embeddings 3D:  21%|██▏       | 109/512 [00:11<00:36, 11.07it/s][A
-Compute Image Embeddings 3D:  22%|██▏       | 111/512 [00:11<00:36, 11.07it/s][A
-Compute Image Embeddings 3D:  22%|██▏       | 113/512 [00:12<00:36, 11.07it/s][A
-Compute Image Embeddings 3D:  22%|██▏       | 115/512 [00:12<00:35, 11.07it/s][A
-Compute Image Embeddings 3D:  23%|██▎       | 117/512 [00:12<00:35, 11.07it/s][A
-Compute Image Embeddings 3D:  23%|██▎       | 119/512 [00:12<00:35, 11.07it/s][A
-Compute Image Embeddings 3D:  24%|██▎       | 121/512 [00:12<00:35, 11.07it/s][A
-Compute Image Embeddings 3D:  24%|██▍       | 123/512 [00:12<00:35, 11.06it/s][A
-Compute Image Embeddings 3D:  24%|██▍       | 125/512 [00:13<00:34, 11.07it/s][A
-Compute Image Embeddings 3D:  25%|██▍       | 127/512 [00:13<00:34, 11.06it/s][A
-Compute Image Embeddings 3D:  25%|██▌       | 129/512 [00:13<00:34, 11.06it/s][A
-Compute Image Embeddings 3D:  26%|██▌       | 131/512 [00:13<00:34, 11.07it/s][A
-Compute Image Embeddings 3D:  26%|██▌       | 133/512 [00:13<00:34, 11.06it/s][A
-Compute Image Embeddings 3D:  26%|██▋       | 135/512 [00:13<00:34, 11.07it/s][A
-Compute Image Embeddings 3D:  27%|██▋       | 137/512 [00:14<00:33, 11.07it/s][A
-Compute Image Embeddings 3D:  27%|██▋       | 139/512 [00:14<00:33, 11.07it/s][A
-Compute Image Embeddings 3D:  28%|██▊       | 141/512 [00:14<00:33, 11.07it/s][A
-Compute Image Embeddings 3D:  28%|██▊       | 143/512 [00:14<00:33, 11.07it/s][A
-Compute Image Embeddings 3D:  28%|██▊       | 145/512 [00:14<00:33, 11.07it/s][A
-Compute Image Embeddings 3D:  29%|██▊       | 147/512 [00:15<00:32, 11.07it/s][A
-Compute Image Embeddings 3D:  29%|██▉       | 149/512 [00:15<00:32, 11.07it/s][A
-Compute Image Embeddings 3D:  29%|██▉       | 151/512 [00:15<00:32, 11.07it/s][A
-Compute Image Embeddings 3D:  30%|██▉       | 153/512 [00:15<00:32, 11.07it/s][A
-Compute Image Embeddings 3D:  30%|███       | 155/512 [00:15<00:32, 11.07it/s][A
-Compute Image Embeddings 3D:  31%|███       | 157/512 [00:15<00:32, 11.07it/s][A
-Compute Image Embeddings 3D:  31%|███       | 159/512 [00:16<00:31, 11.07it/s][A
-Compute Image Embeddings 3D:  31%|███▏      | 161/512 [00:16<00:31, 11.07it/s][A
-Compute Image Embeddings 3D:  32%|███▏      | 163/512 [00:16<00:31, 11.07it/s][A
-Compute Image Embeddings 3D:  32%|███▏      | 165/512 [00:16<00:31, 11.07it/s][A
-Compute Image Embeddings 3D:  33%|███▎      | 167/512 [00:16<00:31, 11.07it/s][A
-Compute Image Embeddings 3D:  33%|███▎      | 169/512 [00:17<00:30, 11.07it/s][A
-Compute Image Embeddings 3D:  33%|███▎      | 171/512 [00:17<00:30, 11.07it/s][A
-Compute Image Embeddings 3D:  34%|███▍      | 173/512 [00:17<00:30, 11.07it/s][A
-Compute Image Embeddings 3D:  34%|███▍      | 175/512 [00:17<00:30, 11.07it/s][A
-Compute Image Embeddings 3D:  35%|███▍      | 177/512 [00:17<00:30, 11.07it/s][A
-Compute Image Embeddings 3D:  35%|███▍      | 179/512 [00:17<00:30, 11.07it/s][A
-Compute Image Embeddings 3D:  35%|███▌      | 181/512 [00:18<00:29, 11.06it/s][A
-Compute Image Embeddings 3D:  36%|███▌      | 183/512 [00:18<00:29, 11.07it/s][A
-Compute Image Embeddings 3D:  36%|███▌      | 185/512 [00:18<00:29, 11.07it/s][A
-Compute Image Embeddings 3D:  37%|███▋      | 187/512 [00:18<00:29, 11.06it/s][A
-Compute Image Embeddings 3D:  37%|███▋      | 189/512 [00:18<00:29, 11.07it/s][A
-Compute Image Embeddings 3D:  37%|███▋      | 191/512 [00:19<00:29, 11.07it/s][A
-Compute Image Embeddings 3D:  38%|███▊      | 193/512 [00:19<00:28, 11.07it/s][A
-Compute Image Embeddings 3D:  38%|███▊      | 195/512 [00:19<00:28, 11.05it/s][A
-Compute Image Embeddings 3D:  38%|███▊      | 197/512 [00:19<00:28, 11.06it/s][A
-Compute Image Embeddings 3D:  39%|███▉      | 199/512 [00:19<00:28, 11.06it/s][A
-Compute Image Embeddings 3D:  39%|███▉      | 201/512 [00:19<00:28, 11.06it/s][A
-Compute Image Embeddings 3D:  40%|███▉      | 203/512 [00:20<00:27, 11.07it/s][A
-Compute Image Embeddings 3D:  40%|████      | 205/512 [00:20<00:27, 11.07it/s][A
-Compute Image Embeddings 3D:  40%|████      | 207/512 [00:20<00:27, 11.07it/s][A
-Compute Image Embeddings 3D:  41%|████      | 209/512 [00:20<00:27, 11.07it/s][A
-Compute Image Embeddings 3D:  41%|████      | 211/512 [00:20<00:27, 11.07it/s][A
-Compute Image Embeddings 3D:  42%|████▏     | 213/512 [00:21<00:27, 11.07it/s][A
-Compute Image Embeddings 3D:  42%|████▏     | 215/512 [00:21<00:26, 11.07it/s][A
-Compute Image Embeddings 3D:  42%|████▏     | 217/512 [00:21<00:26, 11.07it/s][A
-Compute Image Embeddings 3D:  43%|████▎     | 219/512 [00:21<00:26, 11.07it/s][A
-Compute Image Embeddings 3D:  43%|████▎     | 221/512 [00:21<00:26, 11.07it/s][A
-Compute Image Embeddings 3D:  44%|████▎     | 223/512 [00:21<00:26, 11.07it/s][A
-Compute Image Embeddings 3D:  44%|████▍     | 225/512 [00:22<00:25, 11.07it/s][A
-Compute Image Embeddings 3D:  44%|████▍     | 227/512 [00:22<00:25, 11.07it/s][A
-Compute Image Embeddings 3D:  45%|████▍     | 229/512 [00:22<00:25, 11.07it/s][A
-Compute Image Embeddings 3D:  45%|████▌     | 231/512 [00:22<00:25, 11.07it/s][A
-Compute Image Embeddings 3D:  46%|████▌     | 233/512 [00:22<00:25, 11.07it/s][A
-Compute Image Embeddings 3D:  46%|████▌     | 235/512 [00:23<00:25, 11.07it/s][A
-Compute Image Embeddings 3D:  46%|████▋     | 237/512 [00:23<00:24, 11.06it/s][A
-Compute Image Embeddings 3D:  47%|████▋     | 239/512 [00:23<00:24, 11.07it/s][A
-Compute Image Embeddings 3D:  47%|████▋     | 241/512 [00:23<00:24, 11.07it/s][A
-Compute Image Embeddings 3D:  47%|████▋     | 243/512 [00:23<00:24, 11.07it/s][A
-Compute Image Embeddings 3D:  48%|████▊     | 245/512 [00:23<00:24, 11.06it/s][A
-Compute Image Embeddings 3D:  48%|████▊     | 247/512 [00:24<00:23, 11.07it/s][A
-Compute Image Embeddings 3D:  49%|████▊     | 249/512 [00:24<00:23, 11.06it/s][A
-Compute Image Embeddings 3D:  49%|████▉     | 251/512 [00:24<00:23, 11.06it/s][A
-Compute Image Embeddings 3D:  49%|████▉     | 253/512 [00:24<00:23, 11.06it/s][A
-Compute Image Embeddings 3D:  50%|████▉     | 255/512 [00:24<00:23, 11.07it/s][A
-Compute Image Embeddings 3D:  50%|█████     | 257/512 [00:25<00:23, 11.06it/s][A
-Compute Image Embeddings 3D:  51%|█████     | 259/512 [00:25<00:22, 11.06it/s][A
-Compute Image Embeddings 3D:  51%|█████     | 261/512 [00:25<00:22, 11.06it/s][A
-Compute Image Embeddings 3D:  51%|█████▏    | 263/512 [00:25<00:22, 11.06it/s][A
-Compute Image Embeddings 3D:  52%|█████▏    | 265/512 [00:25<00:22, 11.07it/s][A
-Compute Image Embeddings 3D:  52%|█████▏    | 267/512 [00:25<00:22, 11.06it/s][A
-Compute Image Embeddings 3D:  53%|█████▎    | 269/512 [00:26<00:21, 11.06it/s][A
-Compute Image Embeddings 3D:  53%|█████▎    | 271/512 [00:26<00:21, 11.07it/s][A
-Compute Image Embeddings 3D:  53%|█████▎    | 273/512 [00:26<00:21, 11.07it/s][A
-Compute Image Embeddings 3D:  54%|█████▎    | 275/512 [00:26<00:21, 11.07it/s][A
-Compute Image Embeddings 3D:  54%|█████▍    | 277/512 [00:26<00:21, 11.07it/s][A
-Compute Image Embeddings 3D:  54%|█████▍    | 279/512 [00:27<00:21, 11.07it/s][A
-Compute Image Embeddings 3D:  55%|█████▍    | 281/512 [00:27<00:20, 11.07it/s][A
-Compute Image Embeddings 3D:  55%|█████▌    | 283/512 [00:27<00:20, 11.07it/s][A
-Compute Image Embeddings 3D:  56%|█████▌    | 285/512 [00:27<00:20, 11.07it/s][A
-Compute Image Embeddings 3D:  56%|█████▌    | 287/512 [00:27<00:20, 11.07it/s][A
-Compute Image Embeddings 3D:  56%|█████▋    | 289/512 [00:27<00:20, 11.07it/s][A
-Compute Image Embeddings 3D:  57%|█████▋    | 291/512 [00:28<00:19, 11.06it/s][A
-Compute Image Embeddings 3D:  57%|█████▋    | 293/512 [00:28<00:19, 11.07it/s][A
-Compute Image Embeddings 3D:  58%|█████▊    | 295/512 [00:28<00:19, 11.06it/s][A
-Compute Image Embeddings 3D:  58%|█████▊    | 297/512 [00:28<00:19, 11.06it/s][A
-Compute Image Embeddings 3D:  58%|█████▊    | 299/512 [00:28<00:19, 11.06it/s][A
-Compute Image Embeddings 3D:  59%|█████▉    | 301/512 [00:28<00:19, 11.06it/s][A
-Compute Image Embeddings 3D:  59%|█████▉    | 303/512 [00:29<00:18, 11.06it/s][A
-Compute Image Embeddings 3D:  60%|█████▉    | 305/512 [00:29<00:18, 11.07it/s][A
-Compute Image Embeddings 3D:  60%|█████▉    | 307/512 [00:29<00:18, 11.07it/s][A
-Compute Image Embeddings 3D:  60%|██████    | 309/512 [00:29<00:18, 11.07it/s][A
-Compute Image Embeddings 3D:  61%|██████    | 311/512 [00:29<00:18, 11.07it/s][A
-Compute Image Embeddings 3D:  61%|██████    | 313/512 [00:30<00:17, 11.07it/s][A
-Compute Image Embeddings 3D:  62%|██████▏   | 315/512 [00:30<00:17, 11.07it/s][A
-Compute Image Embeddings 3D:  62%|██████▏   | 317/512 [00:30<00:17, 11.07it/s][A
-Compute Image Embeddings 3D:  62%|██████▏   | 319/512 [00:30<00:17, 11.07it/s][A
-Compute Image Embeddings 3D:  63%|██████▎   | 321/512 [00:30<00:17, 11.07it/s][A
-Compute Image Embeddings 3D:  63%|██████▎   | 323/512 [00:30<00:17, 11.07it/s][A
-Compute Image Embeddings 3D:  63%|██████▎   | 325/512 [00:31<00:16, 11.07it/s][A
-Compute Image Embeddings 3D:  64%|██████▍   | 327/512 [00:31<00:16, 11.07it/s][A
-Compute Image Embeddings 3D:  64%|██████▍   | 329/512 [00:31<00:16, 11.07it/s][A
-Compute Image Embeddings 3D:  65%|██████▍   | 331/512 [00:31<00:16, 11.07it/s][A
-Compute Image Embeddings 3D:  65%|██████▌   | 333/512 [00:31<00:16, 11.07it/s][A
-Compute Image Embeddings 3D:  65%|██████▌   | 335/512 [00:32<00:15, 11.07it/s][A
-Compute Image Embeddings 3D:  66%|██████▌   | 337/512 [00:32<00:15, 11.07it/s][A
-Compute Image Embeddings 3D:  66%|██████▌   | 339/512 [00:32<00:15, 11.07it/s][A
-Compute Image Embeddings 3D:  67%|██████▋   | 341/512 [00:32<00:15, 11.07it/s][A
-Compute Image Embeddings 3D:  67%|██████▋   | 343/512 [00:32<00:15, 11.07it/s][A
-Compute Image Embeddings 3D:  67%|██████▋   | 345/512 [00:32<00:15, 11.07it/s][A
-Compute Image Embeddings 3D:  68%|██████▊   | 347/512 [00:33<00:14, 11.07it/s][A
-Compute Image Embeddings 3D:  68%|██████▊   | 349/512 [00:33<00:14, 11.07it/s][A
-Compute Image Embeddings 3D:  69%|██████▊   | 351/512 [00:33<00:14, 11.07it/s][A
-Compute Image Embeddings 3D:  69%|██████▉   | 353/512 [00:33<00:14, 11.06it/s][A
-Compute Image Embeddings 3D:  69%|██████▉   | 355/512 [00:33<00:14, 11.07it/s][A
-Compute Image Embeddings 3D:  70%|██████▉   | 357/512 [00:34<00:14, 11.07it/s][A
-Compute Image Embeddings 3D:  70%|███████   | 359/512 [00:34<00:13, 11.07it/s][A
-Compute Image Embeddings 3D:  71%|███████   | 361/512 [00:34<00:13, 11.07it/s][A
-Compute Image Embeddings 3D:  71%|███████   | 363/512 [00:34<00:13, 11.07it/s][A
-Compute Image Embeddings 3D:  71%|███████▏  | 365/512 [00:34<00:13, 11.07it/s][A
-Compute Image Embeddings 3D:  72%|███████▏  | 367/512 [00:34<00:13, 11.07it/s][A
-Compute Image Embeddings 3D:  72%|███████▏  | 369/512 [00:35<00:12, 11.07it/s][A
-Compute Image Embeddings 3D:  72%|███████▏  | 371/512 [00:35<00:12, 11.07it/s][A
-Compute Image Embeddings 3D:  73%|███████▎  | 373/512 [00:35<00:12, 11.04it/s][A
-Compute Image Embeddings 3D:  73%|███████▎  | 375/512 [00:35<00:12, 11.05it/s][A
-Compute Image Embeddings 3D:  74%|███████▎  | 377/512 [00:35<00:12, 11.06it/s][A
-Compute Image Embeddings 3D:  74%|███████▍  | 379/512 [00:36<00:12, 11.06it/s][A
-Compute Image Embeddings 3D:  74%|███████▍  | 381/512 [00:36<00:11, 11.06it/s][A
-Compute Image Embeddings 3D:  75%|███████▍  | 383/512 [00:36<00:11, 11.06it/s][A
-Compute Image Embeddings 3D:  75%|███████▌  | 385/512 [00:36<00:11, 11.06it/s][A
-Compute Image Embeddings 3D:  76%|███████▌  | 387/512 [00:36<00:11, 11.07it/s][A
-Compute Image Embeddings 3D:  76%|███████▌  | 389/512 [00:36<00:11, 11.07it/s][A
-Compute Image Embeddings 3D:  76%|███████▋  | 391/512 [00:37<00:10, 11.07it/s][A
-Compute Image Embeddings 3D:  77%|███████▋  | 393/512 [00:37<00:10, 11.07it/s][A
-Compute Image Embeddings 3D:  77%|███████▋  | 395/512 [00:37<00:10, 11.07it/s][A
-Compute Image Embeddings 3D:  78%|███████▊  | 397/512 [00:37<00:10, 11.07it/s][A
-Compute Image Embeddings 3D:  78%|███████▊  | 399/512 [00:37<00:10, 11.07it/s][A
-Compute Image Embeddings 3D:  78%|███████▊  | 401/512 [00:38<00:10, 11.07it/s][A
-Compute Image Embeddings 3D:  79%|███████▊  | 403/512 [00:38<00:09, 11.07it/s][A
-Compute Image Embeddings 3D:  79%|███████▉  | 405/512 [00:38<00:09, 11.07it/s][A
-Compute Image Embeddings 3D:  79%|███████▉  | 407/512 [00:38<00:09, 11.07it/s][A
-Compute Image Embeddings 3D:  80%|███████▉  | 409/512 [00:38<00:09, 11.07it/s][A
-Compute Image Embeddings 3D:  80%|████████  | 411/512 [00:38<00:09, 11.07it/s][A
-Compute Image Embeddings 3D:  81%|████████  | 413/512 [00:39<00:08, 11.07it/s][A
-Compute Image Embeddings 3D:  81%|████████  | 415/512 [00:39<00:08, 11.07it/s][A
-Compute Image Embeddings 3D:  81%|████████▏ | 417/512 [00:39<00:08, 11.07it/s][A
-Compute Image Embeddings 3D:  82%|████████▏ | 419/512 [00:39<00:08, 11.06it/s][A
-Compute Image Embeddings 3D:  82%|████████▏ | 421/512 [00:39<00:08, 11.06it/s][A
-Compute Image Embeddings 3D:  83%|████████▎ | 423/512 [00:40<00:08, 11.06it/s][A
-Compute Image Embeddings 3D:  83%|████████▎ | 425/512 [00:40<00:07, 11.07it/s][A
-Compute Image Embeddings 3D:  83%|████████▎ | 427/512 [00:40<00:07, 11.06it/s][A
-Compute Image Embeddings 3D:  84%|████████▍ | 429/512 [00:40<00:07, 11.06it/s][A
-Compute Image Embeddings 3D:  84%|████████▍ | 431/512 [00:40<00:07, 11.06it/s][A
-Compute Image Embeddings 3D:  85%|████████▍ | 433/512 [00:40<00:07, 11.06it/s][A
-Compute Image Embeddings 3D:  85%|████████▍ | 435/512 [00:41<00:06, 11.06it/s][A
-Compute Image Embeddings 3D:  85%|████████▌ | 437/512 [00:41<00:06, 11.06it/s][A
-Compute Image Embeddings 3D:  86%|████████▌ | 439/512 [00:41<00:06, 11.06it/s][A
-Compute Image Embeddings 3D:  86%|████████▌ | 441/512 [00:41<00:06, 11.07it/s][A
-Compute Image Embeddings 3D:  87%|████████▋ | 443/512 [00:41<00:06, 11.07it/s][A
-Compute Image Embeddings 3D:  87%|████████▋ | 445/512 [00:42<00:06, 11.07it/s][A
-Compute Image Embeddings 3D:  87%|████████▋ | 447/512 [00:42<00:05, 11.07it/s][A
-Compute Image Embeddings 3D:  88%|████████▊ | 449/512 [00:42<00:05, 11.07it/s][A
-Compute Image Embeddings 3D:  88%|████████▊ | 451/512 [00:42<00:05, 11.07it/s][A
-Compute Image Embeddings 3D:  88%|████████▊ | 453/512 [00:42<00:05, 11.07it/s][A
-Compute Image Embeddings 3D:  89%|████████▉ | 455/512 [00:42<00:05, 11.07it/s][A
-Compute Image Embeddings 3D:  89%|████████▉ | 457/512 [00:43<00:04, 11.07it/s][A
-Compute Image Embeddings 3D:  90%|████████▉ | 459/512 [00:43<00:04, 11.07it/s][A
-Compute Image Embeddings 3D:  90%|█████████ | 461/512 [00:43<00:04, 11.07it/s][A
-Compute Image Embeddings 3D:  90%|█████████ | 463/512 [00:43<00:04, 11.07it/s][A
-Compute Image Embeddings 3D:  91%|█████████ | 465/512 [00:43<00:04, 11.07it/s][A
-Compute Image Embeddings 3D:  91%|█████████ | 467/512 [00:43<00:04, 11.07it/s][A
-Compute Image Embeddings 3D:  92%|█████████▏| 469/512 [00:44<00:03, 11.07it/s][A
-Compute Image Embeddings 3D:  92%|█████████▏| 471/512 [00:44<00:03, 11.07it/s][A
-Compute Image Embeddings 3D:  92%|█████████▏| 473/512 [00:44<00:03, 11.07it/s][A
-Compute Image Embeddings 3D:  93%|█████████▎| 475/512 [00:44<00:03, 11.07it/s][A
-Compute Image Embeddings 3D:  93%|█████████▎| 477/512 [00:44<00:03, 11.07it/s][A
-Compute Image Embeddings 3D:  94%|█████████▎| 479/512 [00:45<00:02, 11.07it/s][Aslurmstepd: error: slurm_get_node_energy: Socket timed out on send/recv operation
-slurmstepd: error: _get_joules_task: can't get info from slurmd
-
-Compute Image Embeddings 3D:  94%|█████████▍| 481/512 [00:45<00:02, 11.07it/s][A
-Compute Image Embeddings 3D:  94%|█████████▍| 483/512 [00:45<00:02, 11.07it/s][A
-Compute Image Embeddings 3D:  95%|█████████▍| 485/512 [00:45<00:02, 11.07it/s][A
-Compute Image Embeddings 3D:  95%|█████████▌| 487/512 [00:45<00:02, 11.07it/s][A
-Compute Image Embeddings 3D:  96%|█████████▌| 489/512 [00:45<00:02, 11.07it/s][A
-Compute Image Embeddings 3D:  96%|█████████▌| 491/512 [00:46<00:01, 11.07it/s][A
-Compute Image Embeddings 3D:  96%|█████████▋| 493/512 [00:46<00:01, 11.07it/s][A
-Compute Image Embeddings 3D:  97%|█████████▋| 495/512 [00:46<00:01, 11.08it/s][A
-Compute Image Embeddings 3D:  97%|█████████▋| 497/512 [00:46<00:01, 11.07it/s][A
-Compute Image Embeddings 3D:  97%|█████████▋| 499/512 [00:46<00:01, 11.07it/s][A
-Compute Image Embeddings 3D:  98%|█████████▊| 501/512 [00:47<00:00, 11.07it/s][A
-Compute Image Embeddings 3D:  98%|█████████▊| 503/512 [00:47<00:00, 11.07it/s][A
-Compute Image Embeddings 3D:  99%|█████████▊| 505/512 [00:47<00:00, 11.07it/s][A
-Compute Image Embeddings 3D:  99%|█████████▉| 507/512 [00:47<00:00, 11.07it/s][A
-Compute Image Embeddings 3D:  99%|█████████▉| 509/512 [00:47<00:00, 11.07it/s][A
-Compute Image Embeddings 3D: 100%|█████████▉| 511/512 [00:47<00:00, 11.06it/s][ACompute Image Embeddings 3D: 100%|██████████| 512/512 [00:48<00:00, 10.59it/s]
-Run instance segmentation grid-search:   0%|          | 0/10 [00:48<?, ?it/s]
-Traceback (most recent call last):
-  File "/mnt/vast-nhr/home/titus.griebel/u12649/micro-sam/finetuning/specialists/training/histopathology/puma/evaluate_amg_cryonuseg.py", line 60, in <module>
-    main()
-  File "/mnt/vast-nhr/home/titus.griebel/u12649/micro-sam/finetuning/specialists/training/histopathology/puma/evaluate_amg_cryonuseg.py", line 55, in main
-    prediction_folder = run_amg_inference(args.model, ckpt, args.experiment_folder, args.dataset)
-                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/mnt/vast-nhr/home/titus.griebel/u12649/micro-sam/finetuning/specialists/training/histopathology/puma/evaluate_amg_cryonuseg.py", line 29, in run_amg_inference
-    prediction_folder = run_amg(
-                        ^^^^^^^^
-  File "/home/titus.griebel/u12649/micro-sam/micro_sam/evaluation/inference.py", line 578, in run_amg
-    instance_segmentation.run_instance_segmentation_grid_search_and_inference(
-  File "/home/titus.griebel/u12649/micro-sam/micro_sam/evaluation/instance_segmentation.py", line 391, in run_instance_segmentation_grid_search_and_inference
-    run_instance_segmentation_grid_search(
-  File "/home/titus.griebel/u12649/micro-sam/micro_sam/evaluation/instance_segmentation.py", line 230, in run_instance_segmentation_grid_search
-    segmenter.initialize(image)
-  File "/mnt/lustre-grete/usr/u12649/conda/envs/sam2/lib/python3.12/site-packages/torch/utils/_contextlib.py", line 116, in decorate_context
-    return func(*args, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^
-  File "/home/titus.griebel/u12649/micro-sam/micro_sam/instance_segmentation.py", line 486, in initialize
-    util.set_precomputed(self._predictor, image_embeddings, i=i)
-  File "/home/titus.griebel/u12649/micro-sam/micro_sam/util.py", line 901, in set_precomputed
-    raise ValueError("The data is 3D so an index i is needed.")
-ValueError: The data is 3D so an index i is needed.
-============ Job Information ===================================================
-Submitted: 2024-11-18T16:16:27
-Started: 2024-11-22T10:08:52
-Ended: 2024-11-22T10:13:45
-Elapsed: 5 min, Limit: 2880 min, Difference: 2875 min
-CPUs: 16, Nodes: 1
-Estimated Consumption: 12.50 core-hours
-================================================================================

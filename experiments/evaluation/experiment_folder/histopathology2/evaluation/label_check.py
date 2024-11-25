@@ -9,6 +9,7 @@ import cv2
 from skimage import io
 from natsort import natsorted
 import shutil
+
 def open_hdf5_file(file_path):
   try:
     with h5py.File(file_path, 'r') as f:

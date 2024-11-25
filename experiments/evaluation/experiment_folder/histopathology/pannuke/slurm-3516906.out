@@ -1,14 +1,0 @@
-Verifying labels in 'train' dataloader:   0%|          | 0/50 [00:00<?, ?it/s]Verifying labels in 'train' dataloader:   2%|▏         | 1/50 [00:00<00:31,  1.57it/s]Verifying labels in 'train' dataloader:   6%|▌         | 3/50 [00:00<00:09,  4.76it/s]Verifying labels in 'train' dataloader:  22%|██▏       | 11/50 [00:00<00:02, 19.10it/s]Verifying labels in 'train' dataloader:  32%|███▏      | 16/50 [00:00<00:01, 25.54it/s]Verifying labels in 'train' dataloader:  46%|████▌     | 23/50 [00:01<00:00, 35.33it/s]Verifying labels in 'train' dataloader:  58%|█████▊    | 29/50 [00:01<00:00, 39.62it/s]Verifying labels in 'train' dataloader:  70%|███████   | 35/50 [00:01<00:00, 44.25it/s]Verifying labels in 'train' dataloader:  82%|████████▏ | 41/50 [00:01<00:00, 45.94it/s]Verifying labels in 'train' dataloader:  94%|█████████▍| 47/50 [00:01<00:00, 46.40it/s]Verifying labels in 'train' dataloader: 100%|██████████| 50/50 [00:01<00:00, 28.95it/s]
-Verifying labels in 'val' dataloader:   0%|          | 0/50 [00:00<?, ?it/s]Verifying labels in 'val' dataloader:   0%|          | 0/50 [00:00<?, ?it/s]
-Traceback (most recent call last):
-  File "/mnt/vast-nhr/home/titus.griebel/u12649/micro-sam/finetuning/specialists/training/histopathology/pannuke/pannuke_finetuning.py", line 94, in <module>
-    main()
-  File "/mnt/vast-nhr/home/titus.griebel/u12649/micro-sam/finetuning/specialists/training/histopathology/pannuke/pannuke_finetuning.py", line 90, in main
-    finetune_pannuke(args)
-  File "/mnt/vast-nhr/home/titus.griebel/u12649/micro-sam/finetuning/specialists/training/histopathology/pannuke/pannuke_finetuning.py", line 30, in finetune_pannuke
-    sam_training.train_sam(
-  File "/home/titus.griebel/u12649/micro-sam/micro_sam/training/training.py", line 239, in train_sam
-    _check_loader(val_loader, with_segmentation_decoder, "val", verify_n_labels_in_loader)
-  File "/home/titus.griebel/u12649/micro-sam/micro_sam/training/training.py", line 88, in _check_loader
-    raise ValueError(
-ValueError: Invalid number of channels in the target data from the data loader. Expect 4 channel for training with an instance segmentation decoder, but got 1 channels.
