@@ -1,0 +1,25 @@
+================================================================================
+JobID = 3467416
+User = u12649, Account = nim00007
+Partition = grete:shared, Nodelist = ggpu104
+================================================================================
+Traceback (most recent call last):
+  File "/mnt/vast-nhr/home/titus.griebel/u12649/micro-sam/finetuning/specialists/training/histopathology/puma/evaluate_instance_segmentation_cryonuseg.py", line 48, in <module>
+    main()
+  File "/mnt/vast-nhr/home/titus.griebel/u12649/micro-sam/finetuning/specialists/training/histopathology/puma/evaluate_instance_segmentation_cryonuseg.py", line 41, in main
+    prediction_folder = run_instance_segmentation_with_decoder_inference(
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/vast-nhr/home/titus.griebel/u12649/micro-sam/finetuning/specialists/training/histopathology/puma/evaluate_instance_segmentation_cryonuseg.py", line 11, in run_instance_segmentation_with_decoder_inference
+    val_image_paths, val_gt_paths = get_val_paths()
+                                    ^^^^^^^^^^^^^^^
+TypeError: get_val_paths() missing 1 required positional argument: 'dataset'
+slurmstepd: error: slurm_get_node_energy: Socket timed out on send/recv operation
+slurmstepd: error: _get_joules_task: can't get info from slurmd
+============ Job Information ===================================================
+Submitted: 2024-11-18T16:16:32
+Started: 2024-11-22T10:08:52
+Ended: 2024-11-22T10:12:54
+Elapsed: 5 min, Limit: 2880 min, Difference: 2875 min
+CPUs: 16, Nodes: 1
+Estimated Consumption: 12.50 core-hours
+================================================================================

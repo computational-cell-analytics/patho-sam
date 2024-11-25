@@ -1,0 +1,43 @@
+slurmstepd: error: slurm_get_node_energy: Socket timed out on send/recv operation
+slurmstepd: error: _get_joules_task: can't get info from slurmd
+================================================================================
+JobID = 3467420
+User = u12649, Account = nim00007
+Partition = grete:shared, Nodelist = ggpu141
+================================================================================
+/home/titus.griebel/u12649/torch-em/torch_em/data/segmentation_dataset.py:222: UserWarning: SegmentationDataset could not be deserialized because of missing /scratch/users/u11644/data/pannuke/pannuke_fold_1.h5, images.
+The dataset is deserialized in order to allow loading trained models from a checkpoint.
+But it cannot be used for further training and will throw an error.
+  warnings.warn(msg)
+/home/titus.griebel/u12649/torch-em/torch_em/data/segmentation_dataset.py:235: UserWarning: SegmentationDataset could not be deserialized because of missing /scratch/users/u11644/data/pannuke/pannuke_fold_1.h5, labels/instances.
+The dataset is deserialized in order to allow loading trained models from a checkpoint.
+But it cannot be used for further training and will throw an error.
+  warnings.warn(msg)
+/home/titus.griebel/u12649/torch-em/torch_em/data/segmentation_dataset.py:222: UserWarning: SegmentationDataset could not be deserialized because of missing /scratch/users/u11644/data/pannuke/pannuke_fold_2.h5, images.
+The dataset is deserialized in order to allow loading trained models from a checkpoint.
+But it cannot be used for further training and will throw an error.
+  warnings.warn(msg)
+/home/titus.griebel/u12649/torch-em/torch_em/data/segmentation_dataset.py:235: UserWarning: SegmentationDataset could not be deserialized because of missing /scratch/users/u11644/data/pannuke/pannuke_fold_2.h5, labels/instances.
+The dataset is deserialized in order to allow loading trained models from a checkpoint.
+But it cannot be used for further training and will throw an error.
+  warnings.warn(msg)
+Traceback (most recent call last):
+  File "/mnt/vast-nhr/home/titus.griebel/u12649/micro-sam/finetuning/specialists/training/histopathology/puma/iterative_prompting_cryonuseg.py", line 54, in <module>
+    main()
+  File "/mnt/vast-nhr/home/titus.griebel/u12649/micro-sam/finetuning/specialists/training/histopathology/puma/iterative_prompting_cryonuseg.py", line 47, in main
+    prediction_root = _run_iterative_prompting(
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/vast-nhr/home/titus.griebel/u12649/micro-sam/finetuning/specialists/training/histopathology/puma/iterative_prompting_cryonuseg.py", line 15, in _run_iterative_prompting
+    image_paths, gt_paths = get_test_paths()
+                            ^^^^^^^^^^^^^^^^
+TypeError: get_test_paths() missing 1 required positional argument: 'dataset'
+slurmstepd: error: slurm_get_node_energy: Socket timed out on send/recv operation
+slurmstepd: error: _get_joules_task: can't get info from slurmd
+============ Job Information ===================================================
+Submitted: 2024-11-18T16:17:04
+Started: 2024-11-22T10:08:52
+Ended: 2024-11-22T10:13:15
+Elapsed: 5 min, Limit: 2880 min, Difference: 2875 min
+CPUs: 16, Nodes: 1
+Estimated Consumption: 12.50 core-hours
+================================================================================

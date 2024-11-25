@@ -1,0 +1,16 @@
+/mnt/lustre-grete/usr/u12649/conda/envs/sam2/lib/python3.12/site-packages/torch/cuda/__init__.py:129: UserWarning: CUDA initialization: Unexpected error from cudaGetDeviceCount(). Did you run some cuda functions before calling NumCudaDevices() that might have already set an error? Error 802: system not yet initialized (Triggered internally at ../c10/cuda/CUDAFunctions.cpp:108.)
+  return torch._C._cuda_getDeviceCount() > 0
+Verifying labels in 'train' dataloader:   0%|          | 0/50 [00:00<?, ?it/s]Verifying labels in 'train' dataloader:   2%|▏         | 1/50 [00:00<00:48,  1.02it/s]Verifying labels in 'train' dataloader:   8%|▊         | 4/50 [00:01<00:09,  4.69it/s]Verifying labels in 'train' dataloader:  18%|█▊        | 9/50 [00:01<00:03, 11.35it/s]Verifying labels in 'train' dataloader:  26%|██▌       | 13/50 [00:01<00:02, 15.90it/s]Verifying labels in 'train' dataloader:  34%|███▍      | 17/50 [00:01<00:01, 20.26it/s]Verifying labels in 'train' dataloader:  42%|████▏     | 21/50 [00:01<00:01, 24.34it/s]Verifying labels in 'train' dataloader:  52%|█████▏    | 26/50 [00:01<00:00, 29.20it/s]Verifying labels in 'train' dataloader:  62%|██████▏   | 31/50 [00:01<00:00, 33.85it/s]Verifying labels in 'train' dataloader:  72%|███████▏  | 36/50 [00:01<00:00, 34.42it/s]Verifying labels in 'train' dataloader:  80%|████████  | 40/50 [00:02<00:00, 34.71it/s]Verifying labels in 'train' dataloader:  88%|████████▊ | 44/50 [00:02<00:00, 35.47it/s]Verifying labels in 'train' dataloader:  98%|█████████▊| 49/50 [00:02<00:00, 37.24it/s]Verifying labels in 'train' dataloader: 100%|██████████| 50/50 [00:02<00:00, 20.68it/s]
+Verifying labels in 'val' dataloader:   0%|          | 0/50 [00:00<?, ?it/s]Verifying labels in 'val' dataloader:   0%|          | 0/50 [00:00<?, ?it/s]
+Traceback (most recent call last):
+  File "/mnt/vast-nhr/home/titus.griebel/u12649/micro-sam/finetuning/specialists/training/histopathology/pannuke/pannuke_finetuning.py", line 94, in <module>
+    main()
+  File "/mnt/vast-nhr/home/titus.griebel/u12649/micro-sam/finetuning/specialists/training/histopathology/pannuke/pannuke_finetuning.py", line 90, in main
+    finetune_pannuke(args)
+  File "/mnt/vast-nhr/home/titus.griebel/u12649/micro-sam/finetuning/specialists/training/histopathology/pannuke/pannuke_finetuning.py", line 30, in finetune_pannuke
+    sam_training.train_sam(
+  File "/home/titus.griebel/u12649/micro-sam/micro_sam/training/training.py", line 239, in train_sam
+    _check_loader(val_loader, with_segmentation_decoder, "val", verify_n_labels_in_loader)
+  File "/home/titus.griebel/u12649/micro-sam/micro_sam/training/training.py", line 88, in _check_loader
+    raise ValueError(
+ValueError: Invalid number of channels in the target data from the data loader. Expect 4 channel for training with an instance segmentation decoder, but got 1 channels.
