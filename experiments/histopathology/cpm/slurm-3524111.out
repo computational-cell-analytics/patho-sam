@@ -1,19 +1,0 @@
-14 14
-Run inference with iterative prompting for all images:   0%|          | 0/14 [00:00<?, ?it/s]Run inference with iterative prompting for all images:   7%|▋         | 1/14 [00:06<01:23,  6.40s/it]Run inference with iterative prompting for all images:  14%|█▍        | 2/14 [00:08<00:48,  4.07s/it]Run inference with iterative prompting for all images:  21%|██▏       | 3/14 [00:11<00:38,  3.54s/it]Run inference with iterative prompting for all images:  29%|██▊       | 4/14 [00:14<00:30,  3.08s/it]Run inference with iterative prompting for all images:  36%|███▌      | 5/14 [00:17<00:28,  3.21s/it]Run inference with iterative prompting for all images:  43%|████▎     | 6/14 [00:21<00:28,  3.53s/it]Run inference with iterative prompting for all images:  50%|█████     | 7/14 [00:26<00:27,  3.89s/it]Run inference with iterative prompting for all images:  57%|█████▋    | 8/14 [00:29<00:21,  3.52s/it]Run inference with iterative prompting for all images:  64%|██████▍   | 9/14 [00:30<00:14,  2.82s/it]Run inference with iterative prompting for all images:  71%|███████▏  | 10/14 [00:32<00:10,  2.52s/it]Run inference with iterative prompting for all images:  79%|███████▊  | 11/14 [00:33<00:06,  2.28s/it]Run inference with iterative prompting for all images:  86%|████████▌ | 12/14 [00:35<00:04,  2.11s/it]Run inference with iterative prompting for all images:  93%|█████████▎| 13/14 [00:38<00:02,  2.27s/it]Run inference with iterative prompting for all images: 100%|██████████| 14/14 [00:40<00:00,  2.32s/it]Run inference with iterative prompting for all images: 100%|██████████| 14/14 [00:40<00:00,  2.91s/it]
-14 14
-Evaluating iteration00
-Evaluate predictions:   0%|          | 0/14 [00:00<?, ?it/s]Evaluate predictions:  50%|█████     | 7/14 [00:00<00:00, 60.64it/s]Evaluate predictions: 100%|██████████| 14/14 [00:00<00:00, 67.09it/s]
-Evaluating iteration01
-Evaluate predictions:   0%|          | 0/14 [00:00<?, ?it/s]Evaluate predictions:  50%|█████     | 7/14 [00:00<00:00, 60.83it/s]Evaluate predictions: 100%|██████████| 14/14 [00:00<00:00, 67.25it/s]
-Evaluating iteration02
-Evaluate predictions:   0%|          | 0/14 [00:00<?, ?it/s]Evaluate predictions:  50%|█████     | 7/14 [00:00<00:00, 62.15it/s]Evaluate predictions: 100%|██████████| 14/14 [00:00<00:00, 68.26it/s]
-Evaluating iteration03
-Evaluate predictions:   0%|          | 0/14 [00:00<?, ?it/s]Evaluate predictions:  50%|█████     | 7/14 [00:00<00:00, 62.11it/s]Evaluate predictions: 100%|██████████| 14/14 [00:00<00:00, 67.98it/s]
-Evaluating iteration04
-Evaluate predictions:   0%|          | 0/14 [00:00<?, ?it/s]Evaluate predictions:  50%|█████     | 7/14 [00:00<00:00, 61.22it/s]Evaluate predictions: 100%|██████████| 14/14 [00:00<00:00, 67.47it/s]
-Evaluating iteration05
-Evaluate predictions:   0%|          | 0/14 [00:00<?, ?it/s]Evaluate predictions:  50%|█████     | 7/14 [00:00<00:00, 61.22it/s]Evaluate predictions: 100%|██████████| 14/14 [00:00<00:00, 67.45it/s]
-Evaluating iteration06
-Evaluate predictions:   0%|          | 0/14 [00:00<?, ?it/s]Evaluate predictions:  50%|█████     | 7/14 [00:00<00:00, 60.91it/s]Evaluate predictions: 100%|██████████| 14/14 [00:00<00:00, 66.89it/s]
-Evaluating iteration07
-Evaluate predictions:   0%|          | 0/14 [00:00<?, ?it/s]Evaluate predictions:  50%|█████     | 7/14 [00:00<00:00, 60.75it/s]Evaluate predictions: 100%|██████████| 14/14 [00:00<00:00, 66.02it/s]
