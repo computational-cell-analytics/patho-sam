@@ -15,7 +15,7 @@ from torch.utils.data import Dataset, DataLoader
 
 import torch_em
 
-import util
+from torch_em.data.datasets import util
 
 
 def get_nuinsseg_data(path: Union[os.PathLike, str], download: bool = False) -> str:

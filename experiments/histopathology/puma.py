@@ -23,7 +23,10 @@ from torch.utils.data import Dataset, DataLoader
 import torch_em
 
 from torch_em.data.datasets import util
-
+import h5py
+import geopandas as gpd
+from rasterio.features import rasterize
+from rasterio.transform import from_bounds
 
 URL = {
     "data": "https://zenodo.org/records/13859989/files/01_training_dataset_tif_ROIs.zip",
@@ -41,13 +44,22 @@ CHECKSUM = {
     }
 }
 
+def get_tiffs(path, annotations):
+    output_dir = os.path.join(path)
+    os.makedirs((os.path.join(output_dir, 'images')), exist_ok=True)
+    os.makedirs((os.path.join(output_dir, 'labels')), exist_ok=True)
+    for file in glob(os.path.join(path, 'preprocessed', '*.h5')): 
+        with h5py.File(file, 'r') as f:
+            img_data = f['raw']
+            label_data = f[f'labels/{annotations}']
+            basename = os.path.basename(file)
+            name, ext = os.path.splitext(basename)
+            img_output_path = os.path.join(output_dir, 'images', f'{name}.tiff')
+            tifffile.imwrite(img_output_path, img_data)
+            label_output_path = os.path.join(output_dir, 'labels', f'{name}.tiff')
+            tifffile.imwrite(label_output_path, label_data)
 
 def _preprocess_inputs(path, annotations):
-    import h5py
-    import geopandas as gpd
-    from rasterio.features import rasterize
-    from rasterio.transform import from_bounds
-
     annotation_paths = glob(os.path.join(path, "annotations", annotations, "*.geojson"))
     roi_dir = os.path.join(path, "data")
     preprocessed_dir = os.path.join(path, "preprocessed")
@@ -76,12 +88,12 @@ def _preprocess_inputs(path, annotations):
         image = imageio.imread(image_path)
         image = image[..., :-1].transpose(2, 0, 1)
 
-        with h5py.File(volume_path, "a") as f:
-            if "raw" not in f.keys():
-                f.create_dataset("raw", data=image, compression="gzip")
+        with h5py.File(volume_path, "a") as d:
+            #if "raw" not in d.keys(): --> raises KeyError because 'raw' does not exist as a dataset yet
+            d.create_dataset("raw", data=image, compression="gzip")
 
-            if f"[annotations]" not in f["labels"].keys():
-                f.create_dataset(f"labels/{annotations}", data=mask, compression="gzip")
+            #if f"{annotations}" not in d["labels"].keys(): --> ref above
+            d.create_dataset(f"labels/{annotations}", data=mask, compression="gzip")
 
 
 
@@ -164,7 +176,8 @@ def get_puma_dataset(
     Returns:
         The segmentation dataset.
     """
-    #volume_paths = get_puma_paths(path, annotations, download)
+    placeholder = get_puma_paths(path, annotations,download)
+    get_tiffs(path, annotations)
     image_paths = natsorted(glob(os.path.join(path, 'images', '*.tiff')))
     label_paths = natsorted(glob(os.path.join(path, 'labels', '*.tiff')))
     kwargs, _ = util.add_instance_label_transform(
@@ -180,19 +193,6 @@ def get_puma_dataset(
         is_seg_dataset=False,
         **kwargs
     )
-
-    # return torch_em.default_segmentation_dataset(
-    #     raw_paths=volume_paths,
-    #     #raw_key="raw",
-    #     label_paths=volume_paths,
-    #     #label_key=f"labels/{annotations}",
-    #     patch_shape=patch_shape,
-    #     with_channels=True,
-    #     is_seg_dataset=False,
-    #     ndim=2,
-    #     **kwargs
-    # )
-
 
 def get_puma_loader(
     path: Union[os.PathLike, str],

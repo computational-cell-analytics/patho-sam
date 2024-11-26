@@ -42,4 +42,4 @@ def check_for_empty_tiff(path):
     print(f'There are {label_len} images left')
 
 
-check_for_empty_tiff('/mnt/lustre-grete/usr/u12649/scratch/data/nuinsseg/loaded_dataset/complete_dataset')
+check_for_empty_tiff('/mnt/lustre-grete/usr/u12649/scratch/data/test/lizard')

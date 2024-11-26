@@ -41,11 +41,6 @@ def _preprocess_images(path):
         raw = imageio.imread(rpath)
         raw = raw[..., :-1].transpose(2, 0, 1)  # remove 4th alpha channel (seems like an empty channel).
         label = imageio.imread(lpath)
-        # image = raw
-        # print(f'Image datatype: {image.dtype}')
-        # unique_values = np.unique(image)
-        # print("Max value:", max(unique_values))
-        # print("Min value:", min(unique_values))
         vol_path = os.path.join(preprocessed_dir, f"{Path(lpath).stem}.h5")
 
         with h5py.File(vol_path, "w") as f:
@@ -66,7 +61,6 @@ def get_tiffs(path):
         with h5py.File(file, 'r') as f: 
             img_data = f['raw']
             label_data = f['labels/instances']
-            print(f'image shape: {img_data.shape}, label shape: {label_data.shape}')
             basename = os.path.basename(file)
             name, ext = os.path.splitext(basename)
             img_output_path = os.path.join(output_dir, 'images', f'{name}.tiff')
@@ -133,8 +127,6 @@ def get_tnbc_dataset(
     get_tiffs(path)
     image_paths = natsorted(glob(os.path.join(path, 'images', '*.tiff')))
     label_paths = natsorted(glob(os.path.join(path, 'labels', '*.tiff')))
-    print(len(image_paths), len(label_paths))
-    breakpoint()
     kwargs, _ = util.add_instance_label_transform(
         kwargs, add_binary_target=True, binary=False, boundaries=False, offsets=None
     )
