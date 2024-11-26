@@ -5,6 +5,11 @@ __pycache__/
 
 # C extensions
 *.so
+*.out
+*.zarray
+*.zgroup
+*.zattrs
+*.0.0
 *.sh
 # Distribution / packaging
 .Python
