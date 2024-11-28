@@ -44,6 +44,7 @@ CHECKSUM = {
     }
 }
 
+
 def get_tiffs(path, annotations):
     output_dir = os.path.join(path)
     os.makedirs((os.path.join(output_dir, 'images')), exist_ok=True)
@@ -58,6 +59,7 @@ def get_tiffs(path, annotations):
             tifffile.imwrite(img_output_path, img_data)
             label_output_path = os.path.join(output_dir, 'labels', f'{name}.tiff')
             tifffile.imwrite(label_output_path, label_data)
+
 
 def _preprocess_inputs(path, annotations):
     annotation_paths = glob(os.path.join(path, "annotations", annotations, "*.geojson"))

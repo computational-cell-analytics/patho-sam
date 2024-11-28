@@ -53,6 +53,7 @@ def _preprocess_images(path):
     shutil.rmtree(os.path.join(path, "TNBC_NucleiSegmentation"))
     shutil.rmtree(os.path.join(path, "__MACOSX"))
 
+
 def get_tiffs(path):
     output_dir = os.path.join(path)
     os.makedirs((os.path.join(output_dir, 'images')), exist_ok=True)
@@ -67,6 +68,10 @@ def get_tiffs(path):
             tifffile.imwrite(img_output_path, img_data)
             label_output_path = os.path.join(output_dir, 'labels', f'{name}.tiff')
             tifffile.imwrite(label_output_path, label_data)
+    image_paths = natsorted(glob(os.path.join(path, 'images', '*.tiff')))
+    label_paths = natsorted(glob(os.path.join(path, 'labels', '*.tiff')))
+    return image_paths, label_paths
+
 
 def get_tnbc_data(path: Union[os.PathLike, str], download: bool = False) -> str:
     """Download the TNBC dataset for nucleus segmentation.
@@ -90,8 +95,6 @@ def get_tnbc_data(path: Union[os.PathLike, str], download: bool = False) -> str:
 
     _preprocess_images(path)
 
-    return data_dir
-
 
 def get_tnbc_paths(path: Union[os.PathLike, str], download: bool = False) -> List[int]:
     """Get paths to the TNBC data.
@@ -103,9 +106,9 @@ def get_tnbc_paths(path: Union[os.PathLike, str], download: bool = False) -> Lis
     Returns:
         List of filepaths to the preprocessed image data.
     """
-    data_dir = get_tnbc_data(path, download)
-    volume_paths = natsorted(glob(os.path.join(data_dir, "*.h5")))
-    return volume_paths
+    get_tnbc_data(path, download)
+    image_paths, label_paths = get_tiffs(path)
+    return image_paths, label_paths
 
 
 def get_tnbc_dataset(
@@ -122,28 +125,20 @@ def get_tnbc_dataset(
     Returns:
         The segmentation dataset.
     """
-    # label_choice = "instances"  # semantic / instances
-    volume_paths = get_tnbc_paths(path, download)
-    get_tiffs(path)
-    image_paths = natsorted(glob(os.path.join(path, 'images', '*.tiff')))
-    label_paths = natsorted(glob(os.path.join(path, 'labels', '*.tiff')))
+    image_paths, label_paths = get_tnbc_paths(path, download)
     kwargs, _ = util.add_instance_label_transform(
         kwargs, add_binary_target=True, binary=False, boundaries=False, offsets=None
     )
 
     return torch_em.default_segmentation_dataset(
-        image_paths, None, label_paths, None, patch_shape, is_seg_dataset=False, **kwargs
+        raw_paths=image_paths,
+        raw_key=None,
+        label_paths=label_paths,
+        label_key=None,
+        patch_shape=patch_shape,
+        is_seg_dataset=False,
+        **kwargs
     )
-    # return torch_em.default_segmentation_dataset(
-    #     raw_paths=volume_paths,
-    #     raw_key="raw",
-    #     label_paths=volume_paths,
-    #     label_key=f"labels/{label_choice}",
-    #     patch_shape=patch_shape,
-    #     is_seg_dataset=True,
-    #     with_channels=True,
-    #     **kwargs
-    # )
 
 
 def get_tnbc_loader(
