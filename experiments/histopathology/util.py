@@ -1,12 +1,7 @@
 import os
 import argparse
-import warnings
 from glob import glob
-
-from torch_em.data import datasets
-
 from micro_sam.util import get_sam_model
-from micro_sam.evaluation.livecell import _get_livecell_paths
 from natsort import natsorted
 
 ROOT = "/scratch/projects/nim00007/sam/data/"
@@ -55,131 +50,10 @@ def get_model(model_type, ckpt):
     return predictor
 
 
-def get_paths(dataset_name, split):
-    assert dataset_name in DATASETS, dataset_name
-
-    if dataset_name == "livecell":
-        image_paths, gt_paths = _get_livecell_paths(input_folder=os.path.join(ROOT, "livecell"), split=split)
-        return sorted(image_paths), sorted(gt_paths)
-
-    image_dir, gt_dir = get_dataset_paths(dataset_name, split)
-    image_paths = sorted(glob(os.path.join(image_dir)))
-    gt_paths = sorted(glob(os.path.join(gt_dir)))
-    return image_paths, gt_paths
-
-
 def get_pred_paths(prediction_folder):
     pred_paths = sorted(glob(os.path.join(prediction_folder, "*")))
     return pred_paths
 
-
-def download_all_datasets(path):
-    # lucchi
-    datasets.get_lucchi_dataset(os.path.join(path, "lucchi"), split="train", patch_shape=(1, 512, 512), download=True)
-    datasets.get_lucchi_dataset(os.path.join(path, "lucchi"), split="test", patch_shape=(1, 512, 512), download=True)
-
-    # snemi
-    datasets.get_snemi_dataset(os.path.join(path, "snemi"), patch_shape=(1, 512, 512), sample="train", download=True)
-    try:
-        datasets.get_snemi_dataset(os.path.join(path, "snemi"), patch_shape=(1, 512, 512), sample="test", download=True)
-    except KeyError:
-        warnings.warn("SNEMI's test set does not have labels. We download it in one place anyways.")
-
-    # nuc_mm
-    datasets.get_nuc_mm_dataset(
-        os.path.join(path, "nuc_mm"), sample="mouse", split="train", patch_shape=(1, 192, 192), download=True
-    )
-    datasets.get_nuc_mm_dataset(
-        os.path.join(path, "nuc_mm"), sample="zebrafish", split="train", patch_shape=(1, 64, 64), download=True
-    )
-
-    # platy-cilia
-    datasets.get_platynereis_cilia_dataset(os.path.join(path, "platynereis"), patch_shape=(1, 512, 512), download=True)
-    datasets.get_platynereis_nuclei_dataset(os.path.join(path, "platynereis"), patch_shape=(1, 512, 512), download=True)
-    datasets.get_platynereis_cell_dataset(os.path.join(path, "platynereis"), patch_shape=(1, 512, 512), download=True)
-
-    # mitoem
-    datasets.get_mitoem_dataset(
-        os.path.join(path, "mitoem"), splits="val", patch_shape=(1, 512, 512), download=True
-    )
-
-    # mitolab
-    print("MitoLab benchmark datasets need to downloaded separately. See `datasets.cem.get_benchmark_datasets`")
-
-    # uro-cell
-    datasets.get_uro_cell_dataset(
-        os.path.join(path, "uro_cell"), target="mito", patch_shape=(1, 512, 512), download=True
-    )
-
-    # sponge-em
-    datasets.get_sponge_em_dataset(
-        os.path.join(path, "sponge_em"), mode="instances", patch_shape=(1, 512, 512), download=True
-    )
-
-    # isbi
-    datasets.get_isbi_dataset(os.path.join(path, "isbi"), patch_shape=(1, 512, 512), download=True)
-
-    # axondeepseg
-    datasets.get_axondeepseg_dataset(
-        os.path.join(path, "axondeepseg"), name="tem", patch_shape=(1, 512, 512), download=True
-    )
-
-    # cremi
-    datasets.get_cremi_dataset(os.path.join(path, "cremi"), patch_shape=(1, 512, 512), download=True)
-
-    # covid-if
-    datasets.get_covid_if_dataset(os.path.join(path, "covid_if"), patch_shape=(1, 512, 512), download=True)
-
-    # tissuenet: data cannot be downloaded automatically. please download from here - https://datasets.deepcell.org/data
-
-    # deepbacs
-    datasets.get_deepbacs_dataset(os.path.join(path, "deepbacs"), split="train", patch_shape=(256, 256), download=True)
-    datasets.get_deepbacs_dataset(os.path.join(path, "deepbacs"), split="val", patch_shape=(256, 256), download=True)
-    datasets.get_deepbacs_dataset(os.path.join(path, "deepbacs"), split="test", patch_shape=(256, 256), download=True)
-
-    # plantseg root
-    datasets.get_plantseg_dataset(
-        os.path.join(path, "plantseg"), name="root", split="train", patch_shape=(1, 512, 512), download=True
-    )
-    datasets.get_plantseg_dataset(
-        os.path.join(path, "plantseg"), name="root", split="val", patch_shape=(1, 512, 512), download=True
-    )
-    datasets.get_plantseg_dataset(
-        os.path.join(path, "plantseg"), name="root", split="test", patch_shape=(1, 512, 512), download=True
-    )
-
-    # hpa
-    datasets.get_hpa_segmentation_dataset(
-        os.path.join(path, "hpa"), split="train", patch_shape=(512, 512), download=True
-    )
-    datasets.get_hpa_segmentation_dataset(
-        os.path.join(path, "hpa"), split="val", patch_shape=(512, 512), download=True
-    )
-
-    # lizard: see `torch_em.data.datasets.get_lizard_dataset` for details to download the dataset
-
-    # mouse embryo
-    datasets.get_mouse_embryo_dataset(
-        os.path.join(path, "mouse-embryo"), name="nuclei", split="train", patch_shape=(1, 512, 512), download=True
-    )
-    datasets.get_mouse_embryo_dataset(
-        os.path.join(path, "mouse-embryo"), name="nuclei", split="val", patch_shape=(1, 512, 512), download=True
-    )
-
-    # plantseg ovules
-    datasets.get_plantseg_dataset(
-        os.path.join(path, "plantseg"), name="ovules", split="train", patch_shape=(1, 512, 512), download=True
-    )
-    datasets.get_plantseg_dataset(
-        os.path.join(path, "plantseg"), name="ovules", split="val", patch_shape=(1, 512, 512), download=True
-    )
-    datasets.get_plantseg_dataset(
-        os.path.join(path, "plantseg"), name="ovules", split="test", patch_shape=(1, 512, 512), download=True
-    )
-
-#
-# PARSER FOR ALL THE REQUIRED ARGUMENTS
-#
 
 def get_default_arguments():
     parser = argparse.ArgumentParser()
@@ -205,15 +79,16 @@ def none_or_str(value):
 
 
 def get_val_paths(dataset):
-    path = os.path.join('/mnt/lustre-grete/usr/u12649/scratch/data/', f'{dataset}', 'loaded_dataset/complete_dataset/test2')
+    path = os.path.join('/mnt/lustre-grete/usr/u12649/scratch/data/', f'{dataset}', 'loaded_dataset/complete_dataset/standard_split')
     val_image_paths = natsorted(glob(os.path.join(path, 'val_images/*')))
     val_label_paths = natsorted(glob(os.path.join(path, 'val_labels/*')))
     print(len(val_image_paths), len(val_label_paths))
 
     return val_image_paths, val_label_paths
 
+
 def get_test_paths(dataset):
-    path = os.path.join('/mnt/lustre-grete/usr/u12649/scratch/data/', f'{dataset}', 'loaded_dataset/complete_dataset/test2')
+    path = os.path.join('/mnt/lustre-grete/usr/u12649/scratch/data/', f'{dataset}', 'loaded_dataset/complete_dataset/standard_split')
     test_image_paths = natsorted(glob(os.path.join(path, 'test_images/*')))
     test_label_paths = natsorted(glob(os.path.join(path, 'test_labels/*')))
     print(len(test_image_paths), len(test_label_paths))
