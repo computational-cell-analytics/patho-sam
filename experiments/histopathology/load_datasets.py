@@ -1,9 +1,10 @@
 import os
 import tifffile
 import numpy
+from glob import glob
 from dataloaders import get_dataloaders
 from tqdm import tqdm
-
+from shutil import rmtree
 """ This loads the selected datasets as .tiff files with an image shape of (512, 512, 3) and a label shape of (512, 512)"""
 
 
@@ -59,6 +60,14 @@ def load_datasets(path, datasets=['cpm15', 'cpm17', 'cryonuseg', 'janowczyk', 'l
                 tifffile.imwrite(os.path.join(label_output_path, f'{counter:04}.tiff'), label_data)
                 counter += 1
         print(f'{dataset} dataset has successfully been loaded.')
+    for dataset in datasets:
+        if os.path.exists(os.path.join(path, dataset, 'loaded_dataset')):
+            for entity in os.listdir(os.path.join(path, dataset)):
+                entity_path = os.path.join(path, dataset, entity)
+                if entity != 'loaded_dataset' and os.path.isdir(entity_path):
+                    rmtree(entity_path)
+                elif entity != 'loaded_dataset' and not os.path.isdir(entity_path):
+                    os.remove(entity_path)
 
 
 load_datasets('/mnt/lustre-grete/usr/u12649/scratch/data/test')
