@@ -10,7 +10,27 @@ from skimage import io
 """ Script to create:
     - a reproducable validation, training and test set from the root directory 
     - evaluation directories for the segmentation modi: automatic instance segmentation, automatic mask generation, iterative prompting with and without boxes for each given model
+    - if prompt is set to True, labels without instances (just background) are removed in order for the iterative prompting evaluation to work
      """
+
+
+def remove_empty_labels(path):
+    empty_count = 0
+    empty_list = []
+    file_list = natsorted(glob(os.path.join(path, 'labels', '*.tiff')))
+    for image_path in file_list:
+        img = io.imread(image_path)
+        unique_elements = np.unique(img)
+        if len(unique_elements) == 1:
+            empty_list.append()
+            print(f'Image {os.path.basename(image_path)} does not contain labels and will be removed.')
+            empty_count += 1
+            os.remove(image_path)
+            os.remove(os.path.join(path, 'images', f'{os.path.basename(image_path)}'))
+            assert len(os.listdir(os.path.join(path, 'labels'))) == len(os.listdir(os.path.join(path, 'images')))
+    print(f'{empty_count} labels were empty')
+    label_len = len(os.listdir(os.path.join(path, 'labels')))
+    print(f'There are {label_len} images left')
 
 
 def create_val_split(directory, val_percentage, test_percentage, custom_name, organ_type=None, split=None, random_seed=42):
@@ -76,25 +96,6 @@ def create_eval_directories(eval_path, dataset, models):
     for model in models:
         for mode in ['instance', 'boxes', 'points', 'amg']:
             os.makedirs(os.path.join(eval_path, f'{model}_eval', dataset, mode), exist_ok=True)
-
-
-def remove_empty_labels(path):
-    empty_count = 0
-    empty_list = []
-    file_list = natsorted(glob(os.path.join(path, 'labels', '*.tiff')))
-    for image_path in file_list:
-        img = io.imread(image_path)
-        unique_elements = np.unique(img)
-        if len(unique_elements) == 1:
-            empty_list.append()
-            print(f'Image {os.path.basename(image_path)} does not contain labels and will be removed.')
-            empty_count += 1
-            os.remove(image_path)
-            os.remove(os.path.join(path, 'images', f'{os.path.basename(image_path)}'))
-            assert len(os.listdir(os.path.join(path, 'labels'))) == len(os.listdir(os.path.join(path, 'images')))
-    print(f'{empty_count} labels were empty')
-    label_len = len(os.listdir(os.path.join(path, 'labels')))
-    print(f'There are {label_len} images left')
 
 
 def preprocess_datasets(eval_path, data_path, model_names=['pannuke_sam', 'vanilla_sam'], prompt=False):

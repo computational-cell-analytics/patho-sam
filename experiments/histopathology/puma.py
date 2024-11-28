@@ -46,19 +46,21 @@ CHECKSUM = {
 
 
 def get_tiffs(path, annotations):
-    output_dir = os.path.join(path)
-    os.makedirs((os.path.join(output_dir, 'images')), exist_ok=True)
-    os.makedirs((os.path.join(output_dir, 'labels')), exist_ok=True)
+    os.makedirs((os.path.join(path, 'images')), exist_ok=True)
+    os.makedirs((os.path.join(path, 'labels')), exist_ok=True)
     for file in glob(os.path.join(path, 'preprocessed', '*.h5')): 
         with h5py.File(file, 'r') as f:
             img_data = f['raw']
             label_data = f[f'labels/{annotations}']
             basename = os.path.basename(file)
             name, ext = os.path.splitext(basename)
-            img_output_path = os.path.join(output_dir, 'images', f'{name}.tiff')
+            img_output_path = os.path.join(path, 'images', f'{name}.tiff')
             tifffile.imwrite(img_output_path, img_data)
-            label_output_path = os.path.join(output_dir, 'labels', f'{name}.tiff')
+            label_output_path = os.path.join(path, 'labels', f'{name}.tiff')
             tifffile.imwrite(label_output_path, label_data)
+    image_paths = natsorted(glob(os.path.join(path, 'images', '*.tiff')))
+    label_paths = natsorted(glob(os.path.join(path, 'labels', '*.tiff')))
+    return image_paths, label_paths
 
 
 def _preprocess_inputs(path, annotations):
@@ -96,7 +98,6 @@ def _preprocess_inputs(path, annotations):
 
             #if f"{annotations}" not in d["labels"].keys(): --> ref above
             d.create_dataset(f"labels/{annotations}", data=mask, compression="gzip")
-
 
 
 def get_puma_data(
@@ -155,8 +156,8 @@ def get_puma_paths(
         List of filepaths for the input data.
     """
     get_puma_data(path, annotations, download)
-    volume_paths = natsorted(glob(os.path.join(path, "preprocessed", "*.h5")))
-    return volume_paths
+    image_paths, label_paths = get_tiffs(path, annotations)
+    return image_paths, label_paths
 
 
 def get_puma_dataset(
@@ -178,10 +179,7 @@ def get_puma_dataset(
     Returns:
         The segmentation dataset.
     """
-    placeholder = get_puma_paths(path, annotations,download)
-    get_tiffs(path, annotations)
-    image_paths = natsorted(glob(os.path.join(path, 'images', '*.tiff')))
-    label_paths = natsorted(glob(os.path.join(path, 'labels', '*.tiff')))
+    image_paths, label_paths = get_puma_paths(path, annotations,download)
     kwargs, _ = util.add_instance_label_transform(
         kwargs, add_binary_target=True, binary=False, boundaries=False, offsets=None
     )

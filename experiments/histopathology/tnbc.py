@@ -55,18 +55,17 @@ def _preprocess_images(path):
 
 
 def get_tiffs(path):
-    output_dir = os.path.join(path)
-    os.makedirs((os.path.join(output_dir, 'images')), exist_ok=True)
-    os.makedirs((os.path.join(output_dir, 'labels')), exist_ok=True)
+    os.makedirs((os.path.join(path, 'images')), exist_ok=True)
+    os.makedirs((os.path.join(path, 'labels')), exist_ok=True)
     for file in glob(os.path.join(path, 'preprocessed', '*.h5')): 
-        with h5py.File(file, 'r') as f: 
+        with h5py.File(file, 'r') as f:
             img_data = f['raw']
             label_data = f['labels/instances']
             basename = os.path.basename(file)
             name, ext = os.path.splitext(basename)
-            img_output_path = os.path.join(output_dir, 'images', f'{name}.tiff')
+            img_output_path = os.path.join(path, 'images', f'{name}.tiff')
             tifffile.imwrite(img_output_path, img_data)
-            label_output_path = os.path.join(output_dir, 'labels', f'{name}.tiff')
+            label_output_path = os.path.join(path, 'labels', f'{name}.tiff')
             tifffile.imwrite(label_output_path, label_data)
     image_paths = natsorted(glob(os.path.join(path, 'images', '*.tiff')))
     label_paths = natsorted(glob(os.path.join(path, 'labels', '*.tiff')))

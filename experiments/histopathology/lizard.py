@@ -21,6 +21,23 @@ import tifffile
 #   - Kaggle API (TODO) - `kaggle datasets download -d aadimator/lizard-dataset`
 
 
+def create_split_dicts(csv_path):
+    df = pd.read_csv(csv_path)
+    split1_list = []
+    split2_list = []
+    split3_list = []
+    for i in df.index:
+        split = df['Split'].iloc[i]
+        if split == 1:
+            split1_list.append(df['Filename'].iloc[i])
+        elif split == 2:
+            split2_list.append(df['Filename'].iloc[i])
+        elif split == 3:
+            split3_list.append(df['Filename'].iloc[i])
+    split_dict = {'split1': split1_list, 'split2': split2_list, 'split3': split3_list}
+    return split_dict
+
+
 def _extract_images(image_folder, label_folder, output_dir, split):
     image_files = glob(os.path.join(image_folder, "*.png"))
     split_dict = create_split_dicts('/mnt/lustre-grete/usr/u12649/scratch/data/lizard/lizard_labels/Lizard_Labels/info.csv')
@@ -62,7 +79,7 @@ def get_tiffs(path, split):
             tifffile.imwrite(label_output_path, label_data)
 
 
-def _require_lizard_data(path, download, split):
+def get_lizard_data(path, download, split):
     """Download the Lizard dataset for nucleus segmentation.
 
     Args:
@@ -109,11 +126,11 @@ def get_lizard_dataset(path, patch_shape, split, download=False, **kwargs):
             "Please manually download the zip files from https://www.kaggle.com/datasets/aadimator/lizard-dataset"
         )
 
-    _require_lizard_data(path, download, split)
+    get_lizard_data(path, download, split)
 
     get_tiffs(path, split)
     image_paths = natsorted(glob(os.path.join(path, split, 'images', '*.tiff')))
-    label_paths = natsorted(glob(os.path.join(path, split, 'labels', '*.tiff')))    
+    label_paths = natsorted(glob(os.path.join(path, split, 'labels', '*.tiff')))
     kwargs, _ = util.add_instance_label_transform(
         kwargs, add_binary_target=True, binary=False, boundaries=False, offsets=None
     )
@@ -142,21 +159,7 @@ def get_lizard_loader(path, patch_shape, batch_size, split, download=False, **kw
 
 
 
-def create_split_dicts(csv_path):
-    df = pd.read_csv(csv_path)
-    split1_list = []
-    split2_list = []
-    split3_list = []
-    for i in df.index:
-        split = df['Split'].iloc[i]
-        if split == 1:
-            split1_list.append(df['Filename'].iloc[i])
-        elif split == 2:
-            split2_list.append(df['Filename'].iloc[i])
-        elif split == 3:
-            split3_list.append(df['Filename'].iloc[i])
-    split_dict = {'split1':split1_list, 'split2':split2_list, 'split3':split3_list}
-    return split_dict
+
 
 def get_dataloaders(patch_shape, data_path, split):
     """This returns the pannuke data loaders implemented in torch_em:
@@ -181,32 +184,3 @@ def get_dataloaders(patch_shape, data_path, split):
         sampler=sampler,
     )
     return split_loader
-
-
-if __name__ == "__main__":
-    get_lizard_loader()
-
-# def load_lizard_dataset(path):
-#     counter = 1
-#     _path = os.path.join(path, 'loaded_dataset', 'complete_dataset')
-#     for split in ['split1', 'split2', 'split3']:
-#         split_loader = get_dataloaders(patch_shape=(1,512,512), data_path=path, split=split)
-
-#         image_output_path = os.path.join(_path, 'images')
-#         label_output_path = os.path.join(_path, 'labels') 
-#         os.makedirs(image_output_path, exist_ok=True)
-#         os.makedirs(label_output_path, exist_ok=True)
-#         for image, label in split_loader:
-#             image_array = image.numpy()
-#             label_array = label.numpy()
-#             squeezed_image = image_array.squeeze()
-#             label_data = label_array.squeeze()          
-#             transposed_image_array = squeezed_image.transpose(1,2,0)
-#             print(f'image {counter:04} shape: {np.shape(transposed_image_array)}, label {counter:04} shape: {np.shape(label_data)}')
-#             tif_image_output_path = os.path.join(image_output_path,f'{counter:04}.tiff')
-#             tifffile.imwrite(tif_image_output_path, transposed_image_array)
-#             tif_label_output_path = os.path.join(label_output_path,f'{counter:04}.tiff')
-#             tifffile.imwrite(tif_label_output_path, label_data)
-#             counter+=1
-
-# load_lizard_dataset('/mnt/lustre-grete/usr/u12649/scratch/data/test/lizard/test')
