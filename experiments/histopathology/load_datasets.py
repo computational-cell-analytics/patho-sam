@@ -9,7 +9,7 @@ from shutil import rmtree
 
 
 def load_datasets(path, datasets=['cpm15', 'cpm17', 'cryonuseg', 'janowczyk', 'lizard', 'lynsec', 'monusac', 'monuseg', 'nuinsseg', 'pannuke', 'puma', 'tnbc']):
-    patch_shape = (1, 512, 512)
+    patch_shape = (1, 512, 512) # I will change this to a more cli-friendly structure so patch shape, path and dataset choice can be modified without touching the code
     for dataset in tqdm(sorted(datasets)):
         if os.path.exists(os.path.join(path, dataset, 'loaded_dataset')):
             continue

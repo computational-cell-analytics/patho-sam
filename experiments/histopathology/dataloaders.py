@@ -8,7 +8,7 @@ from torch_em.data.datasets.histopathology.monuseg import get_monuseg_loader
 from torch_em.data.datasets.histopathology.nuinsseg import get_nuinsseg_loader
 from torch_em.data.datasets.histopathology.pannuke import get_pannuke_loader
 # from torch_em.data.datasets.histopathology.puma import get_puma_loader 
-from puma import get_puma_loader
+#from puma import get_puma_loader
 from lizard import get_lizard_loader
 # from torch_em.data.datasets.histopathology.tnbc import get_tnbc_loader
 from tnbc import get_tnbc_loader
