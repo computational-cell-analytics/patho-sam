@@ -1,11 +1,11 @@
 import os
-import tifffile
+import tifffile as tiff
 import numpy
 from glob import glob
 from dataloaders import get_dataloaders
 from tqdm import tqdm
 from shutil import rmtree
-""" This loads the selected datasets as .tiff files with an image shape of (512, 512, 3) and a label shape of (512, 512)"""
+""" This loads the selected datasets as .tiff files with an image shape of (512, 512, 3) and a label shape of (512, 512). Alpha channels are deleted and shape deviations excluded"""
 
 
 def load_datasets(path, datasets=['cpm15', 'cpm17', 'cryonuseg', 'janowczyk', 'lizard', 'lynsec', 'monusac', 'monuseg', 'nuinsseg', 'pannuke', 'puma', 'tnbc']):
@@ -48,16 +48,20 @@ def load_datasets(path, datasets=['cpm15', 'cpm17', 'cryonuseg', 'janowczyk', 'l
         os.makedirs(image_output_path, exist_ok=True)
         os.makedirs(label_output_path, exist_ok=True)
         for loader in loaders:
-            for image, label in (loader):
+            for image, label in loader:
                 image_array = image.numpy()
                 label_array = label.numpy()
                 squeezed_image = image_array.squeeze()
                 label_data = label_array.squeeze()
                 tp_img = squeezed_image.transpose(1, 2, 0)
-                if tp_img.shape[-1] == 4: # deletes alpha channel if one exists
+                if tp_img.shape[-1] == 4:  # deletes alpha channel if one exists
                     tp_img = tp_img[..., :-1]
-                tifffile.imwrite(os.path.join(image_output_path, f'{counter:04}.tiff'), tp_img)
-                tifffile.imwrite(os.path.join(label_output_path, f'{counter:04}.tiff'), label_data)
+                if tp_img.shape != (512, 512, 3):  # 3 tnbc images had a shape of (512, 512, 2) and had to be sorted out
+                    print(f'Incorrect image shape of {tp_img.shape} in {os.path.join(image_output_path, f'{counter:04}.tiff')}')
+                    counter += 1
+                    continue
+                tiff.imwrite(os.path.join(image_output_path, f'{counter:04}.tiff'), tp_img)
+                tiff.imwrite(os.path.join(label_output_path, f'{counter:04}.tiff'), label_data)
                 counter += 1
         print(f'{dataset} dataset has successfully been loaded.')
     for dataset in datasets:
