@@ -8,8 +8,8 @@ from shutil import rmtree
 """ This loads the selected datasets as .tiff files with an image shape of (512, 512, 3) and a label shape of (512, 512). Alpha channels are deleted and shape deviations excluded"""
 
 
-def load_datasets(path, datasets=['cpm15', 'cpm17', 'cryonuseg', 'janowczyk', 'lizard', 'lynsec', 'monusac', 'monuseg', 'nuinsseg', 'pannuke', 'puma', 'tnbc']):
-    patch_shape = (1, 512, 512) # I will change this to a more cli-friendly structure so patch shape, path and dataset choice can be modified without touching the code
+def load_datasets(path, datasets=['cpm15', 'cpm17', 'cryonuseg', 'janowczyk', 'lizard', 'lynsec', 'monusac', 'monuseg', 'nuinsseg', 'pannuke', 'puma', 'tnbc'], patch_shape=(1, 512, 512)):
+    # I will change this to a more cli-friendly structure so patch shape, path and dataset choice can be modified without touching the code
     for dataset in tqdm(sorted(datasets)):
         if os.path.exists(os.path.join(path, dataset, 'loaded_dataset')):
             continue
@@ -56,7 +56,7 @@ def load_datasets(path, datasets=['cpm15', 'cpm17', 'cryonuseg', 'janowczyk', 'l
                 tp_img = squeezed_image.transpose(1, 2, 0)
                 if tp_img.shape[-1] == 4:  # deletes alpha channel if one exists
                     tp_img = tp_img[..., :-1]
-                if tp_img.shape != (512, 512, 3):  # 3 tnbc images had a shape of (512, 512, 2) and had to be sorted out
+                if tp_img.shape != (patch_shape[1], patch_shape[2], 3):  # 3 tnbc images had a shape of (512, 512, 2) and had to be sorted out
                     print(f'Incorrect image shape of {tp_img.shape} in {os.path.join(image_output_path, f'{counter:04}.tiff')}')
                     counter += 1
                     continue
@@ -65,6 +65,8 @@ def load_datasets(path, datasets=['cpm15', 'cpm17', 'cryonuseg', 'janowczyk', 'l
                 counter += 1
         print(f'{dataset} dataset has successfully been loaded.')
     for dataset in datasets:
+        if dataset == 'lizard':
+            continue
         if os.path.exists(os.path.join(path, dataset, 'loaded_dataset')):
             for entity in os.listdir(os.path.join(path, dataset)):
                 entity_path = os.path.join(path, dataset, entity)
@@ -74,4 +76,4 @@ def load_datasets(path, datasets=['cpm15', 'cpm17', 'cryonuseg', 'janowczyk', 'l
                     os.remove(entity_path)
 
 
-load_datasets('/mnt/lustre-grete/usr/u12649/scratch/data/test')
+load_datasets('/mnt/lustre-grete/usr/u12649/scratch/data/test/hovernet', ['tnbc'], (1, 256, 256))
