@@ -1,11 +1,9 @@
 import os
-from glob import glob
-from natsort import natsorted
+
 from micro_sam.evaluation.evaluation import run_evaluation
 from micro_sam.evaluation.inference import run_amg
+
 from util import get_default_arguments, get_pred_paths, VANILLA_MODELS, get_test_paths, get_val_paths
-
-
 
 
 def run_amg_inference(model_type, checkpoint, experiment_folder, dataset):
@@ -20,6 +18,7 @@ def run_amg_inference(model_type, checkpoint, experiment_folder, dataset):
         test_image_paths
     )
     return prediction_folder
+
 
 def eval_amg(prediction_folder, experiment_folder, dataset):
     print("Evaluating", prediction_folder)
@@ -38,7 +37,7 @@ def main():
         ckpt = args.checkpoint
 
     prediction_folder = run_amg_inference(args.model, ckpt, args.experiment_folder, args.dataset)
-    eval_amg(prediction_folder, args.experiment_folder, args.dataset) #deleted args.dataset as an argument for eval_amg due to error occurence
+    eval_amg(prediction_folder, args.experiment_folder, args.dataset)
 
 
 if __name__ == "__main__":

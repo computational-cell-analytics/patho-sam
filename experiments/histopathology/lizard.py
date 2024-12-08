@@ -2,7 +2,6 @@ import os
 import warnings
 from glob import glob
 from shutil import rmtree
-import numpy as np
 import h5py
 import imageio.v3 as imageio
 import torch_em
@@ -155,11 +154,8 @@ def get_lizard_loader(path, patch_shape, batch_size, split, download=False, **kw
     """Dataloader for the segmentation of nuclei in histopathology. See 'get_lizard_dataset' for details."""
     ds_kwargs, loader_kwargs = util.split_kwargs(torch_em.default_segmentation_dataset, **kwargs)
     ds = get_lizard_dataset(path, patch_shape, split, download=download, **ds_kwargs)
-    
+
     return torch_em.get_data_loader(ds, batch_size=batch_size, **loader_kwargs)
-
-
-
 
 
 def get_dataloaders(patch_shape, data_path, split):

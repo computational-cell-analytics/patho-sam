@@ -79,7 +79,9 @@ def none_or_str(value):
 
 
 def get_val_paths(dataset):
-    path = os.path.join('/mnt/lustre-grete/usr/u12649/scratch/data/', f'{dataset}', 'loaded_dataset/complete_dataset/standard_split')
+    path = os.path.join(
+        '/mnt/lustre-grete/usr/u12649/scratch/data/', f'{dataset}', 'loaded_dataset/complete_dataset/standard_split'
+    )
     val_image_paths = natsorted(glob(os.path.join(path, 'val_images/*')))
     val_label_paths = natsorted(glob(os.path.join(path, 'val_labels/*')))
     print(len(val_image_paths), len(val_label_paths))
@@ -88,7 +90,9 @@ def get_val_paths(dataset):
 
 
 def get_test_paths(dataset):
-    path = os.path.join('/mnt/lustre-grete/usr/u12649/scratch/data/', f'{dataset}', 'loaded_dataset/complete_dataset/standard_split')
+    path = os.path.join(
+        '/mnt/lustre-grete/usr/u12649/scratch/data/', f'{dataset}', 'loaded_dataset/complete_dataset/standard_split'
+    )
     test_image_paths = natsorted(glob(os.path.join(path, 'test_images/*')))
     test_label_paths = natsorted(glob(os.path.join(path, 'test_labels/*')))
     print(len(test_image_paths), len(test_label_paths))

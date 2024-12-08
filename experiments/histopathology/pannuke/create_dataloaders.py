@@ -1,16 +1,12 @@
 import torch
-import os
+
+from pannuke import get_pannuke_loader
+
 from torch_em.data import MinInstanceSampler
 from torch_em.util.debug import check_loader
-from pannuke import get_pannuke_dataset
-from pannuke import get_pannuke_loader
-import h5py
 from torch_em.transform.label import PerObjectDistanceTransform
-import tifffile
+
 import micro_sam.training as sam_training
-import numpy as np
-from tqdm import tqdm
-import time
 
 
 def get_dataloaders(patch_shape, data_path):

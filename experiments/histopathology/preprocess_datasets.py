@@ -8,10 +8,10 @@ from pathlib import Path
 from skimage import io
 
 """ Script to create:
-    - a reproducable validation, training and test set from the root directory 
-    - evaluation directories for the segmentation modi: automatic instance segmentation, automatic mask generation, iterative prompting with and without boxes for each given model
-    - if prompt is set to True, labels without instances (just background) are removed in order for the iterative prompting evaluation to work
-     """
+- a reproducable validation, training and test set from the root directory 
+- evaluation directories for the segmentation modi: automatic instance segmentation, automatic mask generation, iterative prompting with and without boxes for each given model
+- if prompt is set to True, labels without instances (just background) are removed in order for the iterative prompting evaluation to work
+"""
 
 
 def remove_empty_labels(path):

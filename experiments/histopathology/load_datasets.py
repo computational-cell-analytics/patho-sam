@@ -1,11 +1,15 @@
+"""
+This loads the selected datasets as .tiff files with an image shape of (512, 512, 3) and a label shape of (512, 512).
+Alpha channels are deleted and shape deviations excluded.
+"""
+
 import os
-import tifffile as tiff
-import numpy
-from glob import glob
-from dataloaders import get_dataloaders
 from tqdm import tqdm
 from shutil import rmtree
-""" This loads the selected datasets as .tiff files with an image shape of (512, 512, 3) and a label shape of (512, 512). Alpha channels are deleted and shape deviations excluded"""
+
+import tifffile as tiff
+
+from dataloaders import get_dataloaders
 
 
 def load_datasets(path, datasets=['cpm15', 'cpm17', 'cryonuseg', 'janowczyk', 'lizard', 'lynsec', 'monusac', 'monuseg', 'nuinsseg', 'pannuke', 'puma', 'tnbc']):
@@ -13,12 +17,14 @@ def load_datasets(path, datasets=['cpm15', 'cpm17', 'cryonuseg', 'janowczyk', 'l
     for dataset in tqdm(sorted(datasets)):
         if os.path.exists(os.path.join(path, dataset, 'loaded_dataset')):
             continue
+
         counter = 1
         if dataset in ['cpm15', 'cpm17']:
             if not os.path.exists(os.path.join(path, dataset, dataset)):
                 print(f'Missing data! For the {dataset} dataset, data has to be downloaded in advance in the format path/{dataset}/{dataset}/Images \n'
                       f'Dataset loading will skip {dataset} and continue with the remaining datasets.')
                 continue
+
         print(f'Loading {dataset} dataset...')
         os.makedirs(os.path.join(path, dataset), exist_ok=True)
         if dataset not in ['cryonuseg', 'lizard', 'monusac', 'monuseg', 'pannuke']:
@@ -43,6 +49,7 @@ def load_datasets(path, datasets=['cpm15', 'cpm17', 'cryonuseg', 'janowczyk', 'l
             loaders = []
             folds = ['fold_3']  # this represents only fold3 for testing the model; other available folds: fold_1, fold_2
             loaders.append(get_dataloaders(patch_shape, data_path=os.path.join(path, dataset), dataset=dataset, split=folds))
+
         image_output_path = os.path.join(path, dataset, 'loaded_dataset/complete_dataset/images')
         label_output_path = os.path.join(path, dataset, 'loaded_dataset/complete_dataset/labels')
         os.makedirs(image_output_path, exist_ok=True)
@@ -60,10 +67,13 @@ def load_datasets(path, datasets=['cpm15', 'cpm17', 'cryonuseg', 'janowczyk', 'l
                     print(f'Incorrect image shape of {tp_img.shape} in {os.path.join(image_output_path, f'{counter:04}.tiff')}')
                     counter += 1
                     continue
+
                 tiff.imwrite(os.path.join(image_output_path, f'{counter:04}.tiff'), tp_img)
                 tiff.imwrite(os.path.join(label_output_path, f'{counter:04}.tiff'), label_data)
                 counter += 1
+
         print(f'{dataset} dataset has successfully been loaded.')
+
     for dataset in datasets:
         if os.path.exists(os.path.join(path, dataset, 'loaded_dataset')):
             for entity in os.listdir(os.path.join(path, dataset)):
@@ -74,4 +84,9 @@ def load_datasets(path, datasets=['cpm15', 'cpm17', 'cryonuseg', 'janowczyk', 'l
                     os.remove(entity_path)
 
 
-load_datasets('/mnt/lustre-grete/usr/u12649/scratch/data/test')
+def main():
+    load_datasets('/mnt/lustre-grete/usr/u12649/scratch/data/test')
+
+
+if __name__ == "__main__":
+    main()
