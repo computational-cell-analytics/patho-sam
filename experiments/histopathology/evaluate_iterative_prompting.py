@@ -5,12 +5,12 @@ from micro_sam.evaluation.evaluation import run_evaluation_for_iterative_prompti
 from util import get_model, get_default_arguments, get_test_paths
 
 
-def _run_iterative_prompting(exp_folder, predictor, start_with_box_prompt, use_masks, dataset):
+def _run_iterative_prompting(exp_folder, predictor, start_with_box_prompt, use_masks, dataset, input_path):
     prediction_root = os.path.join(
         exp_folder, "start_with_box" if start_with_box_prompt else "start_with_point"
     )
     embedding_folder = os.path.join(exp_folder, "embeddings")
-    image_paths, gt_paths = get_test_paths(dataset)
+    image_paths, gt_paths = get_test_paths(input_path, dataset)
     inference.run_inference_with_iterative_prompting(
         predictor=predictor,
         image_paths=image_paths,
@@ -23,8 +23,8 @@ def _run_iterative_prompting(exp_folder, predictor, start_with_box_prompt, use_m
     return prediction_root
 
 
-def _evaluate_iterative_prompting(prediction_root, start_with_box_prompt, exp_folder, dataset):
-    _, gt_paths = get_test_paths(dataset)
+def _evaluate_iterative_prompting(prediction_root, start_with_box_prompt, exp_folder, dataset, input_path):
+    _, gt_paths = get_test_paths(input_path, dataset)
 
     run_evaluation_for_iterative_prompting(
         gt_paths=gt_paths,
@@ -43,9 +43,9 @@ def main():
     predictor = get_model(model_type=args.model, ckpt=args.checkpoint)
 
     prediction_root = _run_iterative_prompting(
-        args.experiment_folder, predictor, start_with_box_prompt, args.use_masks, args.dataset
+        args.experiment_folder, predictor, start_with_box_prompt, args.use_masks, args.dataset, args.input_path
     )
-    _evaluate_iterative_prompting(prediction_root, start_with_box_prompt, args.experiment_folder, args.dataset)
+    _evaluate_iterative_prompting(prediction_root, start_with_box_prompt, args.experiment_folder, args.dataset, args.input_path)
 
 
 if __name__ == "__main__":

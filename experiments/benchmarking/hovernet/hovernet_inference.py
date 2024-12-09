@@ -20,23 +20,27 @@ def mat_to_tiff(path):
         os.remove(mpath)
 
 
-def run_inference(model_dir, input_dir, output_dir, type_info_path):
-    for dataset in ['cpm15', 'cpm17', 'cryonuseg', 'janowczyk', 'lizard', 'lynsec', 'monusac', 'monuseg', 'nuinsseg', 'pannuke', 'puma', 'tnbc']:
-        if os.path.exists(os.path.join('/mnt/lustre-grete/usr/u12649/scratch/models/hovernet/inference/', f'{dataset}')):
-            continue
-        input_path = os.path.join(input_dir, dataset, 'loaded_dataset/complete_dataset/images')
+def run_inference(model_dir, input_dir, output_dir, type_info_path, chunk=False):
+    for dataset in ['cpm15', 'cpm17', 'cryonuseg', 'janowczyk', 'lizard', 'lynsec', 'monusac', 'monuseg', 'nuinsseg', 'puma', 'tnbc', 'chunk1', 'chunk2', 'chunk3', 'chunk4', 'chunk5']:
         for model in ['consep', 'cpm17', 'kumar', 'pannuke', 'monusac']:
-            if os.path.exists(f'/mnt/lustre-grete/usr/u12649/scratch/models/hovernet/inference/{dataset}/{model}'):
-                continue
-            output_path = os.path.join(output_dir, dataset, model)
-            os.makedirs(output_dir, exist_ok=True)
+            if 'chunk' in dataset:
+                if not chunk:
+                    continue
+                input_path = os.path.join(input_dir, dataset)
+                output_path = os.path.join(output_dir, 'pannuke', model)
+                print('chunk detected')
+            else:
+                output_path = os.path.join(output_dir, dataset, model)
+                input_path = os.path.join(input_dir, dataset, 'loaded_dataset/complete_dataset/images')
+                if os.path.exists(output_path):
+                    continue
+            os.makedirs(output_path, exist_ok=True)
             if model in ['consep', 'cpm17', 'kumar']:
                 model_mode = 'original'
                 model_path = os.path.join(model_dir, f'hovernet_original_{model}_notype_tf2pytorch.tar')
                 nr_types = 0
                 type_info = ''
             else:
-                print(f'Running {model} inference right now')
                 model_mode = 'fast'
                 model_path = os.path.join(model_dir, f'hovernet_fast_{model}_type_tf2pytorch.tar')
                 type_info = type_info_path
@@ -57,12 +61,15 @@ def run_inference(model_dir, input_dir, output_dir, type_info_path):
             ]
 
             command = ['python3', '/user/titus.griebel/u12649/hover_net/run_infer.py'] + args
+            print(f'Running inference with CellViT {model} model on {dataset} dataset...')
 
             subprocess.run(command)
 
             mat_to_tiff(os.path.join(output_path, 'mat'))
             shutil.rmtree(os.path.join(output_path, 'json'))
             shutil.rmtree(os.path.join(output_path, 'overlay'))
+            print(f'Inference on {dataset} dataset with the HoVerNet {model} model successfully completed')
 
 
-run_inference(model_dir='/mnt/lustre-grete/usr/u12649/scratch/models/models/hovernet/checkpoints', input_dir='/mnt/lustre-grete/usr/u12649/scratch/data/test' ,output_dir='/mnt/lustre-grete/usr/u12649/scratch/models/hovernet/inference/', type_info_path='/user/titus.griebel/u12649/hover_net/type_info.json')
+
+run_inference(model_dir='/mnt/lustre-grete/usr/u12649/scratch/models/models/hovernet/checkpoints', input_dir='/mnt/lustre-grete/usr/u12649/scratch/data/test', output_dir='/mnt/lustre-grete/usr/u12649/scratch/models/hovernet/inference/', type_info_path='/user/titus.griebel/u12649/hover_net/type_info.json', chunk=True)

@@ -63,6 +63,7 @@ def get_default_arguments():
     parser.add_argument("-c", "--checkpoint", type=none_or_str, default=None) #expects best.pt
     parser.add_argument("-e", "--experiment_folder", type=str, required=True) #empty directory for saving the output
     parser.add_argument("-d", "--dataset", type=str, required=True, default=None) #defines dataset, mandatory
+    parser.add_argument("-i", "--input_path", type=str, required=True, default=None)
     parser.add_argument("--organ", type=str, required=False, default=None) #optionally defines organ class to access. If empty, whole dataset is used
     parser.add_argument("--box", action="store_true", help="If passed, starts with first prompt as box") #otherwise, point
     parser.add_argument(
@@ -78,8 +79,8 @@ def none_or_str(value):
     return value
 
 
-def get_val_paths(dataset):
-    path = os.path.join('/mnt/lustre-grete/usr/u12649/scratch/data/', f'{dataset}', 'loaded_dataset/complete_dataset/standard_split')
+def get_val_paths(input_path, dataset):
+    path = os.path.join(input_path, dataset, 'loaded_dataset/complete_dataset/standard_split')
     val_image_paths = natsorted(glob(os.path.join(path, 'val_images/*')))
     val_label_paths = natsorted(glob(os.path.join(path, 'val_labels/*')))
     print(len(val_image_paths), len(val_label_paths))
@@ -87,8 +88,8 @@ def get_val_paths(dataset):
     return val_image_paths, val_label_paths
 
 
-def get_test_paths(dataset):
-    path = os.path.join('/mnt/lustre-grete/usr/u12649/scratch/data/', f'{dataset}', 'loaded_dataset/complete_dataset/standard_split')
+def get_test_paths(input_path, dataset):
+    path = os.path.join(input_path, dataset, 'loaded_dataset/complete_dataset/standard_split')
     test_image_paths = natsorted(glob(os.path.join(path, 'test_images/*')))
     test_label_paths = natsorted(glob(os.path.join(path, 'test_labels/*')))
     print(len(test_image_paths), len(test_label_paths))
