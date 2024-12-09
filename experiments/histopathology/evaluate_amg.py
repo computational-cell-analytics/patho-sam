@@ -40,5 +40,6 @@ def main():
     prediction_folder = run_amg_inference(args.model, ckpt, args.experiment_folder, args.dataset, args.input_path)
     eval_amg(prediction_folder, args.experiment_folder, args.dataset, args.input_path)
 
+
 if __name__ == "__main__":
     main()

@@ -8,7 +8,7 @@ from shutil import rmtree
 """ This loads the selected datasets as .tiff files with an image shape of (512, 512, 3) and a label shape of (512, 512). Alpha channels are deleted and shape deviations excluded"""
 
 
-def load_datasets(path, datasets=['cpm15', 'cpm17', 'cryonuseg', 'janowczyk', 'lizard', 'lynsec', 'monusac', 'monuseg', 'nuinsseg', 'pannuke', 'puma', 'tnbc'], patch_shape=(1, 512, 512)):
+def load_datasets(path, datasets=['cpm15', 'cpm17', 'cryonuseg', 'janowczyk', 'lizard', 'lynsec', 'monusac', 'monuseg', 'nuinsseg', 'pannuke', 'puma', 'tnbc'], patch_shape=(512, 512)):
     # I will change this to a more cli-friendly structure so patch shape, path and dataset choice can be modified without touching the code
     for dataset in tqdm(sorted(datasets)):
         if os.path.exists(os.path.join(path, dataset, 'loaded_dataset')):
@@ -25,12 +25,10 @@ def load_datasets(path, datasets=['cpm15', 'cpm17', 'cryonuseg', 'janowczyk', 'l
             loaders = [get_dataloaders(patch_shape, data_path=os.path.join(path, dataset), dataset=dataset)]
         elif dataset == 'cryonuseg':
             loaders = []
-            for rater in ['b1', 'b2', 'b3']:  # this represents all available raters
-                loaders.append(get_dataloaders(patch_shape, data_path=os.path.join(path, dataset), dataset=dataset, split=rater))
+            loaders.append(get_dataloaders(patch_shape, data_path=os.path.join(path, dataset), dataset=dataset, split='b1'))
         elif dataset == 'lizard':
             loaders = []
-            for split in ['split1', 'split2', 'split3']:  # this represents all available splits
-                loaders.append(get_dataloaders(patch_shape, data_path=os.path.join(path, dataset), dataset=dataset, split=split))
+            loaders.append(get_dataloaders(patch_shape, data_path=os.path.join(path, dataset), dataset=dataset))
         elif dataset == 'monusac':
             loaders = []
             for split in ['train', 'test']:  # this represents all available splits
@@ -76,4 +74,4 @@ def load_datasets(path, datasets=['cpm15', 'cpm17', 'cryonuseg', 'janowczyk', 'l
                     os.remove(entity_path)
 
 
-load_datasets('/mnt/lustre-grete/usr/u12649/scratch/data/test/hovernet', ['tnbc'], (1, 256, 256))
+load_datasets('/mnt/lustre-grete/usr/u12649/scratch/data')

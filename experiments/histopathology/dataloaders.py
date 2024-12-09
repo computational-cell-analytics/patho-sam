@@ -1,17 +1,10 @@
-from torch_em.data.datasets.histopathology.cpm import get_cpm_loader
-from torch_em.data.datasets.histopathology.cryonuseg import get_cryonuseg_loader
-from torch_em.data.datasets.histopathology.janowczyk import get_janowczyk_loader 
-# from torch_em.data.datasets.histopathology.lizard import get_lizard_loader
-from torch_em.data.datasets.histopathology.lynsec import get_lynsec_loader
-from monusac import get_monusac_loader
-from torch_em.data.datasets.histopathology.monuseg import get_monuseg_loader
-from torch_em.data.datasets.histopathology.nuinsseg import get_nuinsseg_loader
-from torch_em.data.datasets.histopathology.pannuke import get_pannuke_loader
-# from torch_em.data.datasets.histopathology.puma import get_puma_loader
-from puma import get_puma_loader
-from lizard import get_lizard_loader
-# from torch_em.data.datasets.histopathology.tnbc import get_tnbc_loader
-from tnbc import get_tnbc_loader
+
+
+from torch_em.data.datasets import (
+    get_cpm_loader, get_cryonuseg_loader, get_janowczyk_loader, get_lizard_loader,
+    get_lynsec_loader, get_monusac_loader, get_monuseg_loader, get_nuinsseg_loader,
+    get_pannuke_loader, get_puma_loader, get_tnbc_loader
+)
 from torch_em.data import MinInstanceSampler
 import micro_sam.training as sam_training
 
@@ -42,7 +35,7 @@ def get_dataloaders(patch_shape, data_path, dataset, split=None, organ_type=None
     elif dataset == 'cryonuseg':
         loader = get_cryonuseg_loader(
             path=data_path,
-            patch_shape=patch_shape,
+            patch_shape=(1,) + patch_shape,
             batch_size=1,
             rater=split,
             download=True,
@@ -113,9 +106,10 @@ def get_dataloaders(patch_shape, data_path, dataset, split=None, organ_type=None
     elif dataset == 'pannuke':
         loader = get_pannuke_loader(
             path=data_path,
-            patch_shape=patch_shape,
+            patch_shape=(1,) + patch_shape,
             batch_size=1,
             folds=split,
+            ndim=2,
             download=True,
             raw_transform=raw_transform,
             sampler=sampler,
@@ -135,6 +129,7 @@ def get_dataloaders(patch_shape, data_path, dataset, split=None, organ_type=None
             path=data_path,
             patch_shape=patch_shape,
             batch_size=1,
+            ndim=2,
             download=True,
             raw_transform=raw_transform,
             sampler=sampler,

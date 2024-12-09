@@ -33,7 +33,7 @@ def remove_empty_labels(path):
     print(f'There are {label_len} images left')
 
 
-def create_val_split(directory, val_percentage, test_percentage, custom_name, organ_type=None, split=None, random_seed=42):
+def create_val_split(directory, val_percentage=0.05, test_percentage=0.95, custom_name='standard_split', organ_type=None, split=None, random_seed=42):
     if split is None:
         path = os.path.join(directory, 'loaded_dataset/complete_dataset')
     else:
@@ -79,7 +79,7 @@ def create_val_split(directory, val_percentage, test_percentage, custom_name, or
         for test_image in test_images:
             label_path = os.path.join(labels_src_path, os.path.basename(test_image))
             image_list.remove(test_image)
-            label_list.remove((os.path.join(labels_src_path, (os.path.basename(test)))))
+            label_list.remove((os.path.join(labels_src_path, (os.path.basename(test_image)))))
             shutil.copy(test_image, dst_paths['test_images'])
             shutil.copy(label_path, dst_paths['test_labels'])
     assert len(os.listdir(dst_paths['test_labels'])) == len(os.listdir(dst_paths['test_images'])), 'label / image count mismatch in val set'
@@ -101,7 +101,7 @@ def create_eval_directories(eval_path, dataset, models):
 def preprocess_datasets(eval_path, data_path, model_names=['pannuke_sam', 'vanilla_sam'], prompt=False):
     datasets = ['cpm15', 'cpm17', 'cryonuseg', 'janowczyk', 'lizard', 'lynsec', 'monusac', 'monuseg', 'nuinsseg', 'pannuke', 'puma', 'tnbc']
     for dataset in datasets:
-        if prompt:
-            remove_empty_labels(os.path.join(data_path, dataset, 'loaded_dataset', 'complete_dataset'))
-        create_val_split(os.path.join(data_path, dataset, val_percentage=0.05, test_percentage=0.95, custom_name='standard_split', random_seed=42))
-        create_eval_directories(eval_path, dataset, model_names)
+        #remove_empty_labels(os.path.join(data_path, dataset, 'loaded_dataset', 'complete_dataset'))
+        create_val_split(os.path.join(data_path, dataset), val_percentage=0.05, test_percentage=0.95, custom_name='standard_split', random_seed=42)
+        # create_eval_directories(eval_path, dataset, model_names)
+preprocess_datasets(' ', '/mnt/lustre-grete/usr/u12649/scratch/data')
