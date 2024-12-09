@@ -5,13 +5,17 @@ from glob import glob
 from dataloaders import get_dataloaders
 from tqdm import tqdm
 from shutil import rmtree
-""" This loads the selected datasets as .tiff files with an image shape of (512, 512, 3) and a label shape of (512, 512). Alpha channels are deleted and shape deviations excluded"""
+from util import dataloading_args
+import tifffile as tiff
+
+from dataloaders import get_dataloaders
 
 
-def load_datasets(path, datasets=['cpm15', 'cpm17', 'cryonuseg', 'janowczyk', 'lizard', 'lynsec', 'monusac', 'monuseg', 'nuinsseg', 'pannuke', 'puma', 'tnbc'], patch_shape=(512, 512)):
-    # I will change this to a more cli-friendly structure so patch shape, path and dataset choice can be modified without touching the code
+def load_datasets(path, datasets=['cpm15', 'cpm17', 'cryonuseg', 'janowczyk', 'lizard', 'lynsec', 'monusac', 'monuseg', 'nuinsseg', 'pannuke', 'puma', 'tnbc']):
+    patch_shape = (512, 512) # I will change this to a more cli-friendly structure so patch shape, path and dataset choice can be modified without touching the code
     for dataset in tqdm(sorted(datasets)):
         if os.path.exists(os.path.join(path, dataset, 'loaded_dataset')):
+            print(f'{dataset} dataset is loaded already.')
             continue
         counter = 1
         if dataset in ['cpm15', 'cpm17']:
@@ -25,9 +29,11 @@ def load_datasets(path, datasets=['cpm15', 'cpm17', 'cryonuseg', 'janowczyk', 'l
             loaders = [get_dataloaders(patch_shape, data_path=os.path.join(path, dataset), dataset=dataset)]
         elif dataset == 'cryonuseg':
             loaders = []
-            loaders.append(get_dataloaders(patch_shape, data_path=os.path.join(path, dataset), dataset=dataset, split='b1'))
+            for rater in ['b1']:  # this represents all available raters
+                loaders.append(get_dataloaders(patch_shape, data_path=os.path.join(path, dataset), dataset=dataset, split=rater))
         elif dataset == 'lizard':
             loaders = []
+            #for split in ['split1', 'split2', 'split3']:  # this represents all available splits
             loaders.append(get_dataloaders(patch_shape, data_path=os.path.join(path, dataset), dataset=dataset))
         elif dataset == 'monusac':
             loaders = []
@@ -73,5 +79,17 @@ def load_datasets(path, datasets=['cpm15', 'cpm17', 'cryonuseg', 'janowczyk', 'l
                 elif entity != 'loaded_dataset' and not os.path.isdir(entity_path):
                     os.remove(entity_path)
 
+def main():
+    args = dataloading_args()
+    if args.path is not None:
+        data_path = args.path
+    else:
+        data_path = '/mnt/lustre-grete/usr/u12649/scratch/data'
+    if args.datasets is not None:
+        load_datasets(data_path, [args.datasets])
+    else:
+        load_datasets(data_path)
 
-load_datasets('/mnt/lustre-grete/usr/u12649/scratch/data')
+
+if __name__ == "__main__":
+    main()

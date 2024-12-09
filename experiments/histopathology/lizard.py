@@ -21,9 +21,17 @@ import torch_em
 
 from .. import util
 
+from scipy.io import loadmat
 
-def create_split_dict(csv_path):
-    df = pd.read_csv(csv_path)
+from torch.utils.data import Dataset, DataLoader
+
+import torch_em
+
+from .. import util
+
+
+def create_split_dicts(path):
+    df = pd.read_csv(os.path.join(path, 'lizard_labels/Lizard_Labels/info.csv'))
     split1_list = []
     split2_list = []
     split3_list = []
@@ -43,11 +51,11 @@ def _extract_images(image_folder, label_folder, output_dir, split):
     import h5py
 
     image_files = glob(os.path.join(image_folder, "*.png"))
+    split_dict = create_split_dicts(output_dir)
     output_path = os.path.join(output_dir, split)
     os.makedirs(output_path, exist_ok=True)
     for image_file in tqdm(image_files, desc=f"Extract images from {image_folder}"):
         fname = os.path.basename(image_file)
-        split_dict = create_split_dict(os.path.join(output_dir, 'lizard_labels/Lizard_Labels/info.csv'))
         if os.path.splitext(fname)[0] not in split_dict[split]:
             continue
         label_file = os.path.join(label_folder, fname.replace(".png", ".mat"))
@@ -115,7 +123,7 @@ def get_lizard_paths(path: Union[os.PathLike], split, download: bool = False) ->
     Returns:
         List of filepaths for the stored data.
     """
-    get_lizard_data(path, download)
+    get_lizard_data(path, download, split)
 
     data_paths = glob(os.path.join(path, split, "*.h5"))
     data_paths.sort()
@@ -169,5 +177,5 @@ def get_lizard_loader(
         The DataLoader.
     """
     ds_kwargs, loader_kwargs = util.split_kwargs(torch_em.default_segmentation_dataset, **kwargs)
-    ds = get_lizard_dataset(path, patch_shape, split=split, download=download, **ds_kwargs)
+    ds = get_lizard_dataset(path, patch_shape, download=download, split=split, **ds_kwargs)
     return torch_em.get_data_loader(ds, batch_size=batch_size, **loader_kwargs)
