@@ -21,19 +21,12 @@ def mat_to_tiff(path):
 
 
 def run_inference(model_dir, input_dir, output_dir, type_info_path, chunk=False):
-    for dataset in ['cpm15', 'cpm17', 'cryonuseg', 'janowczyk', 'lizard', 'lynsec', 'monusac', 'monuseg', 'nuinsseg', 'puma', 'tnbc', 'chunk1', 'chunk2', 'chunk3', 'chunk4', 'chunk5']:
+    for dataset in ['cpm15', 'cpm17', 'cryonuseg', 'janowczyk', 'lizard', 'lynsec', 'monusac', 'monuseg', 'nuinsseg', 'pannuke', 'puma', 'tnbc']:
         for model in ['consep', 'cpm17', 'kumar', 'pannuke', 'monusac']:
-            if 'chunk' in dataset:
-                if not chunk:
-                    continue
-                input_path = os.path.join(input_dir, dataset)
-                output_path = os.path.join(output_dir, 'pannuke', model)
-                print('chunk detected')
-            else:
-                output_path = os.path.join(output_dir, dataset, model)
-                input_path = os.path.join(input_dir, dataset, 'loaded_dataset/complete_dataset/images')
-                if os.path.exists(output_path):
-                    continue
+            output_path = os.path.join(output_dir, dataset, model)
+            input_path = os.path.join(input_dir, dataset, 'loaded_dataset/complete_dataset/images')
+            if os.path.exists(output_path):
+                continue
             os.makedirs(output_path, exist_ok=True)
             if model in ['consep', 'cpm17', 'kumar']:
                 model_mode = 'original'
@@ -42,6 +35,7 @@ def run_inference(model_dir, input_dir, output_dir, type_info_path, chunk=False)
                 type_info = ''
             else:
                 model_mode = 'fast'
+
                 model_path = os.path.join(model_dir, f'hovernet_fast_{model}_type_tf2pytorch.tar')
                 type_info = type_info_path
                 if model == 'pannuke':
@@ -52,8 +46,9 @@ def run_inference(model_dir, input_dir, output_dir, type_info_path, chunk=False)
             args = [
                 "--nr_types", f"{nr_types}",
                 "--type_info_path", f"{type_info}",
+                "--model_mode", f"{model_mode}",
                 "--model_path", f"{model_path}",
-                "--model_mode", f"{model_mode}",  
+                "--nr_post_proc_worker", "0",
                 "tile",
                 "--input_dir", f"{input_path}",
                 "--output_dir", f"{output_path}",
@@ -64,7 +59,6 @@ def run_inference(model_dir, input_dir, output_dir, type_info_path, chunk=False)
             print(f'Running inference with CellViT {model} model on {dataset} dataset...')
 
             subprocess.run(command)
-
             mat_to_tiff(os.path.join(output_path, 'mat'))
             shutil.rmtree(os.path.join(output_path, 'json'))
             shutil.rmtree(os.path.join(output_path, 'overlay'))

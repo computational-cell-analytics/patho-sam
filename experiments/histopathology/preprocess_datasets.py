@@ -99,7 +99,7 @@ def create_eval_directories(eval_path, dataset, models):
 
 
 def preprocess_datasets(eval_path, data_path, model_names=['pannuke_sam', 'vanilla_sam'], prompt=False):
-    datasets = ['cpm15', 'cpm17', 'cryonuseg', 'janowczyk', 'lizard', 'lynsec', 'monusac', 'monuseg', 'nuinsseg', 'pannuke', 'puma', 'tnbc']
+    datasets = ['lizard']#['cpm15', 'cpm17', 'cryonuseg', 'janowczyk', 'lizard', 'lynsec', 'monusac', 'monuseg', 'nuinsseg', 'pannuke', 'puma', 'tnbc']
     for dataset in datasets:
         #remove_empty_labels(os.path.join(data_path, dataset, 'loaded_dataset', 'complete_dataset'))
         create_val_split(os.path.join(data_path, dataset), val_percentage=0.05, test_percentage=0.95, custom_name='standard_split', random_seed=42)

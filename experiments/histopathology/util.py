@@ -16,6 +16,33 @@ VANILLA_MODELS = {
 }
 
 
+def get_dataset_paths(dataset_name, split_choice):
+    # let's check if we have a particular naming logic to save the images
+    try:
+        file_search_specs = FILE_SPECS[dataset_name][split_choice]
+        is_explicit_split = False
+    except KeyError:
+        file_search_specs = "*"
+        is_explicit_split = True
+
+    # if the datasets have different modalities/species, let's make use of it
+    split_names = dataset_name.split("/")
+    if len(split_names) > 1:
+        assert len(split_names) <= 2
+        dataset_name = [split_names[0], "slices", split_names[1]]
+    else:
+        dataset_name = [*split_names, "slices"]
+
+    # if there is an explicit val/test split made, let's look at them
+    if is_explicit_split:
+        dataset_name.append(split_choice)
+
+    raw_dir = os.path.join(ROOT, *dataset_name, "raw", file_search_specs)
+    labels_dir = os.path.join(ROOT, *dataset_name, "labels", file_search_specs)
+
+    return raw_dir, labels_dir
+
+
 def get_model(model_type, ckpt):
     if ckpt is None:
         ckpt = VANILLA_MODELS[model_type]
@@ -45,14 +72,11 @@ def get_default_arguments():
     args = parser.parse_args()
     return args
 
-def dataloading_args():
+def dataloading_args()
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "-d", "--datasets", type=str, default=None,
-    )
-    parser.add_argument(
-        "-p", "--path", type=str, default=None
-    )
+    parser.add_argument("-p", "--path", type=str, default=None)
+    parser.add_argument("-d", "--dataset", type=str, default=None)
+
     args = parser.parse_args()
     return args
 
@@ -78,3 +102,4 @@ def get_test_paths(input_path, dataset):
     test_label_paths = natsorted(glob(os.path.join(path, 'test_labels/*')))
     print(len(test_image_paths), len(test_label_paths))
     return test_image_paths, test_label_paths
+    

@@ -17,9 +17,6 @@ from scipy.io import loadmat
 
 from torch.utils.data import Dataset, DataLoader
 
-import torch_em
-
-from .. import util
 
 from scipy.io import loadmat
 
@@ -27,8 +24,7 @@ from torch.utils.data import Dataset, DataLoader
 
 import torch_em
 
-from .. import util
-
+from torch_em.data.datasets import util
 
 def create_split_dicts(path):
     df = pd.read_csv(os.path.join(path, 'lizard_labels/Lizard_Labels/info.csv'))

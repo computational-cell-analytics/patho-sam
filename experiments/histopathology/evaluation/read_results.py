@@ -60,7 +60,7 @@ def read_amg_csv(path, model_name=None):
     return df 
 
 
-read_amg_csv(eval_path, model_name)
+# read_amg_csv(eval_path, model_name)
 
 
 def read_it_boxes_csv(path, model_name=None):

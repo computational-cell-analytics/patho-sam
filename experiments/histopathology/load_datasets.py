@@ -8,7 +8,6 @@ from shutil import rmtree
 from util import dataloading_args
 import tifffile as tiff
 
-from dataloaders import get_dataloaders
 
 
 def load_datasets(path, datasets=['cpm15', 'cpm17', 'cryonuseg', 'janowczyk', 'lizard', 'lynsec', 'monusac', 'monuseg', 'nuinsseg', 'pannuke', 'puma', 'tnbc']):
@@ -33,7 +32,7 @@ def load_datasets(path, datasets=['cpm15', 'cpm17', 'cryonuseg', 'janowczyk', 'l
                 loaders.append(get_dataloaders(patch_shape, data_path=os.path.join(path, dataset), dataset=dataset, split=rater))
         elif dataset == 'lizard':
             loaders = []
-            #for split in ['split1', 'split2', 'split3']:  # this represents all available splits
+            # for split in ['split1', 'split2', 'split3']:  # this represents all available splits
             loaders.append(get_dataloaders(patch_shape, data_path=os.path.join(path, dataset), dataset=dataset))
         elif dataset == 'monusac':
             loaders = []
@@ -60,7 +59,7 @@ def load_datasets(path, datasets=['cpm15', 'cpm17', 'cryonuseg', 'janowczyk', 'l
                 tp_img = squeezed_image.transpose(1, 2, 0)
                 if tp_img.shape[-1] == 4:  # deletes alpha channel if one exists
                     tp_img = tp_img[..., :-1]
-                if tp_img.shape != (patch_shape[1], patch_shape[2], 3):  # 3 tnbc images had a shape of (512, 512, 2) and had to be sorted out
+                if tp_img.shape != (patch_shape[0], patch_shape[1], 3):  # 3 tnbc images had a shape of (512, 512, 2) and had to be sorted out
                     print(f'Incorrect image shape of {tp_img.shape} in {os.path.join(image_output_path, f'{counter:04}.tiff')}')
                     counter += 1
                     continue
@@ -84,7 +83,7 @@ def main():
     if args.path is not None:
         data_path = args.path
     else:
-        data_path = '/mnt/lustre-grete/usr/u12649/scratch/data'
+        data_path = '/mnt/lustre-grete/usr/u12649/scratch/data/'
     if args.datasets is not None:
         load_datasets(data_path, [args.datasets])
     else:

@@ -33,8 +33,8 @@ def _run_evaluation(gt_paths, prediction_paths, verbose=True):
     return msas, sa50s, sa75s
 
 
-def evaluate_all_datasets_hovernet(prediction_dir, label_dir, result_dir):
-    for dataset in ['cpm15', 'cpm17', 'cryonuseg', 'janowczyk', 'lizard', 'lynsec', 'monusac', 'monuseg', 'nuinsseg', 'pannuke', 'puma', 'tnbc']:
+def evaluate_all_datasets_cellvit(prediction_dir, label_dir, result_dir):
+    for dataset in ['cpm15', 'cpm17', 'cryonuseg', 'janowczyk', 'lynsec', 'monusac', 'monuseg', 'nuinsseg', 'pannuke', 'puma', 'tnbc']:
         gt_paths = natsorted(glob(os.path.join(label_dir, dataset, 'loaded_dataset/complete_dataset/labels/*.tiff')))
         for model in ['256-x20', '256-x40', 'SAM-H-x20', 'SAM-H-x40']:
             prediction_paths = natsorted(glob(os.path.join(prediction_dir, dataset, model, dataset, 'inference_masks', '*.tiff')))
@@ -50,4 +50,4 @@ def evaluate_all_datasets_hovernet(prediction_dir, label_dir, result_dir):
                 results.to_csv(save_path, index=False)
 
 
-evaluate_all_datasets_hovernet('/mnt/lustre-grete/usr/u12649/scratch/models/cellvit/inference', '/mnt/lustre-grete/usr/u12649/scratch/data/test', '/mnt/lustre-grete/usr/u12649/scratch/models/cellvit/results')
+evaluate_all_datasets_cellvit('/mnt/lustre-grete/usr/u12649/scratch/models/cellvit/inference', '/mnt/lustre-grete/usr/u12649/scratch/data', '/mnt/lustre-grete/usr/u12649/scratch/models/cellvit/results')
