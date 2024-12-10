@@ -36,18 +36,20 @@ def _run_evaluation(gt_paths, prediction_paths, verbose=True):
 def evaluate_all_datasets_cellvit(prediction_dir, label_dir, result_dir):
     for dataset in ['cpm15', 'cpm17', 'cryonuseg', 'janowczyk', 'lynsec', 'monusac', 'monuseg', 'nuinsseg', 'pannuke', 'puma', 'tnbc']:
         gt_paths = natsorted(glob(os.path.join(label_dir, dataset, 'loaded_dataset/complete_dataset/labels/*.tiff')))
-        for model in ['256-x20', '256-x40', 'SAM-H-x20', 'SAM-H-x40']:
-            prediction_paths = natsorted(glob(os.path.join(prediction_dir, dataset, model, dataset, 'inference_masks', '*.tiff')))
-            print(os.path.join(prediction_dir, dataset, model, dataset, 'inference_masks'))
+        for checkpoint in ['256-x20', '256-x40', 'SAM-H-x20', 'SAM-H-x40']:
+            save_path = os.path.join(result_dir, dataset, checkpoint, 'ais_result.csv')
+            if os.path.exists(save_path):
+                continue
+            prediction_paths = natsorted(glob(os.path.join(prediction_dir, dataset, checkpoint, dataset, 'inference_masks', '*.tiff')))
             msas, sa50s, sa75s = _run_evaluation(gt_paths=gt_paths, prediction_paths=prediction_paths)
             results = pd.DataFrame.from_dict({
                 "mSA": [np.mean(msas)], "SA50": [np.mean(sa50s)], "SA75": [np.mean(sa75s)],
             })
-            save_path = os.path.join(result_dir, dataset, model, f'{model}_instance_eval_{dataset}.csv')
-            os.makedirs(os.path.join(result_dir, dataset, model), exist_ok=True)
-            if save_path is not None:
-                os.makedirs(Path(save_path).parent, exist_ok=True)
-                results.to_csv(save_path, index=False)
+            os.makedirs(os.path.join(result_dir, dataset, checkpoint), exist_ok=True)
+            results.to_csv(save_path, index=False)
 
 
-evaluate_all_datasets_cellvit('/mnt/lustre-grete/usr/u12649/scratch/models/cellvit/inference', '/mnt/lustre-grete/usr/u12649/scratch/data', '/mnt/lustre-grete/usr/u12649/scratch/models/cellvit/results')
+evaluate_all_datasets_cellvit('/mnt/lustre-grete/usr/u12649/scratch/models/cellvit/inference',
+                              '/mnt/lustre-grete/usr/u12649/scratch/data', 
+                              '/mnt/lustre-grete/usr/u12649/scratch/models/cellvit/results'
+                              )

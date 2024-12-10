@@ -1,11 +1,7 @@
 import os
-from glob import glob
-from natsort import natsorted
 from micro_sam.evaluation.evaluation import run_evaluation
 from micro_sam.evaluation.inference import run_amg
 from util import get_default_arguments, get_pred_paths, VANILLA_MODELS, get_test_paths, get_val_paths
-
-
 
 
 def run_amg_inference(model_type, checkpoint, experiment_folder, dataset, input_path):
@@ -20,6 +16,7 @@ def run_amg_inference(model_type, checkpoint, experiment_folder, dataset, input_
         test_image_paths
     )
     return prediction_folder
+
 
 def eval_amg(prediction_folder, experiment_folder, dataset, input_path):
     print("Evaluating", prediction_folder)

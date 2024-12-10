@@ -36,12 +36,12 @@ def _run_evaluation(gt_paths, prediction_paths, verbose=True):
 def evaluate_all_datasets_hovernet(prediction_dir, label_dir, result_dir):
     for dataset in ['cpm15', 'cpm17', 'cryonuseg', 'janowczyk', 'lynsec', 'monusac', 'monuseg', 'nuinsseg', 'pannuke', 'puma', 'tnbc']:
         gt_paths = natsorted(glob(os.path.join(label_dir, dataset, 'loaded_dataset/complete_dataset/labels/*.tiff')))
-        for model in ['consep', 'cpm17', 'kumar', 'pannuke', 'monusac']:
-            save_path = os.path.join(result_dir, dataset, model, 'ais_result.csv')
+        for checkpoint in ['consep', 'cpm17', 'kumar', 'pannuke', 'monusac']:
+            save_path = os.path.join(result_dir, dataset, checkpoint, 'ais_result.csv')
             if os.path.exists(save_path):
                 continue
-            prediction_paths = natsorted(glob(os.path.join(prediction_dir, dataset, model, 'mat/', '*.tiff')))
-            os.makedirs(os.path.join(result_dir, dataset, model), exist_ok=True)
+            prediction_paths = natsorted(glob(os.path.join(prediction_dir, dataset, checkpoint, 'mat/', '*.tiff')))
+            os.makedirs(os.path.join(result_dir, dataset, checkpoint), exist_ok=True)
             msas, sa50s, sa75s = _run_evaluation(gt_paths=gt_paths, prediction_paths=prediction_paths)
             results = pd.DataFrame.from_dict({
                 "mSA": [np.mean(msas)], "SA50": [np.mean(sa50s)], "SA75": [np.mean(sa75s)],
@@ -50,4 +50,6 @@ def evaluate_all_datasets_hovernet(prediction_dir, label_dir, result_dir):
             results.to_csv(save_path, index=False)
 
 
-evaluate_all_datasets_hovernet('/mnt/lustre-grete/usr/u12649/scratch/models/hovernet/inference', '/mnt/lustre-grete/usr/u12649/scratch/data/', '/mnt/lustre-grete/usr/u12649/scratch/models/hovernet/results')
+evaluate_all_datasets_hovernet('/mnt/lustre-grete/usr/u12649/scratch/models/hovernet/inference',
+                               '/mnt/lustre-grete/usr/u12649/scratch/data/',
+                               '/mnt/lustre-grete/usr/u12649/scratch/models/hovernet/results')

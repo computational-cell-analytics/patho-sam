@@ -22,6 +22,7 @@ def get_dataloaders(patch_shape, data_path, dataset, split=None, organ_type=None
             sampler=sampler,
             data_choice='cpm15'
         )
+
     elif dataset == 'cpm17':
         loader = get_cpm_loader(
             path=data_path,
@@ -32,16 +33,18 @@ def get_dataloaders(patch_shape, data_path, dataset, split=None, organ_type=None
             sampler=sampler,
             data_choice='cpm17'
         )
+
     elif dataset == 'cryonuseg':
         loader = get_cryonuseg_loader(
             path=data_path,
             patch_shape=(1,) + patch_shape,
             batch_size=1,
-            rater=split,
+            rater=['b1'],
             download=True,
             raw_transform=raw_transform,
             sampler=sampler,
             )
+
     elif dataset == 'janowczyk': 
         loader = get_janowczyk_loader(
             path=data_path,
@@ -52,6 +55,7 @@ def get_dataloaders(patch_shape, data_path, dataset, split=None, organ_type=None
             annotation='nuclei',
             sampler=sampler,
             )
+
     elif dataset == 'lizard':
         loader = get_lizard_loader(
             path=data_path,
@@ -61,6 +65,7 @@ def get_dataloaders(patch_shape, data_path, dataset, split=None, organ_type=None
             raw_transform=raw_transform,
             sampler=sampler,
             )
+
     elif dataset == 'lynsec': 
         loader = get_lynsec_loader(
             path=data_path,
@@ -71,6 +76,7 @@ def get_dataloaders(patch_shape, data_path, dataset, split=None, organ_type=None
             raw_transform=raw_transform,
             sampler=sampler,
             )
+
     elif dataset == 'monusac':
         loader = get_monusac_loader(
             path=data_path,
@@ -82,6 +88,7 @@ def get_dataloaders(patch_shape, data_path, dataset, split=None, organ_type=None
             raw_transform=raw_transform,
             sampler=sampler,
             )
+        
     elif dataset == 'monuseg':
         loader = get_monuseg_loader(
             path=data_path,
@@ -93,6 +100,7 @@ def get_dataloaders(patch_shape, data_path, dataset, split=None, organ_type=None
             raw_transform=raw_transform,
             sampler=sampler,
             )
+
     elif dataset == 'nuinsseg': 
         loader = get_nuinsseg_loader(
             path=data_path,
@@ -102,6 +110,7 @@ def get_dataloaders(patch_shape, data_path, dataset, split=None, organ_type=None
             raw_transform=raw_transform,
             sampler=sampler,
             )
+
     elif dataset == 'pannuke':
         loader = get_pannuke_loader(
             path=data_path,
@@ -113,6 +122,7 @@ def get_dataloaders(patch_shape, data_path, dataset, split=None, organ_type=None
             raw_transform=raw_transform,
             sampler=sampler,
             )
+
     elif dataset == 'puma':
         loader = get_puma_loader(
             path=data_path,
@@ -123,6 +133,7 @@ def get_dataloaders(patch_shape, data_path, dataset, split=None, organ_type=None
             raw_transform=raw_transform,
             sampler=sampler,
             )
+
     elif dataset == 'tnbc': 
         loader = get_tnbc_loader(
             path=data_path,
@@ -133,4 +144,5 @@ def get_dataloaders(patch_shape, data_path, dataset, split=None, organ_type=None
             raw_transform=raw_transform,
             sampler=sampler,
             )
+
     return loader

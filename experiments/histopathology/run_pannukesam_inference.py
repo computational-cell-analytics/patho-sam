@@ -1,7 +1,7 @@
 import subprocess
 import os
 import shutil
-print('test')
+
 
 def run_inference(model_dir, input_dir, output_dir):
     for dataset in ['cpm15', 'cpm17', 'cryonuseg', 'janowczyk', 'lynsec', 'lizard', 'monusac', 'monuseg', 'nuinsseg', 'pannuke', 'puma', 'tnbc']:

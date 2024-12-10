@@ -16,13 +16,11 @@ from skimage import io
 
 def remove_empty_labels(path):
     empty_count = 0
-    empty_list = []
     file_list = natsorted(glob(os.path.join(path, 'labels', '*.tiff')))
     for image_path in file_list:
         img = io.imread(image_path)
         unique_elements = np.unique(img)
         if len(unique_elements) == 1:
-            empty_list.append()
             print(f'Image {os.path.basename(image_path)} does not contain labels and will be removed.')
             empty_count += 1
             os.remove(image_path)
@@ -99,7 +97,7 @@ def create_eval_directories(eval_path, dataset, models):
 
 
 def preprocess_datasets(eval_path, data_path, model_names=['pannuke_sam', 'vanilla_sam'], prompt=False):
-    datasets = ['lizard']#['cpm15', 'cpm17', 'cryonuseg', 'janowczyk', 'lizard', 'lynsec', 'monusac', 'monuseg', 'nuinsseg', 'pannuke', 'puma', 'tnbc']
+    datasets = ['cpm15', 'cpm17', 'cryonuseg', 'janowczyk', 'lizard', 'lynsec', 'monusac', 'monuseg', 'nuinsseg', 'pannuke', 'puma', 'tnbc']
     for dataset in datasets:
         #remove_empty_labels(os.path.join(data_path, dataset, 'loaded_dataset', 'complete_dataset'))
         create_val_split(os.path.join(data_path, dataset), val_percentage=0.05, test_percentage=0.95, custom_name='standard_split', random_seed=42)

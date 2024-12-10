@@ -72,10 +72,12 @@ def get_default_arguments():
     args = parser.parse_args()
     return args
 
-def dataloading_args()
+
+def dataloading_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("-p", "--path", type=str, default=None)
-    parser.add_argument("-d", "--dataset", type=str, default=None)
+    parser.add_argument("-d", "--datasets", type=str, default=None)
+    parser.add_argument("-ps", "--patch_shape", type=tuple, default=(512, 512))
 
     args = parser.parse_args()
     return args
@@ -102,4 +104,3 @@ def get_test_paths(input_path, dataset):
     test_label_paths = natsorted(glob(os.path.join(path, 'test_labels/*')))
     print(len(test_image_paths), len(test_label_paths))
     return test_image_paths, test_label_paths
-    

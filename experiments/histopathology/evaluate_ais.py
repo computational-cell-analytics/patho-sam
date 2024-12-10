@@ -6,7 +6,7 @@ from micro_sam.evaluation.inference import run_instance_segmentation_with_decode
 
 from util import get_pred_paths, get_default_arguments, VANILLA_MODELS, get_test_paths, get_val_paths
 
-def run_instance_segmentation_with_decoder_inference(model_type, checkpoint, experiment_folder, dataset, input_path): #removed dataset_name as argument
+def run_instance_segmentation_with_decoder_inference(model_type, checkpoint, experiment_folder, dataset, input_path):
     val_image_paths, val_gt_paths = get_val_paths(input_path, dataset)
     test_image_paths, _ = get_test_paths(input_path, dataset)
     prediction_folder = run_instance_segmentation_with_decoder(

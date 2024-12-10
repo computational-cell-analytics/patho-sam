@@ -29,7 +29,7 @@ def run_inference(model_dir, input_dir, output_dir):
                 "--data", f"{input_dir}",
             ]
 
-            command = ['python3', '/user/titus.griebel/u12649/CellViT/cell_segmentation/inference/inference_cellvit_experiment_monuseg.py'].extend(args)
+            command = ['python3', '/user/titus.griebel/u12649/CellViT/cell_segmentation/inference/inference_cellvit_experiment_monuseg.py'] + args
             print(f'Running inference with CellViT {model} model on {dataset} dataset...')
             subprocess.run(command)
             plot_dir = os.path.join(output_dir, dataset, model, dataset, 'plots')

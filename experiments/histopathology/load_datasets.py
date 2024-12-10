@@ -1,18 +1,16 @@
 import os
 import tifffile as tiff
-import numpy
-from glob import glob
 from dataloaders import get_dataloaders
 from tqdm import tqdm
 from shutil import rmtree
 from util import dataloading_args
-import tifffile as tiff
+
+DATASETS = ['cpm15', 'cpm17', 'cryonuseg', 'janowczyk', 'lizard', 'lynsec',
+            'monusac', 'monuseg', 'nuinsseg', 'pannuke', 'puma', 'tnbc']
 
 
-
-def load_datasets(path, datasets=['cpm15', 'cpm17', 'cryonuseg', 'janowczyk', 'lizard', 'lynsec', 'monusac', 'monuseg', 'nuinsseg', 'pannuke', 'puma', 'tnbc']):
-    patch_shape = (512, 512) # I will change this to a more cli-friendly structure so patch shape, path and dataset choice can be modified without touching the code
-    for dataset in tqdm(sorted(datasets)):
+def load_datasets(path, datasets=DATASETS, patch_shape=(512, 512)):
+    for dataset in tqdm(datasets):
         if os.path.exists(os.path.join(path, dataset, 'loaded_dataset')):
             print(f'{dataset} dataset is loaded already.')
             continue
@@ -23,29 +21,26 @@ def load_datasets(path, datasets=['cpm15', 'cpm17', 'cryonuseg', 'janowczyk', 'l
                       f'Dataset loading will skip {dataset} and continue with the remaining datasets.')
                 continue
         print(f'Loading {dataset} dataset...')
-        os.makedirs(os.path.join(path, dataset), exist_ok=True)
-        if dataset not in ['cryonuseg', 'lizard', 'monusac', 'monuseg', 'pannuke']:
-            loaders = [get_dataloaders(patch_shape, data_path=os.path.join(path, dataset), dataset=dataset)]
-        elif dataset == 'cryonuseg':
-            loaders = []
-            for rater in ['b1']:  # this represents all available raters
-                loaders.append(get_dataloaders(patch_shape, data_path=os.path.join(path, dataset), dataset=dataset, split=rater))
+        dpath = os.path.join(path, dataset)
+        os.makedirs(dpath, exist_ok=True)
+        if dataset not in ['lizard', 'monusac', 'monuseg', 'pannuke']:
+            loaders = [get_dataloaders(patch_shape, dpath, dataset)]
         elif dataset == 'lizard':
             loaders = []
             # for split in ['split1', 'split2', 'split3']:  # this represents all available splits
-            loaders.append(get_dataloaders(patch_shape, data_path=os.path.join(path, dataset), dataset=dataset))
+            loaders.append(get_dataloaders(patch_shape, dpath, dataset))
         elif dataset == 'monusac':
             loaders = []
             for split in ['train', 'test']:  # this represents all available splits
-                loaders.append(get_dataloaders(patch_shape, data_path=os.path.join(path, dataset), dataset=dataset, split=split))
+                loaders.append(get_dataloaders(patch_shape, dpath, dataset, split=split))
         elif dataset == 'monuseg':
             loaders = []
             for split in ['train', 'test']:  # this represents all available splits
-                loaders.append(get_dataloaders(patch_shape, data_path=os.path.join(path, dataset), dataset=dataset, split=split))
+                loaders.append(get_dataloaders(patch_shape, dpath, dataset, split=split))
         elif dataset == 'pannuke':
             loaders = []
             folds = ['fold_3']  # this represents only fold3 for testing the model; other available folds: fold_1, fold_2
-            loaders.append(get_dataloaders(patch_shape, data_path=os.path.join(path, dataset), dataset=dataset, split=folds))
+            loaders.append(get_dataloaders(patch_shape, dpath, dataset, split=folds))
         image_output_path = os.path.join(path, dataset, 'loaded_dataset/complete_dataset/images')
         label_output_path = os.path.join(path, dataset, 'loaded_dataset/complete_dataset/labels')
         os.makedirs(image_output_path, exist_ok=True)
@@ -68,8 +63,6 @@ def load_datasets(path, datasets=['cpm15', 'cpm17', 'cryonuseg', 'janowczyk', 'l
                 counter += 1
         print(f'{dataset} dataset has successfully been loaded.')
     for dataset in datasets:
-        if dataset == 'lizard':
-            continue
         if os.path.exists(os.path.join(path, dataset, 'loaded_dataset')):
             for entity in os.listdir(os.path.join(path, dataset)):
                 entity_path = os.path.join(path, dataset, entity)
@@ -78,6 +71,7 @@ def load_datasets(path, datasets=['cpm15', 'cpm17', 'cryonuseg', 'janowczyk', 'l
                 elif entity != 'loaded_dataset' and not os.path.isdir(entity_path):
                     os.remove(entity_path)
 
+
 def main():
     args = dataloading_args()
     if args.path is not None:
@@ -85,9 +79,9 @@ def main():
     else:
         data_path = '/mnt/lustre-grete/usr/u12649/scratch/data/'
     if args.datasets is not None:
-        load_datasets(data_path, [args.datasets])
+        load_datasets(data_path, [args.datasets], args.patch_shape)
     else:
-        load_datasets(data_path)
+        load_datasets(data_path, patch_shape=args.patch_shape)
 
 
 if __name__ == "__main__":
