@@ -102,4 +102,6 @@ def preprocess_datasets(eval_path, data_path, model_names=['pannuke_sam', 'vanil
         #remove_empty_labels(os.path.join(data_path, dataset, 'loaded_dataset', 'complete_dataset'))
         create_val_split(os.path.join(data_path, dataset), val_percentage=0.05, test_percentage=0.95, custom_name='standard_split', random_seed=42)
         # create_eval_directories(eval_path, dataset, model_names)
+
+
 preprocess_datasets(' ', '/mnt/lustre-grete/usr/u12649/scratch/data')

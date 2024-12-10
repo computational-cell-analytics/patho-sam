@@ -13,7 +13,7 @@ from elf.evaluation import mean_segmentation_accuracy
 
 
 def _run_evaluation(gt_paths, prediction_paths, verbose=True):
-    assert len(gt_paths) == len(prediction_paths)
+    assert len(gt_paths) == len(prediction_paths), f'label / prediction mismatch: {len(gt_paths)} / {len(prediction_paths)}'
     msas, sa50s, sa75s = [], [], []
 
     for gt_path, pred_path in tqdm(
@@ -34,14 +34,18 @@ def _run_evaluation(gt_paths, prediction_paths, verbose=True):
 
 
 def evaluate_all_datasets_hovernet(prediction_dir, label_dir, result_dir):
-    for dataset in ['cpm15', 'cpm17', 'cryonuseg', 'janowczyk', 'lynsec', 'monusac', 'monuseg', 'nuinsseg', 'pannuke', 'puma', 'tnbc']:
+    for dataset in ['cpm15', 'cpm17', 'cryonuseg', 'janowczyk', 'lizard', 'lynsec', 'monusac', 'monuseg', 'nuinsseg', 'pannuke', 'puma', 'tnbc']:
         gt_paths = natsorted(glob(os.path.join(label_dir, dataset, 'loaded_dataset/complete_dataset/labels/*.tiff')))
         for checkpoint in ['consep', 'cpm17', 'kumar', 'pannuke', 'monusac']:
             save_path = os.path.join(result_dir, dataset, checkpoint, 'ais_result.csv')
             if os.path.exists(save_path):
                 continue
             prediction_paths = natsorted(glob(os.path.join(prediction_dir, dataset, checkpoint, 'mat/', '*.tiff')))
+            if len(prediction_paths) == 0:
+                print(f'No predictions for {dataset} dataset on {checkpoint} checkpoint found')
+                continue
             os.makedirs(os.path.join(result_dir, dataset, checkpoint), exist_ok=True)
+            print(f'evaluation {dataset} dataset on checkpoint {checkpoint} ...')
             msas, sa50s, sa75s = _run_evaluation(gt_paths=gt_paths, prediction_paths=prediction_paths)
             results = pd.DataFrame.from_dict({
                 "mSA": [np.mean(msas)], "SA50": [np.mean(sa50s)], "SA75": [np.mean(sa75s)],

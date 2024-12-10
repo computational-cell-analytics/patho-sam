@@ -48,6 +48,7 @@ def run_inference(model_dir, input_dir, output_dir, type_info_path, chunk=False)
                 "--type_info_path", f"{type_info}",
                 "--model_mode", f"{model_mode}",
                 "--model_path", f"{model_path}",
+                "--nr_inference_workers", "0",
                 "--nr_post_proc_worker", "0",
                 "tile",
                 "--input_dir", f"{input_path}",
@@ -56,7 +57,7 @@ def run_inference(model_dir, input_dir, output_dir, type_info_path, chunk=False)
             ]
 
             command = ['python3', '/user/titus.griebel/u12649/hover_net/run_infer.py'] + args
-            print(f'Running inference with CellViT {model} model on {dataset} dataset...')
+            print(f'Running inference with HoVerNet {model} model on {dataset} dataset...')
 
             subprocess.run(command)
             mat_to_tiff(os.path.join(output_path, 'mat'))

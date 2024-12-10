@@ -3,18 +3,18 @@ import pandas as pd
 from natsort import natsorted
 
 
-MODEL_NAME = ['pannuke_sam', 'vanilla_sam', 'hovernet', 'cellvit']
+MODEL_NAMES = ['pannuke_sam', 'vanilla_sam', 'hovernet']
 EVAL_PATH = '/mnt/lustre-grete/usr/u12649/scratch/models/'
 DATASETS = [
     'pannuke', 'lynsec', 'cryonuseg', 'lizard', 'tnbc', 'monusac',
-    'monuseg', 'puma', 'jano', 'cpm15', 'cpm17', 'nuinsseg'
+    'monuseg', 'puma', 'janowczyk', 'cpm15', 'cpm17', 'nuinsseg'
     ]
 
 
 def get_instance_results(path, model, checkpoint=None):
     result_dict = {'dataset': [], 'msa': [], 'sa50': [], 'sa75': []}
     if model == 'pannuke_sam':
-        os.makedirs(os.path.join(path, 'sum_results'))
+        os.makedirs(os.path.join(path, 'sum_results'), exist_ok=True)
         csv_out = os.path.join(path, 'sum_results', 'ais_results.csv')
     else:
         os.makedirs(os.path.join(path, checkpoint, 'sum_results'), exist_ok=True)
@@ -28,8 +28,8 @@ def get_instance_results(path, model, checkpoint=None):
         else:
             csv_path = os.path.join(path, 'results', dataset, checkpoint, 'ais_result.csv')
         if not os.path.exists(csv_path):
-            print(f'Ais results for {model} model with checkpoint {checkpoint} not in {csv_path}')
-            return
+            print(f'Ais results for {model} model on {dataset} dataset with checkpoint {checkpoint} not in {csv_path}')
+            continue
         df = pd.read_csv(csv_path)
         result_dict['msa'].append(df.loc[0, 'mSA'])
         result_dict['sa50'].append(df.loc[0, 'SA50'])
@@ -172,7 +172,7 @@ def get_comparison_csv(mode):
 
 
 def main():
-    read_instance_csv(EVAL_PATH, MODEL_NAME)
+    read_instance_csv(EVAL_PATH, MODEL_NAMES)
     #read_amg_csv(EVAL_PATH, MODEL_NAME)
 
     # read_it_boxes_csv(eval_path, model_name)
