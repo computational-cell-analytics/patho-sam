@@ -27,8 +27,8 @@ def load_datasets(path, datasets=DATASETS, patch_shape=(512, 512)):
             loaders = [get_dataloaders(patch_shape, dpath, dataset)]
         elif dataset == 'lizard':
             loaders = []
-            # for split in ['split1', 'split2', 'split3']:  # this represents all available splits
-            loaders.append(get_dataloaders(patch_shape, dpath, dataset))
+            for split in ['split1', 'split2', 'split3']:  # this represents all available splits
+                loaders.append(get_dataloaders(patch_shape, dpath, dataset, split))
         elif dataset == 'monusac':
             loaders = []
             for split in ['train', 'test']:  # this represents all available splits
@@ -77,7 +77,7 @@ def main():
     if args.path is not None:
         data_path = args.path
     else:
-        data_path = '/mnt/lustre-grete/usr/u12649/scratch/data/'
+        data_path = '/mnt/lustre-grete/usr/u12649/scratch/data/test'
     if args.datasets is not None:
         load_datasets(data_path, [args.datasets], args.patch_shape)
     else:

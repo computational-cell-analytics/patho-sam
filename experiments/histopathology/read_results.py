@@ -3,7 +3,7 @@ import pandas as pd
 from natsort import natsorted
 
 
-MODEL_NAMES = ['pannuke_sam', 'vanilla_sam', 'hovernet']
+MODEL_NAMES = ['pannuke_sam', 'vanilla_sam', 'hovernet', 'cellvit']
 EVAL_PATH = '/mnt/lustre-grete/usr/u12649/scratch/models/'
 DATASETS = [
     'pannuke', 'lynsec', 'cryonuseg', 'lizard', 'tnbc', 'monusac',
@@ -15,10 +15,10 @@ def get_instance_results(path, model, checkpoint=None):
     result_dict = {'dataset': [], 'msa': [], 'sa50': [], 'sa75': []}
     if model == 'pannuke_sam':
         os.makedirs(os.path.join(path, 'sum_results'), exist_ok=True)
-        csv_out = os.path.join(path, 'sum_results', 'ais_results.csv')
+        csv_out = os.path.join(path, 'sum_results', f'ais_{model}_results.csv')
     else:
-        os.makedirs(os.path.join(path, checkpoint, 'sum_results'), exist_ok=True)
-        csv_out = os.path.join(path, checkpoint, 'sum_results', 'ais_results.csv')
+        os.makedirs(os.path.join(path, 'sum_results', checkpoint), exist_ok=True)
+        csv_out = os.path.join(path, 'sum_results', checkpoint, f'ais_{model}_{checkpoint}_results.csv')
     if os.path.exists(csv_out):
         print(f'{csv_out} already exists.')
         return
@@ -172,6 +172,7 @@ def get_comparison_csv(mode):
 
 
 def main():
+    
     read_instance_csv(EVAL_PATH, MODEL_NAMES)
     #read_amg_csv(EVAL_PATH, MODEL_NAME)
 

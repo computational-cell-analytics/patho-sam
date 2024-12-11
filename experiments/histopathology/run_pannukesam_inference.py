@@ -19,10 +19,13 @@ def run_inference(model_dir, input_dir, output_dir):
         command = ['python3', '/user/titus.griebel/u12649/patho-sam/experiments/histopathology/evaluate_ais.py'] + args
         print(f'Running inference with pannuke_sam model on {dataset} dataset...')
         subprocess.run(command)
-
+        embedding_path = os.path.join(output_dir, dataset, 'instance', 'embeddings')
+        if os.path.exists(embedding_path):
+            shutil.rmtree(embedding_path)
         print(f'Successfully ran inference with pannuke_sam model on {dataset} dataset')
 
 
 run_inference(model_dir='/mnt/lustre-grete/usr/u12649/scratch/models/pannuke_sam/checkpoints/vit_b/pannuke_sam/best.pt',
               input_dir='/mnt/lustre-grete/usr/u12649/scratch/data',
-              output_dir='/mnt/lustre-grete/usr/u12649/scratch/models/pannuke_sam/inference/')
+              output_dir='/mnt/lustre-grete/usr/u12649/scratch/models/pannuke_sam/inference/'
+              )

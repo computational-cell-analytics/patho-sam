@@ -62,6 +62,7 @@ def get_dataloaders(patch_shape, data_path, dataset, split=None, organ_type=None
             patch_shape=patch_shape,
             batch_size=1,
             download=True,
+            split=split,
             raw_transform=raw_transform,
             sampler=sampler,
             )

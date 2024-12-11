@@ -86,25 +86,26 @@ def label_consecutive_trafo(labels):
 
 def get_concat_hp_datasets(path, patch_shape):
     label_dtype = torch.int64
-    sampler = MinInstanceSampler(min_num_instances=5)
-
+    sampler = MinInstanceSampler(min_num_instances=3)
+    #datasets: CPM15, CPM17, Janowczyk, Lizard, PanNuke, PUMA, TNBC, MoNuSeg #### Lynsec? 
     # make lizard dataset splits into fractions
-    lizard_ds = datasets.get_lizard_dataset(
-        path=os.path.join(path, "lizard"), patch_shape=patch_shape, sampler=sampler, label_dtype=label_dtype,
-        raw_transform=raw_padding_trafo, label_transform=label_padding_trafo
+    cpm17_ds = datasets.get_cpm_dataset(
+        path=os.path.join(path, "cpm"), patch_shape=patch_shape, sampler=sampler, label_dtype=label_dtype,
+        raw_transform=raw_padding_trafo, data_choice='cpm17', label_transform=label_padding_trafo
     )
-    lizard_train_ds, lizard_val_ds = _get_train_val_split(ds=lizard_ds)
-    lizard_train_ds.ndim = 2
-    lizard_val_ds.ndim = 2
+    cpm17_train_ds, cpm17_val_ds = _get_train_val_split(ds=cpm17_ds)
+    
+    #janowczyk --> no pre-defined train/test
 
-    # get bcss internal splits
-    bcss_train_ds = datasets.get_bcss_dataset(
-        path=os.path.join(path, "bcss"), patch_shape=patch_shape, split="train", sampler=MinInstanceSampler(),
-        label_transform=BCSSLabelTrafo(do_connected_components=True), label_dtype=label_dtype
+
+
+    lizard_train_ds = datasets.get_lizard_dataset(
+        path=os.path.join(path, "lizard"), patch_shape=patch_shape, sampler=sampler, label_dtype=label_dtype,
+        raw_transform=raw_padding_trafo, split='split1', label_transform=label_padding_trafo, ndim=2
     )
-    bcss_val_ds = datasets.get_bcss_dataset(
-        path=os.path.join(path, "bcss"), patch_shape=patch_shape, split="val", sampler=MinInstanceSampler(),
-        label_transform=BCSSLabelTrafo(do_connected_components=True), label_dtype=label_dtype
+    lizard_val_ds = datasets.get_lizard_dataset(
+        path=os.path.join(path, "lizard"), patch_shape=patch_shape, sampler=sampler, label_dtype=label_dtype,
+        raw_transform=raw_padding_trafo, split='split2', label_transform=label_padding_trafo, ndim=2
     )
 
     # make monuseg train dataset splits into fractions
@@ -113,14 +114,9 @@ def get_concat_hp_datasets(path, patch_shape):
         label_transform=label_consecutive_trafo, ndim=2, label_dtype=label_dtype
     )
     monuseg_train_ds, monuseg_val_ds = _get_train_val_split(ds=monuseg_ds)
-
-    # make monusac train dataset splits into fractions
-    monusac_ds = datasets.get_monusac_dataset(
-        path=os.path.join(path, "monusac"), patch_shape=patch_shape, split="train", sampler=MinInstanceSampler(),
-        label_transform=label_consecutive_trafo, ndim=2, label_dtype=label_dtype
-    )
-    monusac_train_ds, monusac_val_ds = _get_train_val_split(ds=monusac_ds)
-
+    
+    
+    
     # out of three folds (sets of data) of provided data, we use two for training and 1 for validation
     pannuke_train_ds = datasets.get_pannuke_dataset(
         path=os.path.join(path, "pannuke"), patch_shape=(1, *patch_shape), sampler=sampler, folds=["fold_1", "fold_2"],
@@ -132,11 +128,11 @@ def get_concat_hp_datasets(path, patch_shape):
     )
 
     generalist_hp_train_dataset = ConcatDataset(
-        lizard_train_ds, bcss_train_ds, monuseg_train_ds, monusac_train_ds, pannuke_train_ds
+        lizard_train_ds, monuseg_train_ds, pannuke_train_ds
     )
 
     generalist_hp_val_dataset = ConcatDataset(
-        lizard_val_ds, bcss_val_ds, monuseg_val_ds, monusac_val_ds, pannuke_val_ds
+        lizard_val_ds, monuseg_val_ds, pannuke_val_ds
     )
 
     return generalist_hp_train_dataset, generalist_hp_val_dataset

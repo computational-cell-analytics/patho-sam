@@ -48,8 +48,8 @@ def run_inference(model_dir, input_dir, output_dir, type_info_path, chunk=False)
                 "--type_info_path", f"{type_info}",
                 "--model_mode", f"{model_mode}",
                 "--model_path", f"{model_path}",
-                "--nr_inference_workers", "0",
-                "--nr_post_proc_worker", "0",
+                "--nr_inference_workers", "1",  
+                "--nr_post_proc_worker", "0",  # seemed necessary for computational feasibility with lizard and puma
                 "tile",
                 "--input_dir", f"{input_path}",
                 "--output_dir", f"{output_path}",
