@@ -15,7 +15,7 @@ from torch_em.data import datasets, MinInstanceSampler, ConcatDataset
 
 import micro_sam.training as sam_training
 from torch_em.transform.label import PerObjectDistanceTransform
-print('test1')
+print('test3')
 """NOTE: test sets for in-domain histopathology evaluation
     - monuseg test split
     - monusac test split
@@ -42,38 +42,6 @@ def _get_train_test_split(ds, test_fraction: float = 0.2):
     return train_split, test_split
 
 
-# def raw_padding_trafo(raw, desired_shape=(3, 512, 512)):
-#     assert raw.shape[0] == 3, "The input shape isn't channels first, expected: (3, H, W)"
-#     tmp_ddim = (desired_shape[1] - raw.shape[1], desired_shape[2] - raw.shape[2])
-#     ddim = (tmp_ddim[0] / 2, tmp_ddim[1] / 2)
-#     raw = np.pad(
-#         raw,
-#         pad_width=((0, 0), (ceil(ddim[0]), floor(ddim[0])), (ceil(ddim[1]), floor(ddim[1]))),
-#         mode="constant"
-#     )
-#     assert raw.shape == desired_shape
-#     return raw
-
-
-# def label_padding_trafo(labels, desired_shape=(512, 512)):
-#     tmp_ddim = (desired_shape[0] - labels.shape[0], desired_shape[1] - labels.shape[1])
-#     ddim = (tmp_ddim[0] / 2, tmp_ddim[1] / 2)
-#     labels = np.pad(
-#         labels,
-#         pad_width=((ceil(ddim[0]), floor(ddim[0])), (ceil(ddim[1]), floor(ddim[1]))),
-#         mode="constant"
-#     )
-#     assert labels.shape == desired_shape
-#     labels = label_consecutive_trafo(labels)
-#     return labels
-
-
-# def label_consecutive_trafo(labels):
-#     labels = labels.astype(int)
-#     labels = torch_em.transform.label.label_consecutive(labels)  # to ensure consecutive IDs
-#     return labels
-
-
 def get_concat_hp_datasets(path, patch_shape):
     label_dtype = torch.int64
     sampler = MinInstanceSampler(min_num_instances=3)
@@ -98,15 +66,15 @@ def get_concat_hp_datasets(path, patch_shape):
 
 
     janowczyk_ds = datasets.get_janowczyk_dataset(
-        path=os.path.join(path, "janowczyk"), patch_shape=patch_shape, sampler=sampler, download=True, label_dtype=label_dtype,
-        raw_transform=raw_transform, annotation="nuclei", label_transform=label_transform
+        path=os.path.join(path, "janowczyk"), patch_shape=patch_shape, sampler=sampler, download=True, 
+        label_dtype=label_dtype, raw_transform=raw_transform, annotation="nuclei", label_transform=label_transform
     )
     janowczyk_train_ds, janowczyk_val_ds = _get_train_val_split(ds=janowczyk_ds, test_exists=False)
 
     
     lizard_train_ds = datasets.get_lizard_dataset(
         path=os.path.join(path, "lizard"), patch_shape=patch_shape, download=True, sampler=sampler, label_dtype=label_dtype,
-        split='train', label_transform=label_consecutive_trafo,
+        split='train', label_transform=label_transform,
     )
     lizard_val_ds = datasets.get_lizard_dataset(
         path=os.path.join(path, "lizard"), patch_shape=patch_shape, download=True, sampler=sampler, label_dtype=label_dtype,
@@ -159,7 +127,7 @@ def get_concat_hp_datasets(path, patch_shape):
         lizard_train_ds,
         monuseg_train_ds,
         puma_train_ds,
-        tnbc_train_ds
+        #tnbc_train_ds
     )
 
     generalist_hp_val_dataset = ConcatDataset(
@@ -170,7 +138,7 @@ def get_concat_hp_datasets(path, patch_shape):
         lizard_val_ds,
         monuseg_val_ds,
         puma_val_ds,
-        tnbc_val_ds
+        #tnbc_val_ds
     )
 
 
