@@ -70,7 +70,7 @@ def main():
         help="Where to save the checkpoint and logs. By default they will be saved where this script is run."
     )
     parser.add_argument(
-        "--iterations", type=int, default=int(1e5),
+        "--iterations", type=int, default=int(5e4),
         help="For how many iterations should the model be trained? By default 100k."
     )
     parser.add_argument(
@@ -86,7 +86,7 @@ def main():
         help="To save every kth epoch while fine-tuning. Expects an integer value."
     )
     parser.add_argument(
-        "--n_objects", type=int, default=25, help="The number of instances (objects) per batch used for finetuning."
+        "--n_objects", type=int, default=40, help="The number of instances (objects) per batch used for finetuning."
     )
     parser.add_argument(
         "--lora_rank", type=int, default=None, help="The rank for low rank adaptation of the attention layers."

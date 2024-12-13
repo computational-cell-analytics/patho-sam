@@ -53,11 +53,16 @@ def create_val_split(directory, val_percentage=0.05, test_percentage=0.95, custo
     for dst in dst_paths.values():
         dst.mkdir(parents=True, exist_ok=True)
     for split in splits:
-        assert not list(dst_paths[f"{split}_labels"].iterdir()), f"{split.capitalize()} labels split already exists"
-        assert not list(dst_paths[f"{split}_images"].iterdir()), f"{split.capitalize()} images split already exists"
+        # assert not list(dst_paths[f"{split}_labels"].iterdir()), f"{split.capitalize()} labels split already exists"
+        # assert not list(dst_paths[f"{split}_images"].iterdir()), f"{split.capitalize()} images split already exists"
+        if len(os.listdir(os.path.join(directory, 'loaded_dataset', 'complete_dataset', custom_name, f'{split}_images'))) > 0:
+            print('Split already exists')
+            return
     print('No pre-existing validation or test set was found. A validation set will be created.')
-    val_count = round(len(image_list)*val_percentage)
+    val_count = max(round(len(image_list)*val_percentage), 1)
     test_count = round(len(image_list)*test_percentage)
+    if round(len(image_list)*val_percentage) == 0:
+        test_count -= 1
     print(f'The validation set will consist of {val_count} images. \n'
           f'The test set will consist of {test_count} images.')
     random.seed(random_seed)
@@ -101,7 +106,6 @@ def preprocess_datasets(eval_path, data_path, model_names=['pannuke_sam', 'vanil
     for dataset in datasets:
         #remove_empty_labels(os.path.join(data_path, dataset, 'loaded_dataset', 'complete_dataset'))
         create_val_split(os.path.join(data_path, dataset), val_percentage=0.05, test_percentage=0.95, custom_name='standard_split', random_seed=42)
-        # create_eval_directories(eval_path, dataset, model_names)
 
 
-preprocess_datasets(' ', '/mnt/lustre-grete/usr/u12649/scratch/data')
+preprocess_datasets(' ', '/mnt/lustre-grete/usr/u12649/scratch/data/test')

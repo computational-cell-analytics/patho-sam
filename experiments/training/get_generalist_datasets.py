@@ -1,6 +1,4 @@
 import os
-import numpy as np
-from math import ceil, floor
 from typing import Optional, List
 
 from skimage import measure
@@ -9,13 +7,13 @@ import torch
 import torch.utils.data as data_util
 
 import torch_em
-from torch_em.transform.raw import standardize
 from torch_em.data import datasets, MinInstanceSampler, ConcatDataset
 
 
 import micro_sam.training as sam_training
 from torch_em.transform.label import PerObjectDistanceTransform
-print('test3')
+
+
 """NOTE: test sets for in-domain histopathology evaluation
     - monuseg test split
     - monusac test split
@@ -50,7 +48,7 @@ def get_concat_hp_datasets(path, patch_shape):
         distances=True, boundary_distances=True, directed_distances=False, foreground=True, instances=True, min_size=25
     )
 
-    # datasets: CPM15, CPM17, Janowczyk, Lizard, PanNuke, PUMA, TNBC, MoNuSeg 
+    # datasets: CPM15, CPM17, Janowczyk, Lizard, MoNuSeg, PanNuke, PUMA, TNBC 
     cpm15_ds = datasets.get_cpm_dataset(
         path=os.path.join(path, "cpm15"), patch_shape=patch_shape, sampler=sampler, label_dtype=label_dtype,
         raw_transform=raw_transform, data_choice='cpm15', label_transform=label_transform
@@ -74,7 +72,7 @@ def get_concat_hp_datasets(path, patch_shape):
     
     lizard_train_ds = datasets.get_lizard_dataset(
         path=os.path.join(path, "lizard"), patch_shape=patch_shape, download=True, sampler=sampler, label_dtype=label_dtype,
-        split='train', label_transform=label_transform,
+        split='train', label_transform=label_transform, raw_transform=raw_transform
     )
     lizard_val_ds = datasets.get_lizard_dataset(
         path=os.path.join(path, "lizard"), patch_shape=patch_shape, download=True, sampler=sampler, label_dtype=label_dtype,
@@ -89,14 +87,16 @@ def get_concat_hp_datasets(path, patch_shape):
     monuseg_train_ds, monuseg_val_ds = _get_train_val_split(ds=monuseg_ds)
     
     
-    pannuke_train_ds = datasets.get_pannuke_dataset(
-        path=os.path.join(path, "pannuke"), patch_shape=(1, *patch_shape), download=True, sampler=sampler, folds=["fold_1"],
+    pannuke_ds = datasets.get_pannuke_dataset(
+        path=os.path.join(path, "pannuke"), patch_shape=(1, *patch_shape), download=True, sampler=MinInstanceSampler(min_num_instances=3), folds=["fold_1", "fold_2"],
         ndim=2, label_dtype=label_dtype, label_transform=label_transform, raw_transform=raw_transform
     )
-    pannuke_val_ds = datasets.get_pannuke_dataset(
-        path=os.path.join(path, "pannuke"), patch_shape=(1, *patch_shape), download=True, sampler=sampler, folds=["fold_2"],
-        ndim=2, label_dtype=label_dtype, label_transform=label_transform, raw_transform=raw_transform
-    )
+    pannuke_train_ds, pannuke_val_ds = _get_train_val_split(ds=pannuke_ds)
+    # pannuke_val_ds = datasets.get_pannuke_dataset(
+    #     path=os.path.join(path, "pannuke"), patch_shape=(1, *patch_shape), download=True, sampler=MinInstanceSampler(min_num_instances=3), folds=["fold_2"],
+    #     ndim=2, label_dtype=label_dtype, label_transform=label_transform, raw_transform=raw_transform
+    # )
+
     
 
     puma_ds = datasets.get_puma_dataset(
@@ -113,13 +113,7 @@ def get_concat_hp_datasets(path, patch_shape):
     tnbc_train_ds, tnbc_val_ds = _get_train_val_split(tnbc_ds, test_exists=False)
 
 
-    # train_datasets = [monuseg_train_ds, pannuke_train_ds]
-
-    # for train_dataset in train_datasets:
-    #     loader = torch_em.get_data_loader(train_dataset, batch_size=2, shuffle=True, num_workers=16)
-    #     print(f'{str(train_dataset)} has a length of {len(loader)}')
-
-    generalist_hp_train_dataset = ConcatDataset(
+    training_datasets = [
         pannuke_train_ds,
         cpm15_train_ds,
         cpm17_train_ds,
@@ -127,10 +121,7 @@ def get_concat_hp_datasets(path, patch_shape):
         lizard_train_ds,
         monuseg_train_ds,
         puma_train_ds,
-        #tnbc_train_ds
-    )
-
-    generalist_hp_val_dataset = ConcatDataset(
+        tnbc_train_ds,
         pannuke_val_ds,
         cpm15_val_ds,
         cpm17_val_ds,
@@ -138,7 +129,32 @@ def get_concat_hp_datasets(path, patch_shape):
         lizard_val_ds,
         monuseg_val_ds,
         puma_val_ds,
-        #tnbc_val_ds
+        tnbc_val_ds
+    ]
+
+    for train_dataset in training_datasets:
+        print(f'{str(train_dataset)} has a length of {len(train_dataset)}')
+
+    generalist_hp_train_dataset = ConcatDataset(
+        lizard_train_ds,
+        pannuke_train_ds,
+        cpm15_train_ds,
+        cpm17_train_ds,
+        janowczyk_train_ds,
+        monuseg_train_ds,
+        puma_train_ds,
+        # tnbc_train_ds
+    )
+
+    generalist_hp_val_dataset = ConcatDataset(
+        lizard_val_ds,
+        pannuke_val_ds,
+        cpm15_val_ds,
+        cpm17_val_ds,
+        janowczyk_val_ds,
+        monuseg_val_ds,
+        puma_val_ds,
+        # tnbc_val_ds
     )
 
 
