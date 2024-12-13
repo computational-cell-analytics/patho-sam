@@ -13,6 +13,9 @@ from torch_em.transform.raw import standardize
 from torch_em.data import datasets, MinInstanceSampler, ConcatDataset
 
 
+import micro_sam.training as sam_training
+from torch_em.transform.label import PerObjectDistanceTransform
+print('test1')
 """NOTE: test sets for in-domain histopathology evaluation
     - monuseg test split
     - monusac test split
@@ -26,114 +29,150 @@ length of individual loaders: @all (3 channel input images)
     - pannuke: train - 1294;  val - 680
 """
 
-
-def _get_train_val_split(ds, val_fraction: float = 0.2):
+def _get_train_val_split(ds, val_fraction: float = 0.2, test_exists=True):
+    if not test_exists:
+        ds, _ = _get_train_test_split(ds=ds)
     generator = torch.Generator().manual_seed(42)
     train_ds, val_ds = data_util.random_split(ds, [1 - val_fraction, val_fraction], generator=generator)
     return train_ds, val_ds
 
-
-class BCSSLabelTrafo:
-    def __init__(self, label_choices: Optional[List[int]] = None, do_connected_components: bool = False):
-        self.label_choices = label_choices
-        self.do_connected_components = do_connected_components
-
-    def __call__(self, labels: np.ndarray) -> np.ndarray:
-        """Returns the transformed bcss data labels (use-case for SAM)"""
-        if self.label_choices is not None:
-            labels[~np.isin(labels, self.label_choices)] = 0
-
-        if self.do_connected_components:
-            segmentation = measure.label(labels)
-        else:
-            segmentation = label_consecutive_trafo(labels)
-
-        return segmentation
+def _get_train_test_split(ds, test_fraction: float = 0.2):
+    generator = torch.Generator().manual_seed(42)
+    train_split, test_split = data_util.random_split(ds, [1 - test_fraction, test_fraction], generator=generator)
+    return train_split, test_split
 
 
-def raw_padding_trafo(raw, desired_shape=(3, 512, 512)):
-    assert raw.shape[0] == 3, "The input shape isn't channels first, expected: (3, H, W)"
-    raw = standardize(raw)
-    tmp_ddim = (desired_shape[1] - raw.shape[1], desired_shape[2] - raw.shape[2])
-    ddim = (tmp_ddim[0] / 2, tmp_ddim[1] / 2)
-    raw = np.pad(
-        raw,
-        pad_width=((0, 0), (ceil(ddim[0]), floor(ddim[0])), (ceil(ddim[1]), floor(ddim[1]))),
-        mode="reflect"
-    )
-    assert raw.shape == desired_shape
-    return raw
+# def raw_padding_trafo(raw, desired_shape=(3, 512, 512)):
+#     assert raw.shape[0] == 3, "The input shape isn't channels first, expected: (3, H, W)"
+#     tmp_ddim = (desired_shape[1] - raw.shape[1], desired_shape[2] - raw.shape[2])
+#     ddim = (tmp_ddim[0] / 2, tmp_ddim[1] / 2)
+#     raw = np.pad(
+#         raw,
+#         pad_width=((0, 0), (ceil(ddim[0]), floor(ddim[0])), (ceil(ddim[1]), floor(ddim[1]))),
+#         mode="constant"
+#     )
+#     assert raw.shape == desired_shape
+#     return raw
 
 
-def label_padding_trafo(labels, desired_shape=(512, 512)):
-    tmp_ddim = (desired_shape[0] - labels.shape[0], desired_shape[1] - labels.shape[1])
-    ddim = (tmp_ddim[0] / 2, tmp_ddim[1] / 2)
-    labels = np.pad(
-        labels,
-        pad_width=((ceil(ddim[0]), floor(ddim[0])), (ceil(ddim[1]), floor(ddim[1]))),
-        mode="reflect"
-    )
-    assert labels.shape == desired_shape
-    labels = label_consecutive_trafo(labels)
-    return labels
+# def label_padding_trafo(labels, desired_shape=(512, 512)):
+#     tmp_ddim = (desired_shape[0] - labels.shape[0], desired_shape[1] - labels.shape[1])
+#     ddim = (tmp_ddim[0] / 2, tmp_ddim[1] / 2)
+#     labels = np.pad(
+#         labels,
+#         pad_width=((ceil(ddim[0]), floor(ddim[0])), (ceil(ddim[1]), floor(ddim[1]))),
+#         mode="constant"
+#     )
+#     assert labels.shape == desired_shape
+#     labels = label_consecutive_trafo(labels)
+#     return labels
 
 
-def label_consecutive_trafo(labels):
-    labels = labels.astype(int)
-    labels = torch_em.transform.label.label_consecutive(labels)  # to ensure consecutive IDs
-    return labels
+# def label_consecutive_trafo(labels):
+#     labels = labels.astype(int)
+#     labels = torch_em.transform.label.label_consecutive(labels)  # to ensure consecutive IDs
+#     return labels
 
 
 def get_concat_hp_datasets(path, patch_shape):
     label_dtype = torch.int64
     sampler = MinInstanceSampler(min_num_instances=3)
-    #datasets: CPM15, CPM17, Janowczyk, Lizard, PanNuke, PUMA, TNBC, MoNuSeg #### Lynsec? 
-    # make lizard dataset splits into fractions
-    cpm17_ds = datasets.get_cpm_dataset(
-        path=os.path.join(path, "cpm"), patch_shape=patch_shape, sampler=sampler, label_dtype=label_dtype,
-        raw_transform=raw_padding_trafo, data_choice='cpm17', label_transform=label_padding_trafo
+    raw_transform = sam_training.identity
+    label_transform = PerObjectDistanceTransform(
+        distances=True, boundary_distances=True, directed_distances=False, foreground=True, instances=True, min_size=25
     )
-    cpm17_train_ds, cpm17_val_ds = _get_train_val_split(ds=cpm17_ds)
+
+    # datasets: CPM15, CPM17, Janowczyk, Lizard, PanNuke, PUMA, TNBC, MoNuSeg 
+    cpm15_ds = datasets.get_cpm_dataset(
+        path=os.path.join(path, "cpm15"), patch_shape=patch_shape, sampler=sampler, label_dtype=label_dtype,
+        raw_transform=raw_transform, data_choice='cpm15', label_transform=label_transform
+    )
+    cpm15_train_ds, cpm15_val_ds = _get_train_val_split(ds=cpm15_ds, test_exists=False)
+
+
+    cpm17_ds = datasets.get_cpm_dataset(
+       path=os.path.join(path, "cpm17"), patch_shape=patch_shape, sampler=sampler, label_dtype=label_dtype,
+       raw_transform=raw_transform, data_choice='cpm17', label_transform=label_transform
+    )
+    cpm17_train_ds, cpm17_val_ds = _get_train_val_split(ds=cpm17_ds, test_exists=False)
+
+
+    janowczyk_ds = datasets.get_janowczyk_dataset(
+        path=os.path.join(path, "janowczyk"), patch_shape=patch_shape, sampler=sampler, download=True, label_dtype=label_dtype,
+        raw_transform=raw_transform, annotation="nuclei", label_transform=label_transform
+    )
+    janowczyk_train_ds, janowczyk_val_ds = _get_train_val_split(ds=janowczyk_ds, test_exists=False)
+
     
-    #janowczyk --> no pre-defined train/test
-
-
-
     lizard_train_ds = datasets.get_lizard_dataset(
-        path=os.path.join(path, "lizard"), patch_shape=patch_shape, sampler=sampler, label_dtype=label_dtype,
-        raw_transform=raw_padding_trafo, split='split1', label_transform=label_padding_trafo, ndim=2
+        path=os.path.join(path, "lizard"), patch_shape=patch_shape, download=True, sampler=sampler, label_dtype=label_dtype,
+        split='train', label_transform=label_consecutive_trafo,
     )
     lizard_val_ds = datasets.get_lizard_dataset(
-        path=os.path.join(path, "lizard"), patch_shape=patch_shape, sampler=sampler, label_dtype=label_dtype,
-        raw_transform=raw_padding_trafo, split='split2', label_transform=label_padding_trafo, ndim=2
+        path=os.path.join(path, "lizard"), patch_shape=patch_shape, download=True, sampler=sampler, label_dtype=label_dtype,
+        raw_transform=raw_transform, split='val', label_transform=label_transform,
     )
 
-    # make monuseg train dataset splits into fractions
+
     monuseg_ds = datasets.get_monuseg_dataset(
-        path=os.path.join(path, "monuseg"), patch_shape=patch_shape, split="train", sampler=sampler,
-        label_transform=label_consecutive_trafo, ndim=2, label_dtype=label_dtype
+        path=os.path.join(path, "monuseg"), patch_shape=patch_shape, download=True, split="train", sampler=sampler,
+        label_transform=label_transform, label_dtype=label_dtype, ndim=2, raw_transform=raw_transform
     )
     monuseg_train_ds, monuseg_val_ds = _get_train_val_split(ds=monuseg_ds)
     
     
-    
-    # out of three folds (sets of data) of provided data, we use two for training and 1 for validation
     pannuke_train_ds = datasets.get_pannuke_dataset(
-        path=os.path.join(path, "pannuke"), patch_shape=(1, *patch_shape), sampler=sampler, folds=["fold_1", "fold_2"],
-        label_transform=label_padding_trafo, raw_transform=raw_padding_trafo, ndim=2, label_dtype=label_dtype
+        path=os.path.join(path, "pannuke"), patch_shape=(1, *patch_shape), download=True, sampler=sampler, folds=["fold_1"],
+        ndim=2, label_dtype=label_dtype, label_transform=label_transform, raw_transform=raw_transform
     )
     pannuke_val_ds = datasets.get_pannuke_dataset(
-        path=os.path.join(path, "pannuke"), patch_shape=(1, *patch_shape), sampler=sampler, folds=["fold_3"],
-        label_transform=label_padding_trafo, raw_transform=raw_padding_trafo, ndim=2, label_dtype=label_dtype
+        path=os.path.join(path, "pannuke"), patch_shape=(1, *patch_shape), download=True, sampler=sampler, folds=["fold_2"],
+        ndim=2, label_dtype=label_dtype, label_transform=label_transform, raw_transform=raw_transform
     )
+    
+
+    puma_ds = datasets.get_puma_dataset(
+        path=os.path.join(path, "puma"), patch_shape=patch_shape, download=True, sampler=sampler, 
+        label_transform=label_transform, raw_transform=raw_transform, label_dtype=label_dtype
+    )
+    puma_train_ds, puma_val_ds = _get_train_val_split(ds=puma_ds, test_exists=False)
+
+
+    tnbc_ds = datasets.get_tnbc_dataset(
+        path=os.path.join(path, "tnbc"), patch_shape=patch_shape, download=True, sampler=sampler, 
+        label_transform=label_transform, label_dtype=label_dtype, ndim=2, raw_transform=raw_transform
+    )
+    tnbc_train_ds, tnbc_val_ds = _get_train_val_split(tnbc_ds, test_exists=False)
+
+
+    # train_datasets = [monuseg_train_ds, pannuke_train_ds]
+
+    # for train_dataset in train_datasets:
+    #     loader = torch_em.get_data_loader(train_dataset, batch_size=2, shuffle=True, num_workers=16)
+    #     print(f'{str(train_dataset)} has a length of {len(loader)}')
 
     generalist_hp_train_dataset = ConcatDataset(
-        lizard_train_ds, monuseg_train_ds, pannuke_train_ds
+        pannuke_train_ds,
+        cpm15_train_ds,
+        cpm17_train_ds,
+        janowczyk_train_ds,
+        lizard_train_ds,
+        monuseg_train_ds,
+        puma_train_ds,
+        tnbc_train_ds
     )
 
     generalist_hp_val_dataset = ConcatDataset(
-        lizard_val_ds, monuseg_val_ds, pannuke_val_ds
+        pannuke_val_ds,
+        cpm15_val_ds,
+        cpm17_val_ds,
+        janowczyk_val_ds,
+        lizard_val_ds,
+        monuseg_val_ds,
+        puma_val_ds,
+        tnbc_val_ds
     )
+
 
     return generalist_hp_train_dataset, generalist_hp_val_dataset
 

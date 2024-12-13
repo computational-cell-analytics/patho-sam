@@ -4,6 +4,7 @@ from dataloaders import get_dataloaders
 from tqdm import tqdm
 from shutil import rmtree
 from util import dataloading_args
+from micro_sam.training.training import _check_loader
 
 DATASETS = ['cpm15', 'cpm17', 'cryonuseg', 'janowczyk', 'lizard', 'lynsec',
             'monusac', 'monuseg', 'nuinsseg', 'pannuke', 'puma', 'tnbc']
@@ -15,19 +16,21 @@ def load_datasets(path, datasets=DATASETS, patch_shape=(512, 512)):
             print(f'{dataset} dataset is loaded already.')
             continue
         counter = 1
-        if dataset in ['cpm15', 'cpm17']:
-            if not os.path.exists(os.path.join(path, dataset, dataset)):
-                print(f'Missing data! For the {dataset} dataset, data has to be downloaded in advance in the format path/{dataset}/{dataset}/Images \n'
-                      f'Dataset loading will skip {dataset} and continue with the remaining datasets.')
-                continue
+        # if dataset in ['cpm15', 'cpm17']:
+        #     if not os.path.exists(os.path.join(path, dataset, dataset)):
+        #         print(f'Missing data! For the {dataset} dataset, data has to be downloaded in advance in the format path/{dataset}/{dataset}/Images \n'
+        #               f'Dataset loading will skip {dataset} and continue with the remaining datasets.')
+        #         continue
         print(f'Loading {dataset} dataset...')
         dpath = os.path.join(path, dataset)
         os.makedirs(dpath, exist_ok=True)
-        if dataset not in ['lizard', 'monusac', 'monuseg', 'pannuke']:
+        if dataset not in ['lizard', 'monusac', 'monuseg', 'pannuke', 'cpm15', 'cpm17']:
             loaders = [get_dataloaders(patch_shape, dpath, dataset)]
+        elif dataset in ['cpm15', 'cpm17']:
+            loaders = [get_dataloaders(patch_shape, dpath, dataset, split=dataset)]
         elif dataset == 'lizard':
             loaders = []
-            for split in ['split1', 'split2', 'split3']:  # this represents all available splits
+            for split in ['train', 'val', 'test']:  # this represents all available splits
                 loaders.append(get_dataloaders(patch_shape, dpath, dataset, split))
         elif dataset == 'monusac':
             loaders = []
@@ -63,6 +66,8 @@ def load_datasets(path, datasets=DATASETS, patch_shape=(512, 512)):
                 counter += 1
         print(f'{dataset} dataset has successfully been loaded.')
     for dataset in datasets:
+        if dataset in ['cpm15', 'cpm17']:
+            continue
         if os.path.exists(os.path.join(path, dataset, 'loaded_dataset')):
             for entity in os.listdir(os.path.join(path, dataset)):
                 entity_path = os.path.join(path, dataset, entity)

@@ -7,11 +7,13 @@ from torch_em.data.datasets import (
 )
 from torch_em.data import MinInstanceSampler
 import micro_sam.training as sam_training
-
+from glob import glob
+import os
 
 def get_dataloaders(patch_shape, data_path, dataset, split=None, organ_type=None):
     raw_transform = sam_training.identity
     sampler = MinInstanceSampler(min_num_instances=3)
+
     if dataset == 'cpm15':
         loader = get_cpm_loader(
             path=data_path,
@@ -22,7 +24,6 @@ def get_dataloaders(patch_shape, data_path, dataset, split=None, organ_type=None
             sampler=sampler,
             data_choice='cpm15'
         )
-
     elif dataset == 'cpm17':
         loader = get_cpm_loader(
             path=data_path,
@@ -39,7 +40,7 @@ def get_dataloaders(patch_shape, data_path, dataset, split=None, organ_type=None
             path=data_path,
             patch_shape=(1,) + patch_shape,
             batch_size=1,
-            rater=['b1'],
+            rater='b1',
             download=True,
             raw_transform=raw_transform,
             sampler=sampler,
