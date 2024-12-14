@@ -7,7 +7,7 @@ import torch_em
 from torch_em.transform.label import PerObjectDistanceTransform
 from torch_em.data import datasets, MinInstanceSampler, ConcatDataset
 
-import micro_sam.training as sam_training
+from patho_sam.training import histopathology_identity
 
 
 def _get_train_val_split(ds, val_fraction=0.2, test_exists=True):
@@ -30,7 +30,7 @@ def get_concat_hp_datasets(path, patch_shape):
     sampler = MinInstanceSampler(min_num_instances=3)
 
     # raw and label transforms
-    raw_transform = sam_training.identity
+    raw_transform = histopathology_identity
     label_transform = PerObjectDistanceTransform(
         distances=True, boundary_distances=True, directed_distances=False,
         foreground=True, instances=True, min_size=25,
@@ -89,7 +89,7 @@ def get_concat_hp_datasets(path, patch_shape):
         path=os.path.join(path, "tnbc"), patch_shape=patch_shape, download=True, sampler=sampler,
         label_transform=label_transform, label_dtype=label_dtype, ndim=2, raw_transform=raw_transform
     )
-    tnbc_train_ds, tnbc_val_ds = _get_train_val_split(tnbc_ds, test_exists=False)  # NOTE: not used atm.
+    tnbc_train_ds, tnbc_val_ds = _get_train_val_split(tnbc_ds, test_exists=False)
 
     generalist_hp_train_dataset = ConcatDataset(
         lizard_train_ds,
@@ -99,7 +99,7 @@ def get_concat_hp_datasets(path, patch_shape):
         janowczyk_train_ds,
         monuseg_train_ds,
         puma_train_ds,
-        # tnbc_train_ds
+        tnbc_train_ds
     )
 
     generalist_hp_val_dataset = ConcatDataset(
@@ -110,7 +110,7 @@ def get_concat_hp_datasets(path, patch_shape):
         janowczyk_val_ds,
         monuseg_val_ds,
         puma_val_ds,
-        # tnbc_val_ds
+        tnbc_val_ds
     )
 
     return generalist_hp_train_dataset, generalist_hp_val_dataset
@@ -121,7 +121,7 @@ def get_generalist_hp_loaders(patch_shape, data_path):
     https://github.com/constantinpape/torch-em/tree/main/torch_em/data/datasets/histopathology
     It will automatically download all the datasets
 
-    NOTE: to remove / replace the datasets with another dataset, you need to add the datasets (for train and val splits)
+    NOTE: To remove / replace the datasets with another dataset, you need to add the datasets (for train and val splits)
     in `get_concat_hp_datasets`. The labels have to be in a label mask instance segmentation format.
     i.e. the tensors (inputs & masks) should be of same spatial shape, with each object in the mask having it's own ID.
     IMPORTANT: the ID 0 is reserved for background, and the IDs must be consecutive.
