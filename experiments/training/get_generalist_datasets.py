@@ -88,14 +88,10 @@ def get_concat_hp_datasets(path, patch_shape):
     
     
     pannuke_ds = datasets.get_pannuke_dataset(
-        path=os.path.join(path, "pannuke"), patch_shape=(1, *patch_shape), download=True, sampler=MinInstanceSampler(min_num_instances=3), folds=["fold_1", "fold_2"],
+        path=os.path.join(path, "pannuke"), patch_shape=(1, *patch_shape), download=True, sampler=sampler, folds=["fold_1", "fold_2"],
         ndim=2, label_dtype=label_dtype, label_transform=label_transform, raw_transform=raw_transform
     )
     pannuke_train_ds, pannuke_val_ds = _get_train_val_split(ds=pannuke_ds)
-    # pannuke_val_ds = datasets.get_pannuke_dataset(
-    #     path=os.path.join(path, "pannuke"), patch_shape=(1, *patch_shape), download=True, sampler=MinInstanceSampler(min_num_instances=3), folds=["fold_2"],
-    #     ndim=2, label_dtype=label_dtype, label_transform=label_transform, raw_transform=raw_transform
-    # )
 
     
 
@@ -131,9 +127,6 @@ def get_concat_hp_datasets(path, patch_shape):
         puma_val_ds,
         tnbc_val_ds
     ]
-
-    for train_dataset in training_datasets:
-        print(f'{str(train_dataset)} has a length of {len(train_dataset)}')
 
     generalist_hp_train_dataset = ConcatDataset(
         lizard_train_ds,
