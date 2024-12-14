@@ -1,14 +1,12 @@
-
-
 from torch_em.data.datasets import (
     get_cpm_loader, get_cryonuseg_loader, get_janowczyk_loader, get_lizard_loader,
     get_lynsec_loader, get_monusac_loader, get_monuseg_loader, get_nuinsseg_loader,
     get_pannuke_loader, get_puma_loader, get_tnbc_loader
 )
 from torch_em.data import MinInstanceSampler
+
 import micro_sam.training as sam_training
-from glob import glob
-import os
+
 
 def get_dataloaders(patch_shape, data_path, dataset, split=None, organ_type=None):
     raw_transform = sam_training.identity
@@ -90,7 +88,7 @@ def get_dataloaders(patch_shape, data_path, dataset, split=None, organ_type=None
             raw_transform=raw_transform,
             sampler=sampler,
             )
-        
+
     elif dataset == 'monuseg':
         loader = get_monuseg_loader(
             path=data_path,

@@ -1,20 +1,18 @@
 import os
-import tifffile as tiff
-from dataloaders import get_dataloaders
 from tqdm import tqdm
-from shutil import rmtree
-from util import dataloading_args
-import os
-from torch_em.data import datasets, MinInstanceSampler, ConcatDataset
-import torch.utils.data as data_util
-import micro_sam.training as sam_training
-import torch_em
+
+import tifffile as tiff
+
 import torch
 import torch.utils.data as data_util
 
+import torch_em
+from torch_em.data import datasets, MinInstanceSampler
 
+import micro_sam.training as sam_training
 
-
+from dataloaders import get_dataloaders
+from util import dataloading_args
 
 
 DATASETS = ['cpm15', 'cpm17', 'janowczyk', 'lizard',
@@ -28,13 +26,14 @@ def _get_train_val_split(ds, val_fraction: float = 0.2, test_exists=True):
     train_ds, val_ds = data_util.random_split(ds, [1 - val_fraction, val_fraction], generator=generator)
     return train_ds, val_ds, _
 
+
 def _get_train_test_split(ds, test_fraction: float = 0.2):
     generator = torch.Generator().manual_seed(42)
     train_split, test_split = data_util.random_split(ds, [1 - test_fraction, test_fraction], generator=generator)
     return train_split, test_split
 
-def load_datasets(path, dsets=DATASETS, patch_shape=(512, 512)):
-    
+
+def load_datasets(path, dsets=DATASETS, patch_shape=(512, 512)):    
     label_dtype = torch.int64
     sampler = MinInstanceSampler(min_num_instances=2)
     raw_transform = sam_training.identity
@@ -44,27 +43,23 @@ def load_datasets(path, dsets=DATASETS, patch_shape=(512, 512)):
         raw_transform=raw_transform, data_choice='cpm15'
     )
 
-
     cpm17_ds = datasets.get_cpm_dataset(
        path=os.path.join(path, "cpm17"), patch_shape=patch_shape, sampler=sampler, label_dtype=label_dtype,
        raw_transform=raw_transform, data_choice='cpm17'
     )
 
-
     janowczyk_ds = datasets.get_janowczyk_dataset(
-        path=os.path.join(path, "janowczyk"), patch_shape=patch_shape, sampler=sampler, download=True, 
+        path=os.path.join(path, "janowczyk"), patch_shape=patch_shape, sampler=sampler, download=True,
         label_dtype=label_dtype, raw_transform=raw_transform, annotation="nuclei"
     )
 
-
     puma_ds = datasets.get_puma_dataset(
-        path=os.path.join(path, "puma"), patch_shape=patch_shape, download=True, sampler=sampler, 
+        path=os.path.join(path, "puma"), patch_shape=patch_shape, download=True, sampler=sampler,
         raw_transform=raw_transform, label_dtype=label_dtype
     )
 
-
     tnbc_ds = datasets.get_tnbc_dataset(
-        path=os.path.join(path, "tnbc"), patch_shape=patch_shape, download=True, sampler=sampler, 
+        path=os.path.join(path, "tnbc"), patch_shape=patch_shape, download=True, sampler=sampler,
         label_dtype=label_dtype, ndim=2, raw_transform=raw_transform
     )
     for dataset in tqdm(dsets):
@@ -75,8 +70,7 @@ def load_datasets(path, dsets=DATASETS, patch_shape=(512, 512)):
         print(f'Loading {dataset} dataset...')
         dpath = os.path.join(path, dataset)
         os.makedirs(dpath, exist_ok=True)
-        
-        
+
         if dataset == 'cpm15':
             _, __, test_set = _get_train_val_split(cpm15_ds, test_exists=False)
             test_loader = torch_em.get_data_loader(test_set, batch_size=1, shuffle=True, num_workers=16)
@@ -93,7 +87,7 @@ def load_datasets(path, dsets=DATASETS, patch_shape=(512, 512)):
             for split in ['test']:
                 test_loader = get_dataloaders(patch_shape, dpath, dataset, split=split)
         elif dataset == 'pannuke':
-            folds = ['fold_3']  # this represents only fold3 for testing the model; other available folds: fold_1, fold_2
+            folds = ['fold_3']  # this represents only fold3 for testing the model
             test_loader = get_dataloaders(patch_shape, dpath, dataset, split=folds)
         elif dataset == 'puma':
             _, __, test_set = _get_train_val_split(puma_ds, test_exists=False)
@@ -113,8 +107,12 @@ def load_datasets(path, dsets=DATASETS, patch_shape=(512, 512)):
             tp_img = squeezed_image.transpose(1, 2, 0)
             if tp_img.shape[-1] == 4:  # deletes alpha channel if one exists
                 tp_img = tp_img[..., :-1]
-            if tp_img.shape != (patch_shape[0], patch_shape[1], 3):  # 3 tnbc images had a shape of (512, 512, 2) and had to be sorted out
-                print(f'Incorrect image shape of {tp_img.shape} in {os.path.join(image_output_path, f'{counter:04}.tiff')}')
+            # 3 tnbc images had a shape of (512, 512, 2) and had to be sorted out
+            if tp_img.shape != (patch_shape[0], patch_shape[1], 3):
+                print(
+                    f"Incorrect image shape of {tp_img.shape} in "
+                    f"{os.path.join(image_output_path, f'{counter:04}.tiff')}"
+                )
                 counter += 1
                 continue
             tiff.imwrite(os.path.join(image_output_path, f'{counter:04}.tiff'), tp_img)

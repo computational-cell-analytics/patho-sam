@@ -1,19 +1,19 @@
 import os
 from glob import glob
 from tqdm import tqdm
-from pathlib import Path
-from typing import List, Optional, Union
-import shutil
+from natsort import natsorted
+
 import numpy as np
 import pandas as pd
 import imageio.v3 as imageio
 from skimage.measure import label
-from natsort import natsorted
+
 from elf.evaluation import mean_segmentation_accuracy
 
 
 def _run_evaluation(gt_paths, prediction_paths, verbose=True):
-    assert len(gt_paths) == len(prediction_paths), f'label / prediction mismatch: {len(gt_paths)} / {len(prediction_paths)}'
+    assert len(gt_paths) == len(prediction_paths), \
+        f'label / prediction mismatch: {len(gt_paths)} / {len(prediction_paths)}'
     msas, sa50s, sa75s = [], [], []
 
     for gt_path, pred_path in tqdm(
@@ -34,7 +34,10 @@ def _run_evaluation(gt_paths, prediction_paths, verbose=True):
 
 
 def evaluate_all_datasets_hovernet(prediction_dir, label_dir, result_dir):
-    for dataset in ['cpm15', 'cpm17', 'cryonuseg', 'janowczyk', 'lizard', 'lynsec', 'monusac', 'monuseg', 'nuinsseg', 'pannuke', 'puma', 'tnbc']:
+    for dataset in [
+        'cpm15', 'cpm17', 'cryonuseg', 'janowczyk', 'lizard', 'lynsec',
+        'monusac', 'monuseg', 'nuinsseg', 'pannuke', 'puma', 'tnbc'
+    ]:
         gt_paths = natsorted(glob(os.path.join(label_dir, dataset, 'loaded_dataset/complete_dataset/labels/*.tiff')))
         for checkpoint in ['consep', 'cpm17', 'kumar', 'pannuke', 'monusac']:
             save_path = os.path.join(result_dir, dataset, checkpoint, 'ais_result.csv')
@@ -54,6 +57,8 @@ def evaluate_all_datasets_hovernet(prediction_dir, label_dir, result_dir):
             results.to_csv(save_path, index=False)
 
 
-evaluate_all_datasets_hovernet('/mnt/lustre-grete/usr/u12649/scratch/models/hovernet/inference',
-                               '/mnt/lustre-grete/usr/u12649/scratch/data/',
-                               '/mnt/lustre-grete/usr/u12649/scratch/models/hovernet/results')
+evaluate_all_datasets_hovernet(
+    '/mnt/lustre-grete/usr/u12649/scratch/models/hovernet/inference',
+    '/mnt/lustre-grete/usr/u12649/scratch/data/',
+    '/mnt/lustre-grete/usr/u12649/scratch/models/hovernet/results'
+)

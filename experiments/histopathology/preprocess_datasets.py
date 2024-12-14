@@ -1,17 +1,20 @@
 import os
 import random
 import shutil
-from natsort import natsorted
 from glob import glob
-import numpy as np
 from pathlib import Path
+from natsort import natsorted
+
+import numpy as np
+
 from skimage import io
 
+
 """ Script to create:
-    - a reproducable validation, training and test set from the root directory 
-    - evaluation directories for the segmentation modi: automatic instance segmentation, automatic mask generation, iterative prompting with and without boxes for each given model
-    - if prompt is set to True, labels without instances (just background) are removed in order for the iterative prompting evaluation to work
-     """
+- a reproducable validation, training and test set from the root directory 
+- evaluation directories for the segmentation mode: automatic instance segmentation, automatic mask generation, iterative prompting with and without boxes for each given model
+- if prompt is set to True, labels without instances (just background) are removed in order for the iterative prompting evaluation to work
+"""  # noqa
 
 
 def remove_empty_labels(path):
@@ -31,7 +34,10 @@ def remove_empty_labels(path):
     print(f'There are {label_len} images left')
 
 
-def create_val_split(directory, val_percentage=0.05, test_percentage=0.95, custom_name='standard_split', organ_type=None, split=None, random_seed=42):
+def create_val_split(
+    directory, val_percentage=0.05, test_percentage=0.95, custom_name='standard_split',
+    organ_type=None, split=None, random_seed=42
+):
     if split is None:
         path = os.path.join(directory, 'loaded_dataset/complete_dataset')
     else:
@@ -55,16 +61,22 @@ def create_val_split(directory, val_percentage=0.05, test_percentage=0.95, custo
     for split in splits:
         # assert not list(dst_paths[f"{split}_labels"].iterdir()), f"{split.capitalize()} labels split already exists"
         # assert not list(dst_paths[f"{split}_images"].iterdir()), f"{split.capitalize()} images split already exists"
-        if len(os.listdir(os.path.join(directory, 'loaded_dataset', 'complete_dataset', custom_name, f'{split}_images'))) > 0:
+        if len(
+            os.listdir(os.path.join(directory, 'loaded_dataset', 'complete_dataset', custom_name, f'{split}_images'))
+        ) > 0:
             print('Split already exists')
             return
+
     print('No pre-existing validation or test set was found. A validation set will be created.')
     val_count = max(round(len(image_list)*val_percentage), 1)
     test_count = round(len(image_list)*test_percentage)
     if round(len(image_list)*val_percentage) == 0:
         test_count -= 1
-    print(f'The validation set will consist of {val_count} images. \n'
-          f'The test set will consist of {test_count} images.')
+    print(
+        f'The validation set will consist of {val_count} images. \n'
+        f'The test set will consist of {test_count} images.'
+    )
+
     random.seed(random_seed)
     val_indices = random.sample(range(0, (len(image_list))), val_count)
     val_images = [image_list[x] for x in val_indices]
@@ -74,7 +86,9 @@ def create_val_split(directory, val_percentage=0.05, test_percentage=0.95, custo
         shutil.copy(label_path, dst_paths['val_labels'])
         image_list.remove(val_image)
         label_list.remove((os.path.join(labels_src_path, (os.path.basename(val_image)))))
-    assert len(os.listdir(dst_paths['val_labels'])) == len(os.listdir(dst_paths['val_images'])), 'label / image count mismatch in val set'
+    assert len(os.listdir(dst_paths['val_labels'])) == len(os.listdir(dst_paths['val_images'])), \
+        'label / image count mismatch in val set'
+
     test_indices = random.sample(range(0, (len(image_list))), test_count)
     if test_count > 0:
         test_images = [image_list[x] for x in test_indices]
@@ -85,14 +99,21 @@ def create_val_split(directory, val_percentage=0.05, test_percentage=0.95, custo
             label_list.remove((os.path.join(labels_src_path, (os.path.basename(test_image)))))
             shutil.copy(test_image, dst_paths['test_images'])
             shutil.copy(label_path, dst_paths['test_labels'])
-    assert len(os.listdir(dst_paths['test_labels'])) == len(os.listdir(dst_paths['test_images'])), 'label / image count mismatch in val set'
+
+    assert len(os.listdir(dst_paths['test_labels'])) == len(os.listdir(dst_paths['test_images'])), \
+        'label / image count mismatch in val set'
     # residual images are per default in the train set
     for train_image in image_list:
         label_path = os.path.join(labels_src_path, os.path.basename(train_image))
         shutil.copy(train_image, dst_paths['train_images'])
         shutil.copy(label_path, dst_paths['train_labels'])
-    assert len(os.listdir(dst_paths['train_labels'])) == len(os.listdir(dst_paths['train_images'])), 'label / image count mismatch in val set'
-    print(f'Train set: {len(os.listdir(dst_paths['train_images']))} images;  val set: {len(os.listdir(dst_paths['val_images']))} images; test set: {len(os.listdir(dst_paths['test_images']))}')
+    assert len(os.listdir(dst_paths['train_labels'])) == len(os.listdir(dst_paths['train_images'])), \
+        'label / image count mismatch in val set'
+    print(
+        f"Train set: {len(os.listdir(dst_paths['train_images']))} images; "
+        f" val set: {len(os.listdir(dst_paths['val_images']))} images; "
+        f"test set: {len(os.listdir(dst_paths['test_images']))}"
+    )
 
 
 def create_eval_directories(eval_path, dataset, models):
@@ -102,10 +123,16 @@ def create_eval_directories(eval_path, dataset, models):
 
 
 def preprocess_datasets(eval_path, data_path, model_names=['pannuke_sam', 'vanilla_sam'], prompt=False):
-    datasets = ['cpm15', 'cpm17', 'cryonuseg', 'janowczyk', 'lizard', 'lynsec', 'monusac', 'monuseg', 'nuinsseg', 'pannuke', 'puma', 'tnbc']
+    datasets = [
+        'cpm15', 'cpm17', 'cryonuseg', 'janowczyk', 'lizard', 'lynsec',
+        'monusac', 'monuseg', 'nuinsseg', 'pannuke', 'puma', 'tnbc'
+    ]
     for dataset in datasets:
-        #remove_empty_labels(os.path.join(data_path, dataset, 'loaded_dataset', 'complete_dataset'))
-        create_val_split(os.path.join(data_path, dataset), val_percentage=0.05, test_percentage=0.95, custom_name='standard_split', random_seed=42)
+        # remove_empty_labels(os.path.join(data_path, dataset, 'loaded_dataset', 'complete_dataset'))
+        create_val_split(
+            os.path.join(data_path, dataset), val_percentage=0.05,
+            test_percentage=0.95, custom_name='standard_split', random_seed=42
+        )
 
 
 preprocess_datasets(' ', '/mnt/lustre-grete/usr/u12649/scratch/data/test')

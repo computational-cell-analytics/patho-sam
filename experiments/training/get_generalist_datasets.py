@@ -32,7 +32,8 @@ def get_concat_hp_datasets(path, patch_shape):
     # raw and label transforms
     raw_transform = sam_training.identity
     label_transform = PerObjectDistanceTransform(
-        distances=True, boundary_distances=True, directed_distances=False, foreground=True, instances=True, min_size=0,
+        distances=True, boundary_distances=True, directed_distances=False,
+        foreground=True, instances=True, min_size=25,
     )
 
     # datasets used for training: CPM15, CPM17, Janowczyk, Lizard, MoNuSeg, PanNuke, PUMA, TNBC
@@ -49,7 +50,7 @@ def get_concat_hp_datasets(path, patch_shape):
     cpm17_train_ds, cpm17_val_ds = _get_train_val_split(ds=cpm17_ds, test_exists=False)
 
     janowczyk_ds = datasets.get_janowczyk_dataset(
-        path=os.path.join(path, "janowczyk"), patch_shape=patch_shape, sampler=sampler, download=True, 
+        path=os.path.join(path, "janowczyk"), patch_shape=patch_shape, sampler=sampler, download=True,
         label_dtype=label_dtype, raw_transform=raw_transform, annotation="nuclei", label_transform=label_transform
     )
     janowczyk_train_ds, janowczyk_val_ds = _get_train_val_split(ds=janowczyk_ds, test_exists=False)
@@ -79,7 +80,7 @@ def get_concat_hp_datasets(path, patch_shape):
     pannuke_train_ds, pannuke_val_ds = _get_train_val_split(ds=pannuke_ds)
 
     puma_ds = datasets.get_puma_dataset(
-        path=os.path.join(path, "puma"), patch_shape=patch_shape, download=True, sampler=sampler, 
+        path=os.path.join(path, "puma"), patch_shape=patch_shape, download=True, sampler=sampler,
         label_transform=label_transform, raw_transform=raw_transform, label_dtype=label_dtype
     )
     puma_train_ds, puma_val_ds = _get_train_val_split(ds=puma_ds, test_exists=False)

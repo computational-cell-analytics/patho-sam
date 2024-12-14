@@ -1,13 +1,17 @@
 import os
-import tifffile as tiff
-from dataloaders import get_dataloaders
 from tqdm import tqdm
 from shutil import rmtree
-from util import dataloading_args
-from micro_sam.training.training import _check_loader
 
-DATASETS = ['cpm15', 'cpm17', 'cryonuseg', 'janowczyk', 'lizard', 'lynsec',
-            'monusac', 'monuseg', 'nuinsseg', 'pannuke', 'puma', 'tnbc']
+import tifffile as tiff
+
+from util import dataloading_args
+from dataloaders import get_dataloaders
+
+
+DATASETS = [
+    'cpm15', 'cpm17', 'cryonuseg', 'janowczyk', 'lizard', 'lynsec',
+    'monusac', 'monuseg', 'nuinsseg', 'pannuke', 'puma', 'tnbc'
+]
 
 
 def load_datasets(path, datasets=DATASETS, patch_shape=(512, 512)):
@@ -18,9 +22,13 @@ def load_datasets(path, datasets=DATASETS, patch_shape=(512, 512)):
         counter = 1
         # if dataset in ['cpm15', 'cpm17']:
         #     if not os.path.exists(os.path.join(path, dataset, dataset)):
-        #         print(f'Missing data! For the {dataset} dataset, data has to be downloaded in advance in the format path/{dataset}/{dataset}/Images \n'
-        #               f'Dataset loading will skip {dataset} and continue with the remaining datasets.')
+        #         print(
+        #             f"Missing data! For the {dataset} dataset, data has to be downloaded in advance in "
+        #             f"the format path/{dataset}/{dataset}/Images. "
+        #             f"Dataset loading will skip {dataset} and continue with the remaining datasets."
+        #         )
         #         continue
+
         print(f'Loading {dataset} dataset...')
         dpath = os.path.join(path, dataset)
         os.makedirs(dpath, exist_ok=True)
@@ -42,7 +50,7 @@ def load_datasets(path, datasets=DATASETS, patch_shape=(512, 512)):
                 loaders.append(get_dataloaders(patch_shape, dpath, dataset, split=split))
         elif dataset == 'pannuke':
             loaders = []
-            folds = ['fold_3']  # this represents only fold3 for testing the model; other available folds: fold_1, fold_2
+            folds = ['fold_3']  # this represents only fold3 for testing the model
             loaders.append(get_dataloaders(patch_shape, dpath, dataset, split=folds))
         image_output_path = os.path.join(path, dataset, 'loaded_dataset/complete_dataset/images')
         label_output_path = os.path.join(path, dataset, 'loaded_dataset/complete_dataset/labels')
@@ -57,14 +65,20 @@ def load_datasets(path, datasets=DATASETS, patch_shape=(512, 512)):
                 tp_img = squeezed_image.transpose(1, 2, 0)
                 if tp_img.shape[-1] == 4:  # deletes alpha channel if one exists
                     tp_img = tp_img[..., :-1]
-                if tp_img.shape != (patch_shape[0], patch_shape[1], 3):  # 3 tnbc images had a shape of (512, 512, 2) and had to be sorted out
-                    print(f'Incorrect image shape of {tp_img.shape} in {os.path.join(image_output_path, f'{counter:04}.tiff')}')
+
+                # 3 tnbc images had a shape of (512, 512, 2) and had to be sorted out
+                if tp_img.shape != (patch_shape[0], patch_shape[1], 3):
+                    print(
+                        f"Incorrect image shape of {tp_img.shape} in "
+                        f"{os.path.join(image_output_path, '{counter:04}.tiff')}"
+                    )
                     counter += 1
                     continue
                 tiff.imwrite(os.path.join(image_output_path, f'{counter:04}.tiff'), tp_img)
                 tiff.imwrite(os.path.join(label_output_path, f'{counter:04}.tiff'), label_data)
                 counter += 1
         print(f'{dataset} dataset has successfully been loaded.')
+
     for dataset in datasets:
         if dataset in ['cpm15', 'cpm17']:
             continue

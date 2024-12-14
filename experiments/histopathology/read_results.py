@@ -8,7 +8,7 @@ EVAL_PATH = '/mnt/lustre-grete/usr/u12649/scratch/models/'
 DATASETS = [
     'pannuke', 'lynsec', 'cryonuseg', 'lizard', 'tnbc', 'monusac',
     'monuseg', 'puma', 'janowczyk', 'cpm15', 'cpm17', 'nuinsseg'
-    ]
+]
 
 
 def get_instance_results(path, model, checkpoint=None):
@@ -24,7 +24,9 @@ def get_instance_results(path, model, checkpoint=None):
         return
     for dataset in natsorted(DATASETS):
         if model == 'pannuke_sam':
-            csv_path = os.path.join(path, 'inference', dataset, 'instance/results/instance_segmentation_with_decoder.csv')
+            csv_path = os.path.join(
+                path, 'inference', dataset, 'instance/results/instance_segmentation_with_decoder.csv'
+            )
         else:
             csv_path = os.path.join(path, 'results', dataset, checkpoint, 'ais_result.csv')
         if not os.path.exists(csv_path):
@@ -46,11 +48,15 @@ def read_instance_csv(path, model_names):
         eval_path = os.path.join(path, model)
         if model == 'vanilla_sam':
             continue
+
         elif model == 'pannuke_sam':
             get_instance_results(eval_path, model)
+
         elif model == 'cellvit':
-            for checkpoint in ['256-x20', '256-x40', 'SAM-H-x20', 'SAM-H-x40']:  # iterates over specific cellvit checkpoints
+            # iterates over specific cellvit checkpoints
+            for checkpoint in ['256-x20', '256-x40', 'SAM-H-x20', 'SAM-H-x40']:
                 get_instance_results(eval_path, model, checkpoint)
+
         elif model == 'hovernet':
             for checkpoint in ['consep', 'cpm17', 'kumar', 'pannuke', 'monusac']:  # iterates over hovernet checkpoints
                 get_instance_results(eval_path, model, checkpoint)
@@ -172,9 +178,8 @@ def get_comparison_csv(mode):
 
 
 def main():
-    
     read_instance_csv(EVAL_PATH, MODEL_NAMES)
-    #read_amg_csv(EVAL_PATH, MODEL_NAME)
+    # read_amg_csv(EVAL_PATH, MODEL_NAME)
 
     # read_it_boxes_csv(eval_path, model_name)
     # read_it_points_csv(eval_path)

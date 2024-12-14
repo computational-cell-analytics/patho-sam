@@ -10,7 +10,7 @@ from get_generalist_datasets import get_generalist_hp_loaders
 
 
 def finetune_generalist(args):
-    """Example code for finetuning SAM on histopathology dataset"""
+    """Example code for finetuning SAM on histopathology datasets."""
     # override this (below) if you have some more complex set-up and need to specify the exact gpu
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
@@ -66,7 +66,7 @@ def main():
     )
     parser.add_argument(
         "--iterations", type=int, default=int(5e4),
-        help="For how many iterations should the model be trained? By default 100k."
+        help="For how many iterations should the model be trained? By default 50k."
     )
     parser.add_argument(
         "--export_path", "-e",

@@ -1,6 +1,8 @@
 import os
-from micro_sam.evaluation.evaluation import run_evaluation
+
 from micro_sam.evaluation.inference import run_amg
+from micro_sam.evaluation.evaluation import run_evaluation
+
 from util import get_default_arguments, get_pred_paths, VANILLA_MODELS, get_test_paths, get_val_paths
 
 

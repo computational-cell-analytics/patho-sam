@@ -3,8 +3,8 @@ import os
 from micro_sam.evaluation.evaluation import run_evaluation
 from micro_sam.evaluation.inference import run_instance_segmentation_with_decoder
 
-
 from util import get_pred_paths, get_default_arguments, VANILLA_MODELS, get_test_paths, get_val_paths
+
 
 def run_instance_segmentation_with_decoder_inference(model_type, checkpoint, experiment_folder, dataset, input_path):
     val_image_paths, val_gt_paths = get_val_paths(input_path, dataset)

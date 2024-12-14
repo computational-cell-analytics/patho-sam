@@ -4,8 +4,8 @@ from glob import glob
 from micro_sam.util import get_sam_model
 from natsort import natsorted
 
-ROOT = "/scratch/projects/nim00007/sam/data/"
 
+ROOT = "/scratch/projects/nim00007/sam/data/"
 EXPERIMENT_ROOT = "/scratch/projects/nim00007/sam/experiments/new_models"
 
 VANILLA_MODELS = {
@@ -17,13 +17,8 @@ VANILLA_MODELS = {
 
 
 def get_dataset_paths(dataset_name, split_choice):
-    # let's check if we have a particular naming logic to save the images
-    try:
-        file_search_specs = FILE_SPECS[dataset_name][split_choice]
-        is_explicit_split = False
-    except KeyError:
-        file_search_specs = "*"
-        is_explicit_split = True
+    file_search_specs = "*"
+    is_explicit_split = True
 
     # if the datasets have different modalities/species, let's make use of it
     split_names = dataset_name.split("/")
@@ -60,12 +55,12 @@ def get_default_arguments():
     parser.add_argument(
         "-m", "--model", type=str, required=True, help="Provide the model type to initialize the predictor"
     )
-    parser.add_argument("-c", "--checkpoint", type=none_or_str, default=None) #expects best.pt
-    parser.add_argument("-e", "--experiment_folder", type=str, required=True) #empty directory for saving the output
-    parser.add_argument("-d", "--dataset", type=str, required=True, default=None) #defines dataset, mandatory
+    parser.add_argument("-c", "--checkpoint", type=none_or_str, default=None)  # expects best.pt
+    parser.add_argument("-e", "--experiment_folder", type=str, required=True)  # empty directory for saving the output
+    parser.add_argument("-d", "--dataset", type=str, required=True, default=None)  # defines dataset, mandatory
     parser.add_argument("-i", "--input_path", type=str, required=True, default=None)
-    parser.add_argument("--organ", type=str, required=False, default=None) #optionally defines organ class to access. If empty, whole dataset is used
-    parser.add_argument("--box", action="store_true", help="If passed, starts with first prompt as box") #otherwise, point
+    parser.add_argument("--organ", type=str, required=False, default=None)  # to access organ class or all dataset.
+    parser.add_argument("--box", action="store_true", help="If passed, starts with first prompt as box")
     parser.add_argument(
         "--use_masks", action="store_true", help="To use logits masks for iterative prompting." 
     )

@@ -1,8 +1,8 @@
-
 import os
 from glob import glob
-from natsort import natsorted
 from tqdm import tqdm
+from natsort import natsorted
+
 import imageio
 from scipy.io import loadmat
 

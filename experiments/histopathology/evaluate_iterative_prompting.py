@@ -2,6 +2,7 @@ import os
 
 from micro_sam.evaluation import inference
 from micro_sam.evaluation.evaluation import run_evaluation_for_iterative_prompting
+
 from util import get_model, get_default_arguments, get_test_paths
 
 
@@ -45,7 +46,9 @@ def main():
     prediction_root = _run_iterative_prompting(
         args.experiment_folder, predictor, start_with_box_prompt, args.use_masks, args.dataset, args.input_path
     )
-    _evaluate_iterative_prompting(prediction_root, start_with_box_prompt, args.experiment_folder, args.dataset, args.input_path)
+    _evaluate_iterative_prompting(
+        prediction_root, start_with_box_prompt, args.experiment_folder, args.dataset, args.input_path
+    )
 
 
 if __name__ == "__main__":
