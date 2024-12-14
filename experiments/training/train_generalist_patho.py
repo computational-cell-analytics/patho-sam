@@ -3,10 +3,9 @@ import argparse
 
 import torch
 
-from torch_em.transform.label import PerObjectDistanceTransform
-
 import micro_sam.training as sam_training
 from micro_sam.util import export_custom_sam_model
+
 from get_generalist_datasets import get_generalist_hp_loaders
 
 
@@ -19,8 +18,7 @@ def finetune_generalist(args):
     model_type = args.model_type
     checkpoint_path = None  # override this to start training from a custom checkpoint
     patch_shape = (512, 512)  # the patch shape for training
-    n_objects_per_batch = args.n_objects  # the number of objects per batch that will be sampled (default: 25)
-    freeze_parts = args.freeze  # override this to freeze different parts of the model
+    n_objects_per_batch = args.n_objects  # the number of objects per batch that will be sampled
     checkpoint_name = f"{args.model_type}/patho_sam"
 
     # all the stuff we need for training
@@ -33,17 +31,14 @@ def finetune_generalist(args):
         model_type=model_type,
         train_loader=train_loader,
         val_loader=val_loader,
-        early_stopping=10,
         n_objects_per_batch=n_objects_per_batch,
         checkpoint_path=checkpoint_path,
-        freeze=freeze_parts,
         device=device,
         lr=1e-5,
         n_iterations=args.iterations,
         save_root=args.save_root,
         scheduler_kwargs=scheduler_kwargs,
-        save_every_kth_epoch=args.save_every_kth_epoch,
-        peft_kwargs={"rank": args.lora_rank} if args.lora_rank is not None else None,
+        verify_n_labels_in_loader=None,  # We verify all labels in the loader.
     )
 
     if args.export_path is not None:
@@ -56,7 +51,7 @@ def finetune_generalist(args):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Finetune Segment Anything for the LIVECell dataset.")
+    parser = argparse.ArgumentParser(description="Finetune Segment Anything for the Histopathology datasets.")
     parser.add_argument(
         "--input_path", "-i", default=None,
         help="The filepath to the datasets. If the data does not exist yet it will be downloaded."
@@ -78,18 +73,7 @@ def main():
         help="Where to export the finetuned model to. The exported model can be used in the annotation tools."
     )
     parser.add_argument(
-        "--freeze", type=str, nargs="+", default=None,
-        help="Which parts of the model to freeze for finetuning."
-    )
-    parser.add_argument(
-        "--save_every_kth_epoch", type=int, default=None,
-        help="To save every kth epoch while fine-tuning. Expects an integer value."
-    )
-    parser.add_argument(
         "--n_objects", type=int, default=40, help="The number of instances (objects) per batch used for finetuning."
-    )
-    parser.add_argument(
-        "--lora_rank", type=int, default=None, help="The rank for low rank adaptation of the attention layers."
     )
     args = parser.parse_args()
     finetune_generalist(args)
