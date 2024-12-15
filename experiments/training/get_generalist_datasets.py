@@ -27,13 +27,12 @@ def _get_train_test_split(ds, test_fraction=0.2):
 
 def get_concat_hp_datasets(path, patch_shape):
     label_dtype = torch.float32
-    sampler = MinInstanceSampler(min_num_instances=3)
+    sampler = MinInstanceSampler(min_num_instances=4)
 
     # raw and label transforms
     raw_transform = histopathology_identity
     label_transform = PerObjectDistanceTransform(
-        distances=True, boundary_distances=True, directed_distances=False,
-        foreground=True, instances=True, min_size=25,
+        distances=True, boundary_distances=True, directed_distances=False, foreground=True, instances=True, min_size=10,
     )
 
     # datasets used for training: CPM15, CPM17, Janowczyk, Lizard, MoNuSeg, PanNuke, PUMA, TNBC
