@@ -3,7 +3,7 @@ import pandas as pd
 from natsort import natsorted
 
 
-MODEL_NAMES = ['pannuke_sam', 'vanilla_sam', 'hovernet', 'cellvit']
+MODEL_NAMES = ['generalist_sam', 'pannuke_sam', 'vanilla_sam', 'hovernet', 'cellvit']
 EVAL_PATH = '/mnt/lustre-grete/usr/u12649/scratch/models/'
 DATASETS = [
     'pannuke', 'lynsec', 'cryonuseg', 'lizard', 'tnbc', 'monusac',
@@ -13,7 +13,7 @@ DATASETS = [
 
 def get_instance_results(path, model, checkpoint=None):
     result_dict = {'dataset': [], 'msa': [], 'sa50': [], 'sa75': []}
-    if model == 'pannuke_sam':
+    if model in ['generalist_sam', 'pannuke_sam']:
         os.makedirs(os.path.join(path, 'sum_results'), exist_ok=True)
         csv_out = os.path.join(path, 'sum_results', f'ais_{model}_results.csv')
     else:
@@ -23,7 +23,7 @@ def get_instance_results(path, model, checkpoint=None):
         print(f'{csv_out} already exists.')
         return
     for dataset in natsorted(DATASETS):
-        if model == 'pannuke_sam':
+        if model in ['generalist_sam', 'pannuke_sam']:
             csv_path = os.path.join(
                 path, 'inference', dataset, 'instance/results/instance_segmentation_with_decoder.csv'
             )
@@ -49,7 +49,7 @@ def read_instance_csv(path, model_names):
         if model == 'vanilla_sam':
             continue
 
-        elif model == 'pannuke_sam':
+        elif model in ['generalist_sam', 'pannuke_sam']:
             get_instance_results(eval_path, model)
 
         elif model == 'cellvit':
@@ -62,84 +62,98 @@ def read_instance_csv(path, model_names):
                 get_instance_results(eval_path, model, checkpoint)
 
 
-def read_amg_csv(path, model_name=None):
-    eval_path = os.path.join(f'/mnt/lustre-grete/usr/u12649/scratch/models/{model_name}_eval')
-    result_dict = {'dataset': [], 'msa': [], 'sa50': [], 'sa75': []}
-    for dataset in natsorted(DATASETS):
-        dataset_path = os.path.join(path, f'{dataset}_eval', 'amg/results/amg.csv')
-        if not os.path.exists(dataset_path):
+def read_amg_csv(path, model_names):
+    for model_name in model_names:
+        csv_path = os.path.join(path, model_name, 'sum_results', f'amg_{model_name}_results.csv')
+        if os.path.exists(csv_path):
+            print(f'{csv_path} already exists.')
             continue
+        eval_path = os.path.join(path, model_name, 'inference')
+        result_dict = {'dataset': [], 'msa': [], 'sa50': [], 'sa75': []}
+        for dataset in natsorted(DATASETS):
+            dataset_csv = os.path.join(eval_path, dataset, 'amg/results/amg.csv')
+            if not os.path.exists(dataset_csv):
+                continue
 
-        df = pd.read_csv(dataset_path)
-        result_dict['msa'].append(df.loc[0, 'mSA'])
-        result_dict['sa50'].append(df.loc[0, 'SA50'])
-        result_dict['sa75'].append(df.loc[0, 'SA75'])
-        result_dict['dataset'].append(dataset)
+            df = pd.read_csv(dataset_csv)
+            result_dict['msa'].append(df.loc[0, 'mSA'])
+            result_dict['sa50'].append(df.loc[0, 'SA50'])
+            result_dict['sa75'].append(df.loc[0, 'SA75'])
+            result_dict['dataset'].append(dataset)
 
-    df = pd.DataFrame(result_dict)
-    print('Results of amg evaluation:')
-    print(df.head(12))
-    csv_path = os.path.join(eval_path, f'amg_results_{model_name}_sam.csv')
-    df.to_csv(csv_path, index=False)
-    return df
+        df = pd.DataFrame(result_dict)
+        print('Results of amg evaluation:')
+        print(df.head(12))
+        os.makedirs(os.path.join(path, model_name, 'sum_results'), exist_ok=True)
+        df.to_csv(csv_path, index=False)
+        return df
 
 
-def read_it_boxes_csv(path, model_name=None):
-    eval_path = os.path.join(f'/mnt/lustre-grete/usr/u12649/scratch/models/{model_name}_eval')
-    result_dict = {
-        'dataset': [], 'msa_1st': [], 'msa_8th': [], 'sa50_1st': [], 'sa50_8th': [], 'sa75_1st': [], 'sa75_8th': []
-    }
-    for dataset in natsorted(DATASETS):
-        dataset_path = os.path.join(
-            path, f'{dataset}_eval', 'boxes/results/iterative_prompting_without_mask/iterative_prompts_start_box.csv'
-        )
-        if not os.path.exists(dataset_path):
+def read_it_boxes_csv(path, model_names=None):
+    for model_name in model_names:
+        eval_path = os.path.join(path, model_name, 'inference')
+        csv_path = os.path.join(path, model_name, 'sum_results', f'boxes_{model_name}_results.csv')
+        if os.path.exists(csv_path):
+            print(f'{csv_path} already exists.')
             continue
+        result_dict = {
+            'dataset': [], 'msa_1st': [], 'msa_8th': [], 'sa50_1st': [], 'sa50_8th': [], 'sa75_1st': [], 'sa75_8th': []
+        }
+        for dataset in natsorted(DATASETS):
+            dataset_csv = os.path.join(eval_path, dataset, 'boxes', 'results', 'iterative_prompting_without_mask', 'iterative_prompts_start_box.csv')
 
-        df = pd.read_csv(dataset_path)
-        result_dict['msa_1st'].append(df.loc[0, 'mSA'])
-        result_dict['sa50_1st'].append(df.loc[0, 'SA50'])
-        result_dict['sa75_1st'].append(df.loc[0, 'SA75'])
-        result_dict['msa_8th'].append(df.loc[7, 'mSA'])
-        result_dict['sa50_8th'].append(df.loc[7, 'SA50'])
-        result_dict['sa75_8th'].append(df.loc[7, 'SA75'])
-        result_dict['dataset'].append(dataset)
+            if not os.path.exists(dataset_csv):
+                continue
 
-    df = pd.DataFrame(result_dict)
-    print('Results of iterative prompting with boxes evaluation:')
-    print(df.head(12))
-    csv_path = os.path.join(eval_path, f'boxes_results_{model_name}.csv')
-    df.to_csv(csv_path, index=False)
-    return df
+            df = pd.read_csv(dataset_csv)
+            result_dict['msa_1st'].append(df.loc[0, 'mSA'])
+            result_dict['sa50_1st'].append(df.loc[0, 'SA50'])
+            result_dict['sa75_1st'].append(df.loc[0, 'SA75'])
+            result_dict['msa_8th'].append(df.loc[7, 'mSA'])
+            result_dict['sa50_8th'].append(df.loc[7, 'SA50'])
+            result_dict['sa75_8th'].append(df.loc[7, 'SA75'])
+            result_dict['dataset'].append(dataset)
+        df = pd.DataFrame(result_dict)
+        print('Results of iterative prompting with boxes evaluation:')
+        print(df.head(12))
+        csv_path = os.path.join(path, model_name, 'sum_results', f'boxes_{model_name}_results.csv')
+        os.makedirs(os.path.join(path, model_name, 'sum_results'), exist_ok=True)
+
+        df.to_csv(csv_path, index=False)
+        return df
 
 
-def read_it_points_csv(path, model_name=None):
-    eval_path = os.path.join(f'/mnt/lustre-grete/usr/u12649/scratch/models/{model_name}_eval')
-    result_dict = {
-        'dataset': [], 'msa_1st': [], 'msa_8th': [], 'sa50_1st': [], 'sa50_8th': [], 'sa75_1st': [], 'sa75_8th': []
-    }
-    for dataset in natsorted(DATASETS):
-        dataset_path = os.path.join(
-            path, f'{dataset}_eval', 'points/results/iterative_prompting_without_mask/iterative_prompts_start_point.csv'
-        )
-        if not os.path.exists(dataset_path):
+def read_it_points_csv(path, model_names=None):
+    for model_name in model_names:
+        csv_path = os.path.join(path, model_name, 'sum_results', f'points_{model_name}_results.csv')
+        if os.path.exists(csv_path):
+            print(f'{csv_path} already exists.')
             continue
+        eval_path = os.path.join(path, model_name, 'inference')
+        result_dict = {
+            'dataset': [], 'msa_1st': [], 'msa_8th': [], 'sa50_1st': [], 'sa50_8th': [], 'sa75_1st': [], 'sa75_8th': []
+        }
+        for dataset in natsorted(DATASETS):
+            dataset_csv = os.path.join(eval_path, dataset, 'points', 'results', 'iterative_prompting_without_mask', 'iterative_prompts_start_point.csv')
 
-        df = pd.read_csv(dataset_path)
-        result_dict['msa_1st'].append(df.loc[0, 'mSA'])
-        result_dict['sa50_1st'].append(df.loc[0, 'SA50'])
-        result_dict['sa75_1st'].append(df.loc[0, 'SA75'])
-        result_dict['msa_8th'].append(df.loc[7, 'mSA'])
-        result_dict['sa50_8th'].append(df.loc[7, 'SA50'])
-        result_dict['sa75_8th'].append(df.loc[7, 'SA75'])
-        result_dict['dataset'].append(dataset)
+            if not os.path.exists(dataset_csv):
+                continue
+            df = pd.read_csv(dataset_csv)
+            result_dict['msa_1st'].append(df.loc[0, 'mSA'])
+            result_dict['sa50_1st'].append(df.loc[0, 'SA50'])
+            result_dict['sa75_1st'].append(df.loc[0, 'SA75'])
+            result_dict['msa_8th'].append(df.loc[7, 'mSA'])
+            result_dict['sa50_8th'].append(df.loc[7, 'SA50'])
+            result_dict['sa75_8th'].append(df.loc[7, 'SA75'])
+            result_dict['dataset'].append(dataset)
 
-    df = pd.DataFrame(result_dict)
-    print('Results of iterative prompting with points evaluation:')
-    print(df.head(12))
-    csv_path = os.path.join(eval_path, f'points_results_{model_name}.csv')
-    df.to_csv(csv_path, index=False)
-    return df
+        df = pd.DataFrame(result_dict)
+        print('Results of iterative prompting with points evaluation:')
+        print(df.head(12))
+        os.makedirs(os.path.join(path, model_name, 'sum_results'), exist_ok=True)
+        
+        df.to_csv(csv_path, index=False)
+        return df
 
 
 def get_comparison_csv(mode):
@@ -179,10 +193,10 @@ def get_comparison_csv(mode):
 
 def main():
     read_instance_csv(EVAL_PATH, MODEL_NAMES)
-    # read_amg_csv(EVAL_PATH, MODEL_NAME)
+    read_amg_csv(EVAL_PATH, MODEL_NAMES)
 
-    # read_it_boxes_csv(eval_path, model_name)
-    # read_it_points_csv(eval_path)
+    read_it_boxes_csv(EVAL_PATH, MODEL_NAMES[:3])
+    read_it_points_csv(EVAL_PATH, MODEL_NAMES[:3])
     # get_comparison_csv('boxes')
 
 
