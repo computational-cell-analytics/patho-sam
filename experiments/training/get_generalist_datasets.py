@@ -10,19 +10,10 @@ from torch_em.data import datasets, MinInstanceSampler, ConcatDataset
 from patho_sam.training import histopathology_identity
 
 
-def _get_train_val_split(ds, val_fraction=0.2, test_exists=True):
-    if not test_exists:
-        ds, _ = _get_train_test_split(ds=ds)
-
+def _get_train_val_split(ds, val_fraction=0.2):
     generator = torch.Generator().manual_seed(42)
     train_ds, val_ds = data_util.random_split(ds, [1 - val_fraction, val_fraction], generator=generator)
     return train_ds, val_ds
-
-
-def _get_train_test_split(ds, test_fraction=0.2):
-    generator = torch.Generator().manual_seed(42)
-    train_split, test_split = data_util.random_split(ds, [1 - test_fraction, test_fraction], generator=generator)
-    return train_split, test_split
 
 
 def get_concat_hp_datasets(path, patch_shape):
@@ -36,17 +27,20 @@ def get_concat_hp_datasets(path, patch_shape):
     )
 
     # datasets used for training: CPM15, CPM17, Janowczyk, Lizard, MoNuSeg, PanNuke, PUMA, TNBC
-    cpm15_ds = datasets.get_cpm_dataset(
+    cpm15_train_ds = datasets.get_cpm_dataset(
         path=os.path.join(path, "cpm15"), patch_shape=patch_shape, sampler=sampler, label_dtype=label_dtype,
-        raw_transform=raw_transform, data_choice='cpm15', label_transform=label_transform
+        raw_transform=raw_transform, data_choice='cpm15',split='train', label_transform=label_transform
     )
-    cpm15_train_ds, cpm15_val_ds = _get_train_val_split(ds=cpm15_ds, test_exists=False)
+    cpm15_val_ds = datasets.get_cpm_dataset(
+        path=os.path.join(path, "cpm15"), patch_shape=patch_shape, sampler=sampler, label_dtype=label_dtype,
+        raw_transform=raw_transform, data_choice='cpm15',split='val', label_transform=label_transform
+    )
 
     cpm17_ds = datasets.get_cpm_dataset(
        path=os.path.join(path, "cpm17"), patch_shape=patch_shape, sampler=sampler, label_dtype=label_dtype,
-       raw_transform=raw_transform, data_choice='cpm17', label_transform=label_transform
+       raw_transform=raw_transform, data_choice='cpm17', split='train', label_transform=label_transform
     )
-    cpm17_train_ds, cpm17_val_ds = _get_train_val_split(ds=cpm17_ds, test_exists=False)
+    cpm17_train_ds, cpm17_val_ds = _get_train_val_split(ds=cpm17_ds)
 
     janowczyk_ds = datasets.get_janowczyk_dataset(
         path=os.path.join(path, "janowczyk"), patch_shape=patch_shape, sampler=sampler, download=True,
@@ -129,3 +123,7 @@ def get_generalist_hp_loaders(patch_shape, data_path):
     train_loader = torch_em.get_data_loader(generalist_train_dataset, batch_size=2, shuffle=True, num_workers=16)
     val_loader = torch_em.get_data_loader(generalist_val_dataset, batch_size=1, shuffle=True, num_workers=16)
     return train_loader, val_loader
+
+
+_, __ = get_generalist_hp_loaders((512, 512), '/mnt/lustre-grete/usr/u12649/scratch/data/cellvit')
+print(len(_))

@@ -20,11 +20,11 @@ def mat_to_tiff(path):
         os.remove(mpath)
 
 
-def run_inference(model_dir, input_dir, output_dir, type_info_path, chunk=False):
+def run_inference(model_dir, input_dir, output_dir, type_info_path):
     for dataset in ['cpm15', 'cpm17', 'cryonuseg', 'janowczyk', 'lizard', 'lynsec', 'monusac', 'monuseg', 'nuinsseg', 'pannuke', 'puma', 'tnbc']:
         for model in ['consep', 'cpm17', 'kumar', 'pannuke', 'monusac']:
             output_path = os.path.join(output_dir, dataset, model)
-            input_path = os.path.join(input_dir, dataset, 'loaded_dataset/complete_dataset/images')
+            input_path = os.path.join(input_dir, dataset, 'loaded_dataset/complete_dataset/eval_split/test_images')
             if os.path.exists(output_path):
                 continue
             os.makedirs(output_path, exist_ok=True)
@@ -48,8 +48,8 @@ def run_inference(model_dir, input_dir, output_dir, type_info_path, chunk=False)
                 "--type_info_path", f"{type_info}",
                 "--model_mode", f"{model_mode}",
                 "--model_path", f"{model_path}",
-                "--nr_inference_workers", "1",  
-                "--nr_post_proc_worker", "0",  # seemed necessary for computational feasibility with lizard and puma
+                "--nr_inference_workers", "2",  
+                "--nr_post_proc_worker", "0",
                 "tile",
                 "--input_dir", f"{input_path}",
                 "--output_dir", f"{output_path}",
@@ -67,4 +67,7 @@ def run_inference(model_dir, input_dir, output_dir, type_info_path, chunk=False)
 
 
 
-run_inference(model_dir='/mnt/lustre-grete/usr/u12649/scratch/models/models/hovernet/checkpoints', input_dir='/mnt/lustre-grete/usr/u12649/scratch/data', output_dir='/mnt/lustre-grete/usr/u12649/scratch/models/hovernet/inference/', type_info_path='/user/titus.griebel/u12649/hover_net/type_info.json')
+run_inference(model_dir='/mnt/lustre-grete/usr/u12649/scratch/models/models/hovernet/checkpoints', 
+              input_dir='/mnt/lustre-grete/usr/u12649/scratch/data/test', 
+              output_dir='/mnt/lustre-grete/usr/u12649/scratch/models/hovernet/inference', 
+              type_info_path='/user/titus.griebel/u12649/hover_net/type_info.json')

@@ -60,7 +60,7 @@ def run_inference(model_dir, input_dir, output_dir):
 
 run_inference(
     '/mnt/lustre-grete/usr/u12649/scratch/models/cellvit/checkpoints',
-    '/mnt/lustre-grete/usr/u12649/scratch/data',
+    '/mnt/lustre-grete/usr/u12649/scratch/data/test',
     '/mnt/lustre-grete/usr/u12649/scratch/models/cellvit/inference/'
 )
 

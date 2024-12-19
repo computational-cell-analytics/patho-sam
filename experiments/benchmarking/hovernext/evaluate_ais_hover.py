@@ -11,6 +11,11 @@ from skimage.measure import label
 from elf.evaluation import mean_segmentation_accuracy
 
 
+CHECKPOINTS = ['lizard_convnextv2_large', 'lizard_convnextv2_base',
+               'lizard_convnextv2_tiny', 'pannuke_convnextv2_tiny_1',
+               'pannuke_convnextv2_tiny_2',  'pannuke_convnextv2_tiny_3'
+               ]
+
 def _run_evaluation(gt_paths, prediction_paths, verbose=True):
     assert len(gt_paths) == len(prediction_paths), \
         f'label / prediction mismatch: {len(gt_paths)} / {len(prediction_paths)}'
@@ -39,11 +44,11 @@ def evaluate_all_datasets_hovernet(prediction_dir, label_dir, result_dir):
         'monusac', 'monuseg', 'nuinsseg', 'pannuke', 'puma', 'tnbc'
     ]:
         gt_paths = natsorted(glob(os.path.join(label_dir, dataset, 'loaded_dataset/complete_dataset/eval_split/test_labels/*.tiff')))
-        for checkpoint in ['consep', 'cpm17', 'kumar', 'pannuke', 'monusac']:
+        for checkpoint in CHECKPOINTS:
             save_path = os.path.join(result_dir, dataset, checkpoint, 'ais_result.csv')
             if os.path.exists(save_path):
                 continue
-            prediction_paths = natsorted(glob(os.path.join(prediction_dir, dataset, checkpoint, 'mat/', '*.tiff')))
+            prediction_paths = natsorted(glob(os.path.join(prediction_dir, dataset, checkpoint, '*.tiff')))
             if len(prediction_paths) == 0:
                 print(f'No predictions for {dataset} dataset on {checkpoint} checkpoint found')
                 continue
@@ -58,7 +63,7 @@ def evaluate_all_datasets_hovernet(prediction_dir, label_dir, result_dir):
 
 
 evaluate_all_datasets_hovernet(
-    '/mnt/lustre-grete/usr/u12649/scratch/models/hovernet/inference',
+    '/mnt/lustre-grete/usr/u12649/scratch/models/hovernext/inference',
     '/mnt/lustre-grete/usr/u12649/scratch/data/test',
-    '/mnt/lustre-grete/usr/u12649/scratch/models/hovernet/results'
+    '/mnt/lustre-grete/usr/u12649/scratch/models/hovernext/results'
 )
