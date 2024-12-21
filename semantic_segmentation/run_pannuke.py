@@ -63,7 +63,7 @@ def train_pannuke_semantic_segmentation(args):
     num_classes = 6  # available classes are [0, 1, 2, 3, 4, 5]
     checkpoint_path = args.checkpoint_path
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    checkpoint_name = f"{model_type}/pannuke"
+    checkpoint_name = f"{model_type}/pannuke_semantic"
 
     train_loader, val_loader = get_dataloaders(
         patch_shape=(1, 256, 256), data_path=os.path.join(args.input_path, "pannuke")
@@ -97,8 +97,8 @@ def train_pannuke_semantic_segmentation(args):
             model_params.append(params)
 
     # All other stuff we need for training
-    optimizer = torch.optim.AdamW(model_params, lr=1e-5)
-    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.9, patience=10)
+    optimizer = torch.optim.AdamW(model_params, lr=1e-4)
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.9, patience=5)
 
     # This class creates all the training data for each batch (inputs and semantic labels)
     convert_inputs = sam_training.util.ConvertToSemanticSamInputs()
@@ -113,7 +113,7 @@ def train_pannuke_semantic_segmentation(args):
         optimizer=optimizer,
         device=device,
         lr_scheduler=scheduler,
-        log_image_interval=100,
+        log_image_interval=10,
         mixed_precision=True,
         compile_model=False,
         convert_inputs=convert_inputs,
@@ -130,7 +130,6 @@ def main(args):
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser()
-
     parser.add_argument("-i", "--input_path", default="/mnt/vast-nhr/projects/cidas/cca/test/data", type=str)
     parser.add_argument("-m", "--model_type", default="vit_b", type=str)
     parser.add_argument("-c", "--checkpoint_path", default=None, type=str)

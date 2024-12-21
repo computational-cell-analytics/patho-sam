@@ -1,6 +1,6 @@
 import torch
 
-from micro_sam.training import SemanticSamTrainer 
+from micro_sam.training import SemanticSamTrainer
 
 
 class SemanticInstanceTrainer(SemanticSamTrainer):
