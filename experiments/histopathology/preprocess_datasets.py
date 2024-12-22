@@ -17,7 +17,7 @@ from skimage import io
 
 def remove_empty_labels(path):
     empty_count = 0
-    file_list = natsorted(glob(os.path.join(path, "labels", "*.tiff")))
+    file_list = natsorted(glob(os.path.join(path, "*.tiff")))
     for image_path in file_list:
         img = io.imread(image_path)
         unique_elements = np.unique(img)

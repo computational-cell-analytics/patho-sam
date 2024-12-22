@@ -30,7 +30,7 @@ def get_concat_hp_datasets(path, patch_shape):
         min_size=10,
     )
 
-    # datasets used for training: CPM15, CPM17, Janowczyk, Lizard, MoNuSeg, PanNuke, PUMA, TNBC
+    # datasets used for training: CPM15, CPM17, Lizard, MoNuSeg, PanNuke, PUMA, TNBC
     cpm15_train_ds = datasets.get_cpm_dataset(
         path=os.path.join(path, "cpm15"),
         patch_shape=patch_shape,
@@ -63,18 +63,6 @@ def get_concat_hp_datasets(path, patch_shape):
         label_transform=label_transform,
     )
     cpm17_train_ds, cpm17_val_ds = _get_train_val_split(ds=cpm17_ds)
-
-    janowczyk_ds = datasets.get_janowczyk_dataset(
-        path=os.path.join(path, "janowczyk"),
-        patch_shape=patch_shape,
-        sampler=sampler,
-        download=True,
-        label_dtype=label_dtype,
-        raw_transform=raw_transform,
-        annotation="nuclei",
-        label_transform=label_transform,
-    )
-    janowczyk_train_ds, janowczyk_val_ds = _get_train_val_split(ds=janowczyk_ds, test_exists=False)
 
     lizard_train_ds = datasets.get_lizard_dataset(
         path=os.path.join(path, "lizard"),
@@ -123,35 +111,55 @@ def get_concat_hp_datasets(path, patch_shape):
     )
     pannuke_train_ds, pannuke_val_ds = _get_train_val_split(ds=pannuke_ds)
 
-    puma_ds = datasets.get_puma_dataset(
+    puma_train_ds = datasets.get_puma_dataset(
         path=os.path.join(path, "puma"),
         patch_shape=patch_shape,
         download=True,
         sampler=sampler,
+        split="train",
         label_transform=label_transform,
         raw_transform=raw_transform,
         label_dtype=label_dtype,
     )
-    puma_train_ds, puma_val_ds = _get_train_val_split(ds=puma_ds, test_exists=False)
+    puma_val_ds = datasets.get_puma_dataset(
+        path=os.path.join(path, "puma"),
+        patch_shape=patch_shape,
+        download=True,
+        sampler=sampler,
+        split="val",
+        label_transform=label_transform,
+        raw_transform=raw_transform,
+        label_dtype=label_dtype,
+    )
 
-    tnbc_ds = datasets.get_tnbc_dataset(
+    tnbc_train_ds = datasets.get_tnbc_dataset(
         path=os.path.join(path, "tnbc"),
         patch_shape=patch_shape,
         download=True,
+        sampler=sampler,
+        split="train",
+        label_transform=label_transform,
+        label_dtype=label_dtype,
+        ndim=2,
+        raw_transform=raw_transform,
+    )
+    tnbc_val_ds = datasets.get_tnbc_dataset(
+        path=os.path.join(path, "tnbc"),
+        patch_shape=patch_shape,
+        download=True,
+        split="val",
         sampler=sampler,
         label_transform=label_transform,
         label_dtype=label_dtype,
         ndim=2,
         raw_transform=raw_transform,
     )
-    tnbc_train_ds, tnbc_val_ds = _get_train_val_split(tnbc_ds, test_exists=False)
 
     generalist_hp_train_dataset = ConcatDataset(
         lizard_train_ds,
         pannuke_train_ds,
         cpm15_train_ds,
         cpm17_train_ds,
-        janowczyk_train_ds,
         monuseg_train_ds,
         puma_train_ds,
         tnbc_train_ds,
@@ -162,7 +170,6 @@ def get_concat_hp_datasets(path, patch_shape):
         pannuke_val_ds,
         cpm15_val_ds,
         cpm17_val_ds,
-        janowczyk_val_ds,
         monuseg_val_ds,
         puma_val_ds,
         tnbc_val_ds,
@@ -185,7 +192,3 @@ def get_generalist_hp_loaders(patch_shape, data_path):
     train_loader = torch_em.get_data_loader(generalist_train_dataset, batch_size=2, shuffle=True, num_workers=16)
     val_loader = torch_em.get_data_loader(generalist_val_dataset, batch_size=1, shuffle=True, num_workers=16)
     return train_loader, val_loader
-
-
-_, __ = get_generalist_hp_loaders((512, 512), "/mnt/lustre-grete/usr/u12649/scratch/data/cellvit")
-print(len(_))
