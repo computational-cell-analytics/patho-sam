@@ -2,10 +2,9 @@ import os
 
 import torch
 import torch.utils.data as data_util
-
 import torch_em
+from torch_em.data import ConcatDataset, MinInstanceSampler, datasets
 from torch_em.transform.label import PerObjectDistanceTransform
-from torch_em.data import datasets, MinInstanceSampler, ConcatDataset
 
 from patho_sam.training import histopathology_identity
 
@@ -23,64 +22,127 @@ def get_concat_hp_datasets(path, patch_shape):
     # raw and label transforms
     raw_transform = histopathology_identity
     label_transform = PerObjectDistanceTransform(
-        distances=True, boundary_distances=True, directed_distances=False, foreground=True, instances=True, min_size=10,
+        distances=True,
+        boundary_distances=True,
+        directed_distances=False,
+        foreground=True,
+        instances=True,
+        min_size=10,
     )
 
     # datasets used for training: CPM15, CPM17, Janowczyk, Lizard, MoNuSeg, PanNuke, PUMA, TNBC
     cpm15_train_ds = datasets.get_cpm_dataset(
-        path=os.path.join(path, "cpm15"), patch_shape=patch_shape, sampler=sampler, label_dtype=label_dtype,
-        raw_transform=raw_transform, data_choice='cpm15',split='train', label_transform=label_transform
+        path=os.path.join(path, "cpm15"),
+        patch_shape=patch_shape,
+        sampler=sampler,
+        label_dtype=label_dtype,
+        raw_transform=raw_transform,
+        data_choice="cpm15",
+        split="train",
+        label_transform=label_transform,
     )
     cpm15_val_ds = datasets.get_cpm_dataset(
-        path=os.path.join(path, "cpm15"), patch_shape=patch_shape, sampler=sampler, label_dtype=label_dtype,
-        raw_transform=raw_transform, data_choice='cpm15',split='val', label_transform=label_transform
+        path=os.path.join(path, "cpm15"),
+        patch_shape=patch_shape,
+        sampler=sampler,
+        label_dtype=label_dtype,
+        raw_transform=raw_transform,
+        data_choice="cpm15",
+        split="val",
+        label_transform=label_transform,
     )
 
     cpm17_ds = datasets.get_cpm_dataset(
-       path=os.path.join(path, "cpm17"), patch_shape=patch_shape, sampler=sampler, label_dtype=label_dtype,
-       raw_transform=raw_transform, data_choice='cpm17', split='train', label_transform=label_transform
+        path=os.path.join(path, "cpm17"),
+        patch_shape=patch_shape,
+        sampler=sampler,
+        label_dtype=label_dtype,
+        raw_transform=raw_transform,
+        data_choice="cpm17",
+        split="train",
+        label_transform=label_transform,
     )
     cpm17_train_ds, cpm17_val_ds = _get_train_val_split(ds=cpm17_ds)
 
     janowczyk_ds = datasets.get_janowczyk_dataset(
-        path=os.path.join(path, "janowczyk"), patch_shape=patch_shape, sampler=sampler, download=True,
-        label_dtype=label_dtype, raw_transform=raw_transform, annotation="nuclei", label_transform=label_transform
+        path=os.path.join(path, "janowczyk"),
+        patch_shape=patch_shape,
+        sampler=sampler,
+        download=True,
+        label_dtype=label_dtype,
+        raw_transform=raw_transform,
+        annotation="nuclei",
+        label_transform=label_transform,
     )
     janowczyk_train_ds, janowczyk_val_ds = _get_train_val_split(ds=janowczyk_ds, test_exists=False)
 
     lizard_train_ds = datasets.get_lizard_dataset(
-        path=os.path.join(path, "lizard"), patch_shape=patch_shape, download=True,
-        sampler=sampler, label_dtype=label_dtype, split='train',
-        label_transform=label_transform, raw_transform=raw_transform
+        path=os.path.join(path, "lizard"),
+        patch_shape=patch_shape,
+        download=True,
+        sampler=sampler,
+        label_dtype=label_dtype,
+        split="train",
+        label_transform=label_transform,
+        raw_transform=raw_transform,
     )
     lizard_val_ds = datasets.get_lizard_dataset(
-        path=os.path.join(path, "lizard"), patch_shape=patch_shape, download=True,
-        sampler=sampler, label_dtype=label_dtype, raw_transform=raw_transform,
-        split='val', label_transform=label_transform,
+        path=os.path.join(path, "lizard"),
+        patch_shape=patch_shape,
+        download=True,
+        sampler=sampler,
+        label_dtype=label_dtype,
+        raw_transform=raw_transform,
+        split="val",
+        label_transform=label_transform,
     )
 
     monuseg_ds = datasets.get_monuseg_dataset(
-        path=os.path.join(path, "monuseg"), patch_shape=patch_shape, download=True, split="train", sampler=sampler,
-        label_transform=label_transform, label_dtype=label_dtype, ndim=2, raw_transform=raw_transform
+        path=os.path.join(path, "monuseg"),
+        patch_shape=patch_shape,
+        download=True,
+        split="train",
+        sampler=sampler,
+        label_transform=label_transform,
+        label_dtype=label_dtype,
+        ndim=2,
+        raw_transform=raw_transform,
     )
     monuseg_train_ds, monuseg_val_ds = _get_train_val_split(ds=monuseg_ds)
 
     pannuke_ds = datasets.get_pannuke_dataset(
-        path=os.path.join(path, "pannuke"), patch_shape=(1, *patch_shape), download=True, sampler=sampler,
-        folds=["fold_1", "fold_2"], ndim=2, label_dtype=label_dtype, label_transform=label_transform,
-        raw_transform=raw_transform
+        path=os.path.join(path, "pannuke"),
+        patch_shape=(1, *patch_shape),
+        download=True,
+        sampler=sampler,
+        folds=["fold_1", "fold_2"],
+        ndim=2,
+        label_dtype=label_dtype,
+        label_transform=label_transform,
+        raw_transform=raw_transform,
     )
     pannuke_train_ds, pannuke_val_ds = _get_train_val_split(ds=pannuke_ds)
 
     puma_ds = datasets.get_puma_dataset(
-        path=os.path.join(path, "puma"), patch_shape=patch_shape, download=True, sampler=sampler,
-        label_transform=label_transform, raw_transform=raw_transform, label_dtype=label_dtype
+        path=os.path.join(path, "puma"),
+        patch_shape=patch_shape,
+        download=True,
+        sampler=sampler,
+        label_transform=label_transform,
+        raw_transform=raw_transform,
+        label_dtype=label_dtype,
     )
     puma_train_ds, puma_val_ds = _get_train_val_split(ds=puma_ds, test_exists=False)
 
     tnbc_ds = datasets.get_tnbc_dataset(
-        path=os.path.join(path, "tnbc"), patch_shape=patch_shape, download=True, sampler=sampler,
-        label_transform=label_transform, label_dtype=label_dtype, ndim=2, raw_transform=raw_transform
+        path=os.path.join(path, "tnbc"),
+        patch_shape=patch_shape,
+        download=True,
+        sampler=sampler,
+        label_transform=label_transform,
+        label_dtype=label_dtype,
+        ndim=2,
+        raw_transform=raw_transform,
     )
     tnbc_train_ds, tnbc_val_ds = _get_train_val_split(tnbc_ds, test_exists=False)
 
@@ -92,7 +154,7 @@ def get_concat_hp_datasets(path, patch_shape):
         janowczyk_train_ds,
         monuseg_train_ds,
         puma_train_ds,
-        tnbc_train_ds
+        tnbc_train_ds,
     )
 
     generalist_hp_val_dataset = ConcatDataset(
@@ -103,7 +165,7 @@ def get_concat_hp_datasets(path, patch_shape):
         janowczyk_val_ds,
         monuseg_val_ds,
         puma_val_ds,
-        tnbc_val_ds
+        tnbc_val_ds,
     )
 
     return generalist_hp_train_dataset, generalist_hp_val_dataset
@@ -125,5 +187,5 @@ def get_generalist_hp_loaders(patch_shape, data_path):
     return train_loader, val_loader
 
 
-_, __ = get_generalist_hp_loaders((512, 512), '/mnt/lustre-grete/usr/u12649/scratch/data/cellvit')
+_, __ = get_generalist_hp_loaders((512, 512), "/mnt/lustre-grete/usr/u12649/scratch/data/cellvit")
 print(len(_))

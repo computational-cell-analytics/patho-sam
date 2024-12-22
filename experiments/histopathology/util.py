@@ -1,9 +1,9 @@
-import os
 import argparse
+import os
 from glob import glob
+
 from micro_sam.util import get_sam_model
 from natsort import natsorted
-
 
 ROOT = "/scratch/projects/nim00007/sam/data/"
 EXPERIMENT_ROOT = "/scratch/projects/nim00007/sam/experiments/new_models"
@@ -12,7 +12,7 @@ VANILLA_MODELS = {
     "vit_t": "/scratch-grete/projects/nim00007/sam/models/vanilla/vit_t_mobile_sam.pth",
     "vit_b": "/scratch-grete/projects/nim00007/sam/models/vanilla/sam_vit_b_01ec64.pth",
     "vit_l": "/scratch-grete/projects/nim00007/sam/models/vanilla/sam_vit_l_0b3195.pth",
-    "vit_h": "/scratch-grete/projects/nim00007/sam/models/vanilla/sam_vit_h_4b8939.pth"
+    "vit_h": "/scratch-grete/projects/nim00007/sam/models/vanilla/sam_vit_h_4b8939.pth",
 }
 
 
@@ -61,9 +61,7 @@ def get_default_arguments():
     parser.add_argument("-i", "--input_path", type=str, required=True, default=None)
     parser.add_argument("--organ", type=str, required=False, default=None)  # to access organ class or all dataset.
     parser.add_argument("--box", action="store_true", help="If passed, starts with first prompt as box")
-    parser.add_argument(
-        "--use_masks", action="store_true", help="To use logits masks for iterative prompting." 
-    )
+    parser.add_argument("--use_masks", action="store_true", help="To use logits masks for iterative prompting.")
     args = parser.parse_args()
     return args
 
@@ -79,23 +77,23 @@ def dataloading_args():
 
 
 def none_or_str(value):
-    if value == 'None':
+    if value == "None":
         return None
     return value
 
 
 def get_val_paths(input_path, dataset):
-    path = os.path.join(input_path, dataset, 'loaded_dataset/complete_dataset/eval_split')
-    val_image_paths = natsorted(glob(os.path.join(path, 'val_images/*')))
-    val_label_paths = natsorted(glob(os.path.join(path, 'val_labels/*')))
+    path = os.path.join(input_path, dataset, "loaded_dataset/complete_dataset/eval_split")
+    val_image_paths = natsorted(glob(os.path.join(path, "val_images/*")))
+    val_label_paths = natsorted(glob(os.path.join(path, "val_labels/*")))
     print(len(val_image_paths), len(val_label_paths))
 
     return val_image_paths, val_label_paths
 
 
 def get_test_paths(input_path, dataset):
-    path = os.path.join(input_path, dataset, 'loaded_dataset/complete_dataset/eval_split')
-    test_image_paths = natsorted(glob(os.path.join(path, 'test_images/*')))
-    test_label_paths = natsorted(glob(os.path.join(path, 'test_labels/*')))
+    path = os.path.join(input_path, dataset, "loaded_dataset/complete_dataset/eval_split")
+    test_image_paths = natsorted(glob(os.path.join(path, "test_images/*")))
+    test_label_paths = natsorted(glob(os.path.join(path, "test_labels/*")))
     print(len(test_image_paths), len(test_label_paths))
     return test_image_paths, test_label_paths

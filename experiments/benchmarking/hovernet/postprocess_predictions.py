@@ -1,10 +1,11 @@
-import shutil
-from scipy.io import loadmat
 import os
-import imageio
-from tqdm import tqdm
-from natsort import natsorted
+import shutil
 from glob import glob
+
+import imageio
+from natsort import natsorted
+from scipy.io import loadmat
+from tqdm import tqdm
 
 
 def mat_to_tiff(path):
@@ -21,14 +22,27 @@ def mat_to_tiff(path):
 
 
 def postprocess_hovernet(output_dir):
-    for dataset in ['cpm15', 'cpm17', 'cryonuseg', 'janowczyk', 'lizard', 'lynsec', 'monusac', 'monuseg', 'nuinsseg', 'pannuke', 'puma', 'tnbc']:
-        for model in ['consep', 'cpm17', 'kumar', 'pannuke', 'monusac']:
+    for dataset in [
+        "cpm15",
+        "cpm17",
+        "cryonuseg",
+        "janowczyk",
+        "lizard",
+        "lynsec",
+        "monusac",
+        "monuseg",
+        "nuinsseg",
+        "pannuke",
+        "puma",
+        "tnbc",
+    ]:
+        for model in ["consep", "cpm17", "kumar", "pannuke", "monusac"]:
             output_path = os.path.join(output_dir, dataset, model)
-            mat_to_tiff(os.path.join(output_path, 'mat'))
-            shutil.rmtree(os.path.join(output_path, 'json'))
-            shutil.rmtree(os.path.join(output_path, 'overlay'))
-            if len(os.listdir(os.path.join(output_path, 'mat'))) == 0:
-                shutil.rmtree(os.path.join(output_path, 'mat'))
+            mat_to_tiff(os.path.join(output_path, "mat"))
+            shutil.rmtree(os.path.join(output_path, "json"))
+            shutil.rmtree(os.path.join(output_path, "overlay"))
+            if len(os.listdir(os.path.join(output_path, "mat"))) == 0:
+                shutil.rmtree(os.path.join(output_path, "mat"))
 
 
-postprocess_hovernet('/mnt/lustre-grete/usr/u12649/scratch/models/hovernet/inference')
+postprocess_hovernet("/mnt/lustre-grete/usr/u12649/scratch/models/hovernet/inference")

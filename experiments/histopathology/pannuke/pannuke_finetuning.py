@@ -1,12 +1,10 @@
-import os
 import argparse
-
-import torch
+import os
 
 import micro_sam.training as sam_training
-from micro_sam.util import export_custom_sam_model
-
+import torch
 from create_dataloaders import get_dataloaders
+from micro_sam.util import export_custom_sam_model
 
 
 def finetune_pannuke(args):
@@ -49,39 +47,50 @@ def finetune_pannuke(args):
             "" if args.save_root is None else args.save_root, "checkpoints", checkpoint_name, "best.pt"
         )
         export_custom_sam_model(
-            checkpoint_path=checkpoint_path, model_type=model_type, save_path=args.export_path,
+            checkpoint_path=checkpoint_path,
+            model_type=model_type,
+            save_path=args.export_path,
         )
 
 
 def main():
     parser = argparse.ArgumentParser(description="Finetune Segment Anything for the PanNuke dataset.")
     parser.add_argument(
-        "--input_path", "-i", default="/scratch/projects/nim00007/sam/data/pannuke/",
-        help="The filepath to the PanNuke data. If the data does not exist yet it will be downloaded."
+        "--input_path",
+        "-i",
+        default="/scratch/projects/nim00007/sam/data/pannuke/",
+        help="The filepath to the PanNuke data. If the data does not exist yet it will be downloaded.",
     )
     parser.add_argument(
-        "--model_type", "-m", default="vit_b",
-        help="The model type to use for fine-tuning. Either vit_t, vit_b, vit_l or vit_h."
+        "--model_type",
+        "-m",
+        default="vit_b",
+        help="The model type to use for fine-tuning. Either vit_t, vit_b, vit_l or vit_h.",
     )
     parser.add_argument(
-        "--save_root", "-s",
-        help="Where to save the checkpoint and logs. By default they will be saved where this script is run."
+        "--save_root",
+        "-s",
+        help="Where to save the checkpoint and logs. By default they will be saved where this script is run.",
     )
     parser.add_argument(
-        "--iterations", type=int, default=int(1e5),
-        help="For how many iterations should the model be trained? By default 100k."
+        "--iterations",
+        type=int,
+        default=int(1e5),
+        help="For how many iterations should the model be trained? By default 100k.",
     )
     parser.add_argument(
-        "--export_path", "-e",
-        help="Where to export the finetuned model to. The exported model can be used in the annotation tools."
+        "--export_path",
+        "-e",
+        help="Where to export the finetuned model to. The exported model can be used in the annotation tools.",
     )
     parser.add_argument(
-        "--freeze", type=str, nargs="+", default=None,
-        help="Which parts of the model to freeze for finetuning."
+        "--freeze", type=str, nargs="+", default=None, help="Which parts of the model to freeze for finetuning."
     )
     parser.add_argument(
-        "--save_every_kth_epoch", type=int, default=None,
-        help="To save every kth epoch while fine-tuning. Expects an integer value."
+        "--save_every_kth_epoch",
+        type=int,
+        default=None,
+        help="To save every kth epoch while fine-tuning. Expects an integer value.",
     )
     parser.add_argument(
         "--n_objects", type=int, default=25, help="The number of instances (objects) per batch used for finetuning."

@@ -1,9 +1,14 @@
 import os
 
-from micro_sam.evaluation.inference import run_amg
 from micro_sam.evaluation.evaluation import run_evaluation
-
-from util import get_default_arguments, get_pred_paths, VANILLA_MODELS, get_test_paths, get_val_paths
+from micro_sam.evaluation.inference import run_amg
+from util import (
+    VANILLA_MODELS,
+    get_default_arguments,
+    get_pred_paths,
+    get_test_paths,
+    get_val_paths,
+)
 
 
 def run_amg_inference(model_type, checkpoint, experiment_folder, dataset, input_path):
@@ -15,7 +20,7 @@ def run_amg_inference(model_type, checkpoint, experiment_folder, dataset, input_
         experiment_folder,
         val_image_paths,
         val_gt_paths,
-        test_image_paths
+        test_image_paths,
     )
     return prediction_folder
 

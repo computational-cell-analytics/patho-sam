@@ -2,14 +2,11 @@ import os
 
 from micro_sam.evaluation import inference
 from micro_sam.evaluation.evaluation import run_evaluation_for_iterative_prompting
-
-from util import get_model, get_default_arguments, get_test_paths
+from util import get_default_arguments, get_model, get_test_paths
 
 
 def _run_iterative_prompting(exp_folder, predictor, start_with_box_prompt, use_masks, dataset, input_path):
-    prediction_root = os.path.join(
-        exp_folder, "start_with_box" if start_with_box_prompt else "start_with_point"
-    )
+    prediction_root = os.path.join(exp_folder, "start_with_box" if start_with_box_prompt else "start_with_point")
     embedding_folder = os.path.join(exp_folder, "embeddings")
     image_paths, gt_paths = get_test_paths(input_path, dataset)
     inference.run_inference_with_iterative_prompting(
@@ -19,7 +16,7 @@ def _run_iterative_prompting(exp_folder, predictor, start_with_box_prompt, use_m
         embedding_dir=embedding_folder,
         prediction_dir=prediction_root,
         start_with_box_prompt=start_with_box_prompt,
-        use_masks=use_masks
+        use_masks=use_masks,
     )
     return prediction_root
 

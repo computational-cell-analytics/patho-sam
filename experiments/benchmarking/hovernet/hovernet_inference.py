@@ -1,11 +1,13 @@
-import subprocess
 import os
 import shutil
+import subprocess
 from glob import glob
-from natsort import natsorted
-from tqdm import tqdm
+
 import imageio
+from natsort import natsorted
 from scipy.io import loadmat
+from tqdm import tqdm
+
 
 def mat_to_tiff(path):
     label_mat_paths = [p for p in natsorted(glob(os.path.join(path, "*.mat")))]
@@ -21,53 +23,75 @@ def mat_to_tiff(path):
 
 
 def run_inference(model_dir, input_dir, output_dir, type_info_path):
-    for dataset in ['cpm15', 'cpm17', 'cryonuseg', 'janowczyk', 'lizard', 'lynsec', 'monusac', 'monuseg', 'nuinsseg', 'pannuke', 'puma', 'tnbc']:
-        for model in ['consep', 'cpm17', 'kumar', 'pannuke', 'monusac']:
+    for dataset in [
+        "cpm15",
+        "cpm17",
+        "cryonuseg",
+        "janowczyk",
+        "lizard",
+        "lynsec",
+        "monusac",
+        "monuseg",
+        "nuinsseg",
+        "pannuke",
+        "puma",
+        "tnbc",
+    ]:
+        for model in ["consep", "cpm17", "kumar", "pannuke", "monusac"]:
             output_path = os.path.join(output_dir, dataset, model)
-            input_path = os.path.join(input_dir, dataset, 'loaded_dataset/complete_dataset/eval_split/test_images')
+            input_path = os.path.join(input_dir, dataset, "loaded_dataset/complete_dataset/eval_split/test_images")
             if os.path.exists(output_path):
                 continue
             os.makedirs(output_path, exist_ok=True)
-            if model in ['consep', 'cpm17', 'kumar']:
-                model_mode = 'original'
-                model_path = os.path.join(model_dir, f'hovernet_original_{model}_notype_tf2pytorch.tar')
+            if model in ["consep", "cpm17", "kumar"]:
+                model_mode = "original"
+                model_path = os.path.join(model_dir, f"hovernet_original_{model}_notype_tf2pytorch.tar")
                 nr_types = 0
-                type_info = ''
+                type_info = ""
             else:
-                model_mode = 'fast'
+                model_mode = "fast"
 
-                model_path = os.path.join(model_dir, f'hovernet_fast_{model}_type_tf2pytorch.tar')
+                model_path = os.path.join(model_dir, f"hovernet_fast_{model}_type_tf2pytorch.tar")
                 type_info = type_info_path
-                if model == 'pannuke':
+                if model == "pannuke":
                     nr_types = 6
                 else:
                     nr_types = 5
 
             args = [
-                "--nr_types", f"{nr_types}",
-                "--type_info_path", f"{type_info}",
-                "--model_mode", f"{model_mode}",
-                "--model_path", f"{model_path}",
-                "--nr_inference_workers", "2",  
-                "--nr_post_proc_worker", "0",
+                "--nr_types",
+                f"{nr_types}",
+                "--type_info_path",
+                f"{type_info}",
+                "--model_mode",
+                f"{model_mode}",
+                "--model_path",
+                f"{model_path}",
+                "--nr_inference_workers",
+                "2",
+                "--nr_post_proc_worker",
+                "0",
                 "tile",
-                "--input_dir", f"{input_path}",
-                "--output_dir", f"{output_path}",
-                "--save_raw_map"
+                "--input_dir",
+                f"{input_path}",
+                "--output_dir",
+                f"{output_path}",
+                "--save_raw_map",
             ]
 
-            command = ['python3', '/user/titus.griebel/u12649/hover_net/run_infer.py'] + args
-            print(f'Running inference with HoVerNet {model} model on {dataset} dataset...')
+            command = ["python3", "/user/titus.griebel/u12649/hover_net/run_infer.py"] + args
+            print(f"Running inference with HoVerNet {model} model on {dataset} dataset...")
 
             subprocess.run(command)
-            mat_to_tiff(os.path.join(output_path, 'mat'))
-            shutil.rmtree(os.path.join(output_path, 'json'))
-            shutil.rmtree(os.path.join(output_path, 'overlay'))
-            print(f'Inference on {dataset} dataset with the HoVerNet {model} model successfully completed')
+            mat_to_tiff(os.path.join(output_path, "mat"))
+            shutil.rmtree(os.path.join(output_path, "json"))
+            shutil.rmtree(os.path.join(output_path, "overlay"))
+            print(f"Inference on {dataset} dataset with the HoVerNet {model} model successfully completed")
 
 
-
-run_inference(model_dir='/mnt/lustre-grete/usr/u12649/scratch/models/models/hovernet/checkpoints', 
-              input_dir='/mnt/lustre-grete/usr/u12649/scratch/data/test', 
-              output_dir='/mnt/lustre-grete/usr/u12649/scratch/models/hovernet/inference', 
-              type_info_path='/user/titus.griebel/u12649/hover_net/type_info.json')
+run_inference(
+    model_dir="/mnt/lustre-grete/usr/u12649/scratch/models/models/hovernet/checkpoints",
+    input_dir="/mnt/lustre-grete/usr/u12649/scratch/data/test",
+    output_dir="/mnt/lustre-grete/usr/u12649/scratch/models/hovernet/inference",
+    type_info_path="/user/titus.griebel/u12649/hover_net/type_info.json",
+)
