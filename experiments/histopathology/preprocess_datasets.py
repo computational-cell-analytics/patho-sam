@@ -40,15 +40,16 @@ def create_val_split(
     organ_type=None,
     split=None,
     random_seed=42,
+    dataset=None,
 ):
     if split is None:
-        path = os.path.join(directory, "loaded_dataset/complete_dataset")
+        path = os.path.join(directory, "loaded_testset")
     else:
         path = os.path.join(directory, split)
-    labels_src_path = Path(path) / "labels"
-    images_src_path = Path(path) / "images"
-    label_list = natsorted(glob(str(labels_src_path / "*.tiff")))
-    image_list = natsorted(glob(str(images_src_path / "*.tiff")))
+    labels_src_path = os.path.join(path, "labels")
+    images_src_path = os.path.join(path, "images")
+    label_list = natsorted(glob(os.path.join(labels_src_path, "*.tiff")))
+    image_list = natsorted(glob(os.path.join(images_src_path, "*.tiff")))
     assert len(label_list) == len(image_list), "Mismatch in labels and images"
     splits = ["val", "test", "train"]
     dst_paths = {f"{split}_labels": Path(path) / custom_name / f"{split}_labels" for split in splits}
@@ -58,23 +59,16 @@ def create_val_split(
     for split in splits:
         # assert not list(dst_paths[f"{split}_labels"].iterdir()), f"{split.capitalize()} labels split already exists"
         # assert not list(dst_paths[f"{split}_images"].iterdir()), f"{split.capitalize()} images split already exists"
-        if (
-            len(
-                os.listdir(
-                    os.path.join(directory, "loaded_dataset", "complete_dataset", custom_name, f"{split}_images")
-                )
-            )
-            > 0
-        ):
-            print("Split already exists")
+        if len(os.listdir(os.path.join(path, custom_name, f"{split}_images"))) > 0:
+            print(f"Split for {dataset} already exists")
             return
 
-    print("No pre-existing validation or test set was found. A validation set will be created.")
+    print(f"No pre-existing validation or test set for {dataset} was found. A validation set will be created.")
     val_count = max(round(len(image_list) * val_percentage), 1)
     test_count = len(image_list) - val_count
     print(
-        f"The validation set will consist of {val_count} images. \n"
-        f"The test set will consist of {test_count} images."
+        f"The validation set of {dataset} will consist of {val_count} images. \n"
+        f"The test set of {dataset} will consist of {test_count} images."
     )
 
     random.seed(random_seed)
@@ -119,14 +113,15 @@ def create_val_split(
     )
 
 
-def create_eval_directories(eval_path, dataset, models):
+def preprocess_datasets(data_path, model_names=None, prompt=False):
     datasets = [
         "cpm15",
         "cpm17",
         "cryonuseg",
-        "janowczyk",
+        # "janowczyk",
         "lizard",
-        "lynsec",
+        "lynsec_he",
+        "lynsec_ihc",
         "monusac",
         "monuseg",
         "nuinsseg",
@@ -135,38 +130,16 @@ def create_eval_directories(eval_path, dataset, models):
         "tnbc",
     ]
     for dataset in datasets:
-        for mode in ["instance", "boxes", "points", "amg"]:
-            os.makedirs(os.path.join(eval_path, dataset, mode), exist_ok=True)
-
-
-create_eval_directories("/mnt/lustre-grete/usr/u12649/scratch/models/generalist_sam/inference")
-
-
-def preprocess_datasets(eval_path, data_path, model_names=None, prompt=False):
-    datasets = [
-        "cpm15",
-        "cpm17",
-        "cryonuseg",
-        "janowczyk",
-        "lizard",
-        "lynsec",
-        "monusac",
-        "monuseg",
-        "nuinsseg",
-        "pannuke",
-        "puma",
-        "tnbc",
-    ]
-    for dataset in datasets:
-        print("Checking labels of dataset: ", dataset)
-        remove_empty_labels(os.path.join(data_path, dataset, "loaded_dataset", "complete_dataset"))
+        # print("Checking labels of dataset: ", dataset)
+        # remove_empty_labels(os.path.join(data_path, dataset, "loaded_dataset", "complete_dataset"))
         create_val_split(
             os.path.join(data_path, dataset),
             val_percentage=0.05,
             test_percentage=0.95,
             custom_name="eval_split",
             random_seed=42,
+            dataset=dataset,
         )
 
 
-# preprocess_datasets(' ', '/mnt/lustre-grete/usr/u12649/scratch/data/test')
+preprocess_datasets("/mnt/lustre-grete/usr/u12649/scratch/data/final_test")

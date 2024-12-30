@@ -5,18 +5,18 @@ from micro_sam.evaluation.inference import run_instance_segmentation_with_decode
 from util import VANILLA_MODELS, get_default_arguments, get_pred_paths, get_test_paths, get_val_paths
 
 
-def run_instance_segmentation_with_decoder_inference(model_type, checkpoint, experiment_folder, dataset, input_path):
-    val_image_paths, val_gt_paths = get_val_paths(input_path, dataset)
-    test_image_paths, _ = get_test_paths(input_path, dataset)
+def run_instance_segmentation_with_decoder_inference(model_type, checkpoint, experiment_folder, input_path):
+    val_image_paths, val_gt_paths = get_val_paths(input_path)
+    test_image_paths, _ = get_test_paths(input_path)
     prediction_folder = run_instance_segmentation_with_decoder(
         checkpoint, model_type, experiment_folder, val_image_paths, val_gt_paths, test_image_paths
     )
     return prediction_folder
 
 
-def eval_instance_segmentation_with_decoder(prediction_folder, experiment_folder, dataset, input_path):
+def eval_instance_segmentation_with_decoder(prediction_folder, experiment_folder, input_path):
     print("Evaluating", prediction_folder)
-    _, gt_paths = get_test_paths(input_path, dataset)
+    _, gt_paths = get_test_paths(input_path)
     pred_paths = get_pred_paths(prediction_folder)
     save_path = os.path.join(experiment_folder, "results", "instance_segmentation_with_decoder.csv")
     res = run_evaluation(gt_paths, pred_paths, save_path=save_path)
@@ -31,9 +31,9 @@ def main():
     else:
         ckpt = args.checkpoint
     prediction_folder = run_instance_segmentation_with_decoder_inference(
-        args.model, ckpt, args.experiment_folder, args.dataset, args.input_path
+        args.model, ckpt, args.experiment_folder, args.input_path
     )
-    eval_instance_segmentation_with_decoder(prediction_folder, args.experiment_folder, args.dataset, args.input_path)
+    eval_instance_segmentation_with_decoder(prediction_folder, args.experiment_folder, args.input_path)
 
 
 if __name__ == "__main__":

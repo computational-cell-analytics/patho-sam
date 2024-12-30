@@ -2,13 +2,13 @@ import os
 from glob import glob
 
 import numpy as np
-import tifffile as tiff
 from dataloaders import get_dataloaders
 from natsort import natsorted
 from skimage import io
 from util import dataloading_args
 
 DATASETS = [
+    "bcss",
     "cpm15",
     "cpm17",
     "cryonuseg",
@@ -18,9 +18,11 @@ DATASETS = [
     "lynsec_ihc",
     "monusac",
     "monuseg",
+    "nuclick",
     "nuinsseg",
     "pannuke",
     "puma",
+    "srsanet",
     "tnbc",
 ]
 
@@ -72,9 +74,9 @@ def load_testsets(path, dsets=DATASETS, patch_shape=(512, 512)):
         elif dataset == "monusac":  # out of donain, partial dataset
             for split in "train", "test":
                 loaders.append(get_dataloaders(patch_shape, dpath, dataset, split=split))
-        # elif dataset == "janowczyk":
-        #     for split in ["train", "val", "test"]:
-        #         loaders.append(get_dataloaders(patch_shape, dpath, dataset, split=split))
+        elif dataset == "janowczyk":
+            for split in ["train"]:
+                loaders.append(get_dataloaders(patch_shape, dpath, dataset, split=split))
         elif dataset == "pannuke":
             loaders.append(get_dataloaders(patch_shape, dpath, dataset, split=["fold_3"]))
         image_output_path = os.path.join(path, dataset, "loaded_testset", "images")
@@ -99,8 +101,8 @@ def load_testsets(path, dsets=DATASETS, patch_shape=(512, 512)):
                     )
                     counter += 1
                     continue
-                tiff.imwrite(os.path.join(image_output_path, f"{counter:04}.tiff"), tp_img)
-                tiff.imwrite(os.path.join(label_output_path, f"{counter:04}.tiff"), label_data)
+                io.imwrite(os.path.join(image_output_path, f"{counter:04}.tiff"), tp_img)
+                io.imwrite(os.path.join(label_output_path, f"{counter:04}.tiff"), label_data)
                 counter += 1
             remove_empty_labels(os.path.join(path, dataset, "loaded_testset"))
             print(f"{dataset} testset has successfully been loaded.")

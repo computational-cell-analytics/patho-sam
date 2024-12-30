@@ -11,9 +11,9 @@ from util import (
 )
 
 
-def run_amg_inference(model_type, checkpoint, experiment_folder, dataset, input_path):
-    val_image_paths, val_gt_paths = get_val_paths(input_path, dataset)
-    test_image_paths, _ = get_test_paths(input_path, dataset)
+def run_amg_inference(model_type, checkpoint, experiment_folder, input_path):
+    val_image_paths, val_gt_paths = get_val_paths(input_path)
+    test_image_paths, _ = get_test_paths(input_path)
     prediction_folder = run_amg(
         checkpoint,
         model_type,
@@ -25,9 +25,9 @@ def run_amg_inference(model_type, checkpoint, experiment_folder, dataset, input_
     return prediction_folder
 
 
-def eval_amg(prediction_folder, experiment_folder, dataset, input_path):
+def eval_amg(prediction_folder, experiment_folder, input_path):
     print("Evaluating", prediction_folder)
-    _, gt_paths = get_test_paths(input_path, dataset)
+    _, gt_paths = get_test_paths(input_path)
     pred_paths = get_pred_paths(prediction_folder)
     save_path = os.path.join(experiment_folder, "results", "amg.csv")
     res = run_evaluation(gt_paths, pred_paths, save_path=save_path)
@@ -41,8 +41,8 @@ def main():
     else:
         ckpt = args.checkpoint
 
-    prediction_folder = run_amg_inference(args.model, ckpt, args.experiment_folder, args.dataset, args.input_path)
-    eval_amg(prediction_folder, args.experiment_folder, args.dataset, args.input_path)
+    prediction_folder = run_amg_inference(args.model, ckpt, args.experiment_folder, args.input_path)
+    eval_amg(prediction_folder, args.experiment_folder, args.input_path)
 
 
 if __name__ == "__main__":

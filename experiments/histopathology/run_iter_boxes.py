@@ -34,17 +34,16 @@ def run_boxes_inference(model_dir, input_dir):
             ):
                 print(f"Inference with {model} model on {dataset} dataset already done")
                 continue
+            input_path = os.path.join(input_dir, dataset, "loaded_testset")
             args = [
                 "-m",
                 "vit_b",
                 "-c",
                 f"{checkpoint_path}",
-                "-d",
-                f"{dataset}",
                 "--experiment_folder",
                 f"{output_path}",
                 "-i",
-                f"{input_dir}",
+                f"{input_path}",
                 "--box",
             ]
             command = [

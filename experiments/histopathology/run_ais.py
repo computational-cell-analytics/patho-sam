@@ -2,13 +2,15 @@ import os
 import shutil
 import subprocess
 
+SAM_SIZES = ["vit_b", "vit_t", "vit_l", "vit_h"]
 MODEL_NAMES = ["generalist_sam", "pannuke_sam"]
 DATASETS = [
     "cpm15",
     "cpm17",
     "cryonuseg",
     "janowczyk",
-    "lynsec",
+    "lynsec_he",
+    "lynsec_ihc",
     "lizard",
     "monusac",
     "monuseg",
@@ -28,17 +30,16 @@ def run_inference(model_dir, input_dir):
             if os.path.exists(os.path.join(output_path, "results", "instance_segmentation_with_decoder.csv")):
                 print(f"Inference with {model} model on {dataset} dataset already done")
                 continue
+            input_path = os.path.join(input_dir, dataset, "loaded_testset", "eval_split")
             args = [
                 "-m",
                 "vit_b",
                 "-c",
                 f"{checkpoint_path}",
-                "-d",
-                f"{dataset}",
                 "--experiment_folder",
                 f"{output_path}",
                 "-i",
-                f"{input_dir}",
+                f"{input_path}",
             ]
             command = [
                 "python3",
@@ -55,5 +56,5 @@ def run_inference(model_dir, input_dir):
 
 run_inference(
     model_dir="/mnt/lustre-grete/usr/u12649/scratch/models",
-    input_dir="/mnt/lustre-grete/usr/u12649/scratch/data/test",
+    input_dir="/mnt/lustre-grete/usr/u12649/scratch/data/final_test",
 )

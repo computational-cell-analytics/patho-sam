@@ -1,6 +1,7 @@
 import micro_sam.training as sam_training
 from torch_em.data import MinInstanceSampler
 from torch_em.data.datasets import (
+    get_bcss_loader,
     get_cpm_loader,
     get_cryonuseg_loader,
     get_janowczyk_loader,
@@ -19,7 +20,20 @@ def get_dataloaders(patch_shape, data_path, dataset, split=None, organ_type=None
     raw_transform = sam_training.identity
     sampler = MinInstanceSampler(min_num_instances=3)
 
-    if dataset == "cpm15":
+    if dataset == "bcss":
+        loader = get_bcss_loader(
+            path=data_path,
+            patch_shape=patch_shape,
+            batch_size=1,
+            download=False,
+            split=split,
+            val_fraction=0.0,
+            raw_transform=raw_transform,
+            sampler=sampler,
+            data_choice="cpm15",
+        )
+
+    elif dataset == "cpm15":
         loader = get_cpm_loader(
             path=data_path,
             patch_shape=patch_shape,
