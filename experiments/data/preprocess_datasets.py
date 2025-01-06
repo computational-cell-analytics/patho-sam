@@ -33,19 +33,14 @@ def remove_empty_labels(path):
 
 
 def create_val_split(
-    directory,
+    path,
     val_percentage=0.05,
     test_percentage=0.95,
     custom_name="standard_split",
     organ_type=None,
-    split=None,
     random_seed=42,
     dataset=None,
 ):
-    if split is None:
-        path = os.path.join(directory, "loaded_testset")
-    else:
-        path = os.path.join(directory, split)
     labels_src_path = os.path.join(path, "labels")
     images_src_path = os.path.join(path, "images")
     label_list = natsorted(glob(os.path.join(labels_src_path, "*.tiff")))
@@ -97,7 +92,7 @@ def create_val_split(
 
     assert len(os.listdir(dst_paths["test_labels"])) == len(
         os.listdir(dst_paths["test_images"])
-    ), "label / image count mismatch in val set"
+    ), "label / image count mismatch in test set"
     # residual images are per default in the train set
     for train_image in image_list:
         label_path = os.path.join(labels_src_path, os.path.basename(train_image))
@@ -113,7 +108,7 @@ def create_val_split(
     )
 
 
-def preprocess_datasets(data_path, model_names=None, prompt=False):
+def main(data_path, model_names=None, prompt=False):
     datasets = [
         "cpm15",
         "cpm17",
@@ -142,4 +137,6 @@ def preprocess_datasets(data_path, model_names=None, prompt=False):
         )
 
 
-preprocess_datasets("/mnt/lustre-grete/usr/u12649/scratch/data/final_test")
+
+if __name__ == "__main__":
+    main()

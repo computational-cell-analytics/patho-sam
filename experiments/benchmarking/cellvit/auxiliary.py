@@ -23,4 +23,4 @@ def remove_cellvit_plots(path):
                 shutil.rmtree(plot_dir)
 
 
-remove_cellvit_plots("/mnt/lustre-grete/usr/u12649/scratch/models/cellvit/inference")
+remove_cellvit_plots("/mnt/lustre-grete/usr/u12649/models/cellvit/inference")

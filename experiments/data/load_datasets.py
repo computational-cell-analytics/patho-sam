@@ -40,7 +40,7 @@ def load_datasets(path, datasets=DATASETS, patch_shape=(512, 512)):
         print(f"Loading {dataset} dataset...")
         dpath = os.path.join(path, dataset)
         os.makedirs(dpath, exist_ok=True)
-        if dataset not in ["lizard", "monusac", "monuseg", "pannuke", "cpm15", "cpm17"]:
+        if dataset not in ["lizard", "monusac", "monuseg", "pannuke", "cpm15", "cpm17", "janowczyk"]:
             loaders = [get_dataloaders(patch_shape, dpath, dataset)]
         elif dataset in ["cpm15", "cpm17"]:
             loaders = [get_dataloaders(patch_shape, dpath, dataset, split=dataset)]
@@ -52,10 +52,10 @@ def load_datasets(path, datasets=DATASETS, patch_shape=(512, 512)):
             loaders = []
             for split in ["train", "test"]:  # this represents all available splits
                 loaders.append(get_dataloaders(patch_shape, dpath, dataset, split=split))
-        elif dataset == "monuseg":
+        elif dataset == "janowczyk":
             loaders = []
-            for split in ["train", "test"]:  # this represents all available splits
-                loaders.append(get_dataloaders(patch_shape, dpath, dataset, split=split))
+            for split in ["train", "val", "test"]:  # this represents all available splits
+                loaders.append(get_dataloaders(patch_shape, dpath, dataset, split))
         elif dataset == "pannuke":
             loaders = []
             folds = ["fold_3"]  # this represents only fold3 for testing the model
@@ -104,7 +104,7 @@ def main():
     if args.path is not None:
         data_path = args.path
     else:
-        data_path = "/mnt/lustre-grete/usr/u12649/scratch/data/test"
+        data_path = "/mnt/lustre-grete/usr/u12649/data/final_test"
     if args.datasets is not None:
         load_datasets(data_path, [args.datasets], args.patch_shape)
     else:

@@ -9,17 +9,20 @@ from scipy.io import loadmat
 from tqdm import tqdm
 
 DATASETS = [
+    "consep",
     "cpm15",
     "cpm17",
     "cryonuseg",
-    "janowczyk",
     "lizard",
-    "lynsec",
+    "lynsec_he",
+    "lynsec_ihc",
     "monusac",
     "monuseg",
+    "nuclick",
     "nuinsseg",
     "pannuke",
     "puma",
+    "srsanet",
     "tnbc",
 ]
 
@@ -41,7 +44,7 @@ def run_inference(model_dir, input_dir, output_dir, type_info_path):
     for dataset in DATASETS:
         for model in ["consep", "cpm17", "kumar", "pannuke", "monusac"]:
             output_path = os.path.join(output_dir, dataset, model)
-            input_path = os.path.join(input_dir, dataset, "loaded_testset/images")
+            input_path = os.path.join(input_dir, dataset, "loaded_testset", "eval_split", "test_images")
             if os.path.exists(output_path):
                 continue
             os.makedirs(output_path, exist_ok=True)
@@ -92,8 +95,8 @@ def run_inference(model_dir, input_dir, output_dir, type_info_path):
 
 
 run_inference(
-    model_dir="/mnt/lustre-grete/usr/u12649/scratch/models/models/hovernet/checkpoints",
-    input_dir="/mnt/lustre-grete/usr/u12649/scratch/data/final_test",
-    output_dir="/mnt/lustre-grete/usr/u12649/scratch/models/hovernet/inference",
+    model_dir="/mnt/lustre-grete/usr/u12649/models/hovernet/checkpoints",
+    input_dir="/mnt/lustre-grete/usr/u12649/data/final_test",
+    output_dir="/mnt/lustre-grete/usr/u12649/models/hovernet/inference",
     type_info_path="/user/titus.griebel/u12649/hover_net/type_info.json",
 )

@@ -2,6 +2,7 @@ import micro_sam.training as sam_training
 from torch_em.data import MinInstanceSampler
 from torch_em.data.datasets import (
     get_bcss_loader,
+    get_consep_loader,
     get_cpm_loader,
     get_cryonuseg_loader,
     get_janowczyk_loader,
@@ -9,9 +10,11 @@ from torch_em.data.datasets import (
     get_lynsec_loader,
     get_monusac_loader,
     get_monuseg_loader,
+    get_nuclick_loader,
     get_nuinsseg_loader,
     get_pannuke_loader,
     get_puma_loader,
+    get_srsanet_loader,
     get_tnbc_loader,
 )
 
@@ -25,12 +28,21 @@ def get_dataloaders(patch_shape, data_path, dataset, split=None, organ_type=None
             path=data_path,
             patch_shape=patch_shape,
             batch_size=1,
-            download=False,
-            split=split,
+            download=False, 
             val_fraction=0.0,
             raw_transform=raw_transform,
             sampler=sampler,
-            data_choice="cpm15",
+        )
+
+    elif dataset == "consep":
+        loader = get_consep_loader(
+            path=data_path,
+            patch_shape=patch_shape,
+            batch_size=1,
+            download=True,
+            split=split,
+            raw_transform=raw_transform,
+            sampler=sampler,
         )
 
     elif dataset == "cpm15":
@@ -44,6 +56,7 @@ def get_dataloaders(patch_shape, data_path, dataset, split=None, organ_type=None
             sampler=sampler,
             data_choice="cpm15",
         )
+
     elif dataset == "cpm17":
         loader = get_cpm_loader(
             path=data_path,
@@ -76,8 +89,9 @@ def get_dataloaders(patch_shape, data_path, dataset, split=None, organ_type=None
             split=split,
             raw_transform=raw_transform,
             annotation="nuclei",
-            sampler=sampler,
+            sampler=MinInstanceSampler(min_num_instances=2),
         )
+        loader.dataset.max_sampling_attempts = 5000
 
     elif dataset == "lizard":
         loader = get_lizard_loader(
@@ -145,6 +159,16 @@ def get_dataloaders(patch_shape, data_path, dataset, split=None, organ_type=None
             raw_transform=raw_transform,
             sampler=sampler,
         )
+    elif dataset == "nuclick":
+        loader = get_nuclick_loader(
+            path=data_path,
+            patch_shape=patch_shape,
+            batch_size=1,
+            download=True,
+            split=split,
+            raw_transform=raw_transform,
+            sampler=sampler,
+        )
 
     elif dataset == "pannuke":
         loader = get_pannuke_loader(
@@ -164,6 +188,18 @@ def get_dataloaders(patch_shape, data_path, dataset, split=None, organ_type=None
             patch_shape=patch_shape,
             batch_size=1,
             annotations="nuclei",
+            download=True,
+            split=split,
+            raw_transform=raw_transform,
+            sampler=sampler,
+        )
+
+
+    elif dataset == "srsanet":
+        loader = get_srsanet_loader(
+            path=data_path,
+            patch_shape=patch_shape,
+            batch_size=1,
             download=True,
             split=split,
             raw_transform=raw_transform,

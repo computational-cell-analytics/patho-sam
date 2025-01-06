@@ -45,4 +45,4 @@ def postprocess_hovernet(output_dir):
                 shutil.rmtree(os.path.join(output_path, "mat"))
 
 
-postprocess_hovernet("/mnt/lustre-grete/usr/u12649/scratch/models/hovernet/inference")
+postprocess_hovernet("/mnt/lustre-grete/usr/u12649/models/hovernet/inference")

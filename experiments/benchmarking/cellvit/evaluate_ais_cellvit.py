@@ -79,8 +79,12 @@ def evaluate_all_datasets_cellvit(prediction_dir, result_dir):
             results.to_csv(save_path, index=False)
             shutil.rmtree(checkpoint_dir)
 
+def main():
+    evaluate_all_datasets_cellvit(
+    "/mnt/lustre-grete/usr/u12649/models/cellvit/inference",
+    "/mnt/lustre-grete/usr/u12649/models/cellvit/results",
+    )   
 
-evaluate_all_datasets_cellvit(
-    "/mnt/lustre-grete/usr/u12649/scratch/models/cellvit/inference",
-    "/mnt/lustre-grete/usr/u12649/scratch/models/cellvit/results",
-)
+
+if __name__ == "__main__":
+    main()

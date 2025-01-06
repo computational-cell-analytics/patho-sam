@@ -86,7 +86,7 @@ def evaluate_all_datasets_hovernet(prediction_dir, label_dir, result_dir):
 
 
 evaluate_all_datasets_hovernet(
-    "/mnt/lustre-grete/usr/u12649/scratch/models/hovernext/inference",
-    "/mnt/lustre-grete/usr/u12649/scratch/data/test",
-    "/mnt/lustre-grete/usr/u12649/scratch/models/hovernext/results",
+    "/mnt/lustre-grete/usr/u12649/models/hovernext/inference",
+    "/mnt/lustre-grete/usr/u12649/data/test",
+    "/mnt/lustre-grete/usr/u12649/models/hovernext/results",
 )
