@@ -51,7 +51,7 @@ def run_inference(model_dir, input_dir):
             if os.path.exists(embedding_path):
                 shutil.rmtree(embedding_path)
 
-            print(f"Successfully ran inference with pannuke_sam model on {dataset} dataset")
+            print(f"Successfully ran inference with {model} model on {dataset} dataset")
 
 
 run_inference(

@@ -7,7 +7,8 @@ MODEL_NAMES = ["generalist_sam", "pannuke_sam", "vanilla_sam", "hovernet", "cell
 EVAL_PATH = "/mnt/lustre-grete/usr/u12649/scratch/models/"
 DATASETS = [
     "pannuke",
-    "lynsec",
+    "lynsec_he",
+    "lynsec_ihc",
     "cryonuseg",
     "lizard",
     "tnbc",
@@ -30,7 +31,7 @@ HNXT_CP = [
 ]
 
 
-def get_instance_results(path, model, checkpoint=None):
+def get_instance_results(path, model, checkpoint=None, overwrite=False):
     result_dict = {"dataset": [], "msa": [], "sa50": [], "sa75": []}
     if model in ["generalist_sam", "pannuke_sam"]:
         os.makedirs(os.path.join(path, "sum_results"), exist_ok=True)
@@ -38,7 +39,7 @@ def get_instance_results(path, model, checkpoint=None):
     else:
         os.makedirs(os.path.join(path, "sum_results", checkpoint), exist_ok=True)
         csv_out = os.path.join(path, "sum_results", checkpoint, f"ais_{model}_{checkpoint}_results.csv")
-    if os.path.exists(csv_out):
+    if os.path.exists(csv_out) and not overwrite:
         print(f"{csv_out} already exists.")
         return
     for dataset in natsorted(DATASETS):
@@ -62,13 +63,13 @@ def get_instance_results(path, model, checkpoint=None):
     df.to_csv(csv_out, index=False)
 
 
-def read_instance_csv(path, model_names):
+def read_instance_csv(path, model_names, overwrite=False):
     for model in model_names:  # iterates over model types
         eval_path = os.path.join(path, model)
         if model == "vanilla_sam":
             continue
         elif model in ["generalist_sam", "pannuke_sam"]:
-            get_instance_results(eval_path, model)
+            get_instance_results(eval_path, model, overwrite)
         elif model == "cellvit":
             for checkpoint in [
                 "256-x20",
@@ -76,13 +77,13 @@ def read_instance_csv(path, model_names):
                 "SAM-H-x20",
                 "SAM-H-x40",
             ]:  # iterates over specific cellvit checkpoints
-                get_instance_results(eval_path, model, checkpoint)
+                get_instance_results(eval_path, model, checkpoint, overwrite)
         elif model == "hovernet":
             for checkpoint in ["consep", "cpm17", "kumar", "pannuke", "monusac"]:  # iterates over hovernet checkpoints
-                get_instance_results(eval_path, model, checkpoint)
+                get_instance_results(eval_path, model, checkpoint, overwrite)
         elif model == "hovernext":
             for checkpoint in HNXT_CP:
-                get_instance_results(eval_path, model, checkpoint)
+                get_instance_results(eval_path, model, checkpoint, overwrite)
 
 
 def read_amg_csv(path, model_names):
@@ -204,43 +205,8 @@ def read_it_points_csv(path, model_names=None):
         return df
 
 
-# def get_comparison_csv(mode):
-#     if mode == 'points':
-#         vanilla_dataframe = read_it_points_csv(
-#             os.path.join('/mnt/lustre-grete/usr/u12649/scratch/models/vanilla_sam_eval'), 'vanilla_sam'
-#         )
-#         pannuke_dataframe = read_it_points_csv(
-#             os.path.join('/mnt/lustre-grete/usr/u12649/scratch/models/pannuke_sam_eval'), 'pannuke_sam'
-#         )
-#         combined_df = pd.concat([vanilla_dataframe, pannuke_dataframe], axis=1)
-#         combined_df.to_csv('~/comb/combined_data_points.csv', index=False)
-#         return
-#     elif mode == 'boxes':
-#         vanilla_dataframe = read_it_boxes_csv(
-#             os.path.join('/mnt/lustre-grete/usr/u12649/scratch/models/vanilla_sam_eval'), 'vanilla_sam'
-#         )
-#         pannuke_dataframe = read_it_boxes_csv(
-#             os.path.join('/mnt/lustre-grete/usr/u12649/scratch/models/pannuke_sam_eval'), 'pannuke_sam'
-#         )
-#         combined_df = pd.concat([vanilla_dataframe, pannuke_dataframe], axis=1)
-#         combined_df.to_csv('~/comb/combined_data_boxes.csv', index=False)
-#         return
-#     else:
-#         vanilla_dataframe = read_amg_csv(
-#             os.path.join('/mnt/lustre-grete/usr/u12649/scratch/models/vanilla_sam_eval'), 'vanilla_sam'
-#         )
-#         pannuke_dataframe_amg = read_amg_csv(
-#             os.path.join('/mnt/lustre-grete/usr/u12649/scratch/models/pannuke_sam_eval'), 'pannuke_sam'
-#         )
-#         pannuke_dataframe_instance = read_instance_csv(
-#             os.path.join('/mnt/lustre-grete/usr/u12649/scratch/models/pannuke_sam_eval'), 'pannuke_sam'
-#         )
-#         combined_df = pd.concat([vanilla_dataframe, pannuke_dataframe_amg, pannuke_dataframe_instance], axis=1)
-#         combined_df.to_csv('~/comb/combined_data_automatic.csv', index=False)
-
-
 def main():
-    read_instance_csv(EVAL_PATH, MODEL_NAMES)
+    read_instance_csv(EVAL_PATH, MODEL_NAMES, overwrite=False)
     # read_amg_csv(EVAL_PATH, MODEL_NAMES)
 
     # read_it_boxes_csv(EVAL_PATH, MODEL_NAMES[:3])

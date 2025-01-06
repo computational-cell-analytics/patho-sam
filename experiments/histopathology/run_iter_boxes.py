@@ -2,6 +2,9 @@ import os
 import shutil
 import subprocess
 
+
+SAM_SIZES = ["vit_b", "vit_t", "vit_l", "vit_h"]
+MODEL_NAMES = ["generalist_sam", "pannuke_sam", "vanilla_sam"]
 MODEL_NAMES = ["generalist_sam", "pannuke_sam", "vanilla_sam"]
 
 
@@ -34,7 +37,7 @@ def run_boxes_inference(model_dir, input_dir):
             ):
                 print(f"Inference with {model} model on {dataset} dataset already done")
                 continue
-            input_path = os.path.join(input_dir, dataset, "loaded_testset")
+            input_path = os.path.join(input_dir, dataset, "loaded_testset", "eval_split")
             args = [
                 "-m",
                 "vit_b",
@@ -56,10 +59,10 @@ def run_boxes_inference(model_dir, input_dir):
             if os.path.exists(embedding_path):
                 shutil.rmtree(embedding_path)
 
-            print(f"Successfully ran inference with pannuke_sam model on {dataset} dataset")
+            print(f"Successfully ran inference with {model} model on {dataset} dataset")
 
 
 run_boxes_inference(
     model_dir="/mnt/lustre-grete/usr/u12649/scratch/models",
-    input_dir="/mnt/lustre-grete/usr/u12649/scratch/data/test",
+    input_dir="/mnt/lustre-grete/usr/u12649/scratch/data/final_test",
 )

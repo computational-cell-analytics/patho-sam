@@ -72,7 +72,7 @@ def load_testsets(path, dsets=DATASETS, patch_shape=(512, 512)):
         ]:
             loaders.append(get_dataloaders(patch_shape, dpath, dataset, split="test"))
         elif dataset == "monusac":  # out of donain, partial dataset
-            for split in "train", "test":
+            for split in ["train", "test"]:
                 loaders.append(get_dataloaders(patch_shape, dpath, dataset, split=split))
         elif dataset == "janowczyk":
             for split in ["train"]:
@@ -84,7 +84,6 @@ def load_testsets(path, dsets=DATASETS, patch_shape=(512, 512)):
         os.makedirs(image_output_path, exist_ok=True)
         os.makedirs(label_output_path, exist_ok=True)
         for loader in loaders:
-            print(len(loader))
             for image, label in loader:
                 image_array = image.numpy()
                 label_array = label.numpy()

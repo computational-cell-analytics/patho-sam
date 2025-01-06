@@ -57,7 +57,14 @@ def get_default_arguments():
     )
     parser.add_argument("-c", "--checkpoint", type=none_or_str, default=None)  # expects best.pt
     parser.add_argument("-e", "--experiment_folder", type=str, required=True)  # empty directory for saving the output
-    parser.add_argument("-i", "--input_path", type=str, required=True, default=None)
+    parser.add_argument(
+        "-i",
+        "--input_path",
+        type=str,
+        required=True,
+        default=None,
+        help="requires path to a directory containing 'test_images', 'test_labels', 'val_images' and 'val_labels' directories that contain the data",
+    )
     parser.add_argument("--organ", type=str, required=False, default=None)  # to access organ class or all dataset.
     parser.add_argument("--box", action="store_true", help="If passed, starts with first prompt as box")
     parser.add_argument("--use_masks", action="store_true", help="To use logits masks for iterative prompting.")
@@ -84,13 +91,10 @@ def none_or_str(value):
 def get_val_paths(input_path):
     val_image_paths = natsorted(glob(os.path.join(input_path, "val_images/*")))
     val_label_paths = natsorted(glob(os.path.join(input_path, "val_labels/*")))
-    print(len(val_image_paths), len(val_label_paths))
-
     return val_image_paths, val_label_paths
 
 
 def get_test_paths(input_path):
     test_image_paths = natsorted(glob(os.path.join(input_path, "test_images/*")))
     test_label_paths = natsorted(glob(os.path.join(input_path, "test_labels/*")))
-    print(len(test_image_paths), len(test_label_paths))
     return test_image_paths, test_label_paths
