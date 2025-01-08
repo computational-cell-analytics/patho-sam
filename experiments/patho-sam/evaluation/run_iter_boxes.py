@@ -4,7 +4,7 @@ import subprocess
 
 
 SAM_TYPES = ["vit_b", "vit_l", "vit_h"]
-MODEL_NAMES = ["generalist_sam", "vanilla_sam"]
+MODEL_NAMES = ["lm_sam", "generalist_sam", "vanilla_sam"]
 DATASETS = [
     "consep",
     "cpm15",
@@ -26,10 +26,17 @@ DATASETS = [
 def run_boxes_inference(model_dir, input_dir):
     for model in MODEL_NAMES:
         for model_type in SAM_TYPES:
-            if model == "vanilla_sam":
+            if model in ["vanilla_sam", "lm_sam"]:
                 checkpoint_path = None
+                if model == "lm_sam":
+                    if model_type != 'vit_b':
+                        continue
+                    model_type = 'vit_b_lm'
             else:
                 checkpoint_path = os.path.join(model_dir, model, "checkpoints", model_type, "best.pt")
+                if not os.path.exists(checkpoint_path):
+                    print(f'No checkpoint for {model} model (type: {model_type} found. Continuing with existent models... ')
+                    continue
             for dataset in DATASETS:
                 output_path = os.path.join(model_dir, model, "inference", dataset, model_type, "boxes")
                 os.makedirs(output_path, exist_ok=True)

@@ -10,6 +10,24 @@ from skimage.measure import label
 from tqdm import tqdm
 
 
+DATASETS = [
+    "consep",
+    "cpm15",
+    "cpm17",
+    "cryonuseg",
+    "lizard",
+    "lynsec_he",
+    "lynsec_ihc",
+    "monusac",
+    "monuseg",
+    "nuclick",
+    "nuinsseg",
+    "pannuke",
+    "puma",
+    "srsanet",
+    "tnbc",
+]
+
 def _run_evaluation(gt_paths, prediction_paths, verbose=True):
     assert len(gt_paths) == len(
         prediction_paths
@@ -37,22 +55,9 @@ def _run_evaluation(gt_paths, prediction_paths, verbose=True):
 
 
 def evaluate_all_datasets_hovernet(prediction_dir, label_dir, result_dir):
-    for dataset in [
-        "cpm15",
-        "cpm17",
-        "cryonuseg",
-        "janowczyk",
-        "lizard",
-        "lynsec",
-        "monusac",
-        "monuseg",
-        "nuinsseg",
-        "pannuke",
-        "puma",
-        "tnbc",
-    ]:
+    for dataset in DATASETS:
         gt_paths = natsorted(
-            glob(os.path.join(label_dir, dataset, "loaded_dataset/complete_dataset/eval_split/test_labels/*.tiff"))
+            glob(os.path.join(label_dir, dataset, "loaded_testset/eval_split/test_labels/*.tiff"))
         )
         for checkpoint in ["consep", "cpm17", "kumar", "pannuke", "monusac"]:
             save_path = os.path.join(result_dir, dataset, checkpoint, "ais_result.csv")
@@ -78,6 +83,6 @@ def evaluate_all_datasets_hovernet(prediction_dir, label_dir, result_dir):
 
 evaluate_all_datasets_hovernet(
     "/mnt/lustre-grete/usr/u12649/models/hovernet/inference",
-    "/mnt/lustre-grete/usr/u12649/data/test",
+    "/mnt/lustre-grete/usr/u12649/data/final_test",
     "/mnt/lustre-grete/usr/u12649/models/hovernet/results",
 )

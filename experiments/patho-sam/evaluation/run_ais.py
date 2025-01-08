@@ -3,7 +3,7 @@ import shutil
 import subprocess
 
 SAM_TYPES = ["vit_b", "vit_l", "vit_h"]
-MODEL_NAMES = ["generalist_sam"]
+MODEL_NAMES = ["lm_sam"]
 DATASETS = [
     "consep",
     "cpm15",
@@ -26,11 +26,20 @@ DATASETS = [
 def run_inference(model_dir, input_dir):
     for model in MODEL_NAMES:
         for model_type in SAM_TYPES:
-            checkpoint_path = os.path.join(model_dir, model, "checkpoints", model_type, "best.pt")
+            if model == "lm_sam":
+                checkpoint_path = None
+                if model_type != 'vit_b':
+                    continue
+                model_type = 'vit_b_lm'
+            else: 
+                checkpoint_path = os.path.join(model_dir, model, "checkpoints", model_type, "best.pt")
+                if not os.path.exists(checkpoint_path):
+                    print(f'No checkpoint for {model} model (type: {model_type} found. Continuing with existent models... ')
+                    continue
             for dataset in DATASETS:
                 output_path = os.path.join(model_dir, model, "inference", dataset, model_type, "instance")
                 os.makedirs(output_path, exist_ok=True)
-                if os.path.exists(os.path.join(output_path, "results", "instance_segmentation_with_decoder.csv")):
+                if os.path.exists(os.path.join(output_path, "results", "instance_segmentation_with_decoder.csv")) or os.path.exists(os.path.join(model_dir, model, 'inference.zip')):
                     print(f"Inference with {model} model (type: {model_type}) on {dataset} dataset already done")
                     continue
                 input_path = os.path.join(input_dir, dataset, "loaded_testset", "eval_split")
