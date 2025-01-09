@@ -51,8 +51,10 @@ def get_instance_results(path, model, checkpoint=None, overwrite=False):
         else:
             csv_path = os.path.join(path, model, "results", dataset, checkpoint, "ais_result.csv")
         if not os.path.exists(csv_path):
-            if not model == 'lm_sam':
-                print(f"Ais results for {model} model on {dataset} dataset with checkpoint {checkpoint} not in {csv_path}")
+            if not model == "lm_sam":
+                print(
+                    f"Ais results for {model} model on {dataset} dataset with checkpoint {checkpoint} not in {csv_path}"
+                )
             continue
         df = pd.read_csv(csv_path)
         result_dict["msa"].append(df.loc[0, "mSA"])
@@ -60,8 +62,10 @@ def get_instance_results(path, model, checkpoint=None, overwrite=False):
         result_dict["sa75"].append(df.loc[0, "SA75"])
         result_dict["dataset"].append(dataset)
     df = pd.DataFrame(result_dict)
-    print(f"Results of instance segmentation evaluation with {model} model using checkpoint {checkpoint}:\n",
-          df.head(len(DATASETS)))
+    print(
+        f"Results of instance segmentation evaluation with {model} model using checkpoint {checkpoint}:\n",
+        df.head(len(DATASETS)),
+    )
     df.to_csv(csv_out, index=False)
 
 
@@ -81,7 +85,7 @@ def read_instance_csv(path, model_names, overwrite=False):
             ]:  # iterates over specific cellvit checkpoints
                 get_instance_results(path, model, checkpoint, overwrite)
         elif model == "hovernet":
-            for checkpoint in ["consep", "cpm17", "kumar", "pannuke", "monusac"]: # Hovernet checkpoints
+            for checkpoint in ["consep", "cpm17", "kumar", "pannuke", "monusac"]:  # Hovernet checkpoints
                 get_instance_results(path, model, checkpoint, overwrite)
         elif model == "hovernext":
             for checkpoint in HNXT_CP:
@@ -97,7 +101,9 @@ def read_amg_csv(path, model_names, overwrite=False):
                 continue
             result_dict = {"dataset": [], "msa": [], "sa50": [], "sa75": []}
             for dataset in natsorted(DATASETS):
-                dataset_csv = os.path.join(path, model_name, "results", dataset, "amg", f"{dataset}_{model_name}_{model_type}_amg.csv")
+                dataset_csv = os.path.join(
+                    path, model_name, "results", dataset, "amg", f"{dataset}_{model_name}_{model_type}_amg.csv"
+                )
                 if not os.path.exists(dataset_csv):
                     continue
 
@@ -108,8 +114,7 @@ def read_amg_csv(path, model_names, overwrite=False):
                 result_dict["dataset"].append(dataset)
 
             df = pd.DataFrame(result_dict)
-            print(f"Results of amg evaluation with {model_name} (model_type: {model_type}):\n",
-                df.head(len(DATASETS)))
+            print(f"Results of amg evaluation with {model_name} (model_type: {model_type}):\n", df.head(len(DATASETS)))
             os.makedirs(os.path.join(path, model_name, "sum_results"), exist_ok=True)
             df.to_csv(csv_path, index=False)
 
@@ -131,7 +136,9 @@ def read_it_boxes_csv(path, model_names=None, overwrite=False):
                 "sa75_8th": [],
             }
             for dataset in natsorted(DATASETS):
-                dataset_csv = os.path.join(path, model_name, "results", dataset, "boxes", f"{dataset}_{model_name}_{model_type}_box.csv")
+                dataset_csv = os.path.join(
+                    path, model_name, "results", dataset, "boxes", f"{dataset}_{model_name}_{model_type}_box.csv"
+                )
                 if not os.path.exists(dataset_csv):
                     continue
 
@@ -167,10 +174,12 @@ def read_it_points_csv(path, model_names=None, overwrite=False):
                 "sa75_8th": [],
             }
             for dataset in natsorted(DATASETS):
-                dataset_csv = os.path.join(path, model_name, "results", dataset, "points", f"{dataset}_{model_name}_{model_type}_point.csv")
+                dataset_csv = os.path.join(
+                    path, model_name, "results", dataset, "points", f"{dataset}_{model_name}_{model_type}_point.csv"
+                )
 
                 if not os.path.exists(dataset_csv):
-                    print('dataset csv not found')
+                    print("dataset csv not found")
                     continue
                 df = pd.read_csv(dataset_csv)
                 result_dict["msa_1st"].append(df.loc[0, "mSA"])
@@ -182,7 +191,9 @@ def read_it_points_csv(path, model_names=None, overwrite=False):
                 result_dict["dataset"].append(dataset)
 
             df = pd.DataFrame(result_dict)
-            print(f"Results of iterative prompting with points evaluation with {model_name} (model_type: {model_type}):")
+            print(
+                f"Results of iterative prompting with points evaluation with {model_name} (model_type: {model_type}):"
+            )
             print(df.head(len(DATASETS)))
             os.makedirs(os.path.join(path, model_name, "sum_results"), exist_ok=True)
             df.to_csv(csv_path, index=False)

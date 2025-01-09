@@ -3,6 +3,7 @@ import subprocess
 
 # This script does not work right now; use the same script inside the hovernext clone
 
+
 def run_inference(input_dir, output_dir):
     for dataset in [
         "cpm15",

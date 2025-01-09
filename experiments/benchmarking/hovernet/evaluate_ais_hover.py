@@ -28,6 +28,7 @@ DATASETS = [
     "tnbc",
 ]
 
+
 def _run_evaluation(gt_paths, prediction_paths, verbose=True):
     assert len(gt_paths) == len(
         prediction_paths
@@ -56,9 +57,7 @@ def _run_evaluation(gt_paths, prediction_paths, verbose=True):
 
 def evaluate_all_datasets_hovernet(prediction_dir, label_dir, result_dir):
     for dataset in DATASETS:
-        gt_paths = natsorted(
-            glob(os.path.join(label_dir, dataset, "loaded_testset/eval_split/test_labels/*.tiff"))
-        )
+        gt_paths = natsorted(glob(os.path.join(label_dir, dataset, "loaded_testset/eval_split/test_labels/*.tiff")))
         for checkpoint in ["consep", "cpm17", "kumar", "pannuke", "monusac"]:
             save_path = os.path.join(result_dir, dataset, checkpoint, "ais_result.csv")
             if os.path.exists(save_path):
