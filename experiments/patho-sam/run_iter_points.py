@@ -68,9 +68,10 @@ def run_boxes_inference(model_dir, input_dir):
                 print(f"Running inference with {model} model (type: {model_type}) on {dataset} dataset...")
                 subprocess.run(command)
                 embedding_path = os.path.join(output_path, "embeddings")
-                if os.path.exists(embedding_path):
-                    shutil.rmtree(embedding_path)
-
+                shutil.rmtree(embedding_path)
+                os.makedirs(os.path.join(model_dir, model, 'results', dataset, 'points'), exist_ok=True)
+                shutil.copy(os.path.join(model_dir, model, "inference", dataset, model_type, 'points', 'results', 'iterative_prompting_without_mask', 'iterative_prompts_start_point.csv'), 
+                            os.path.join(model_dir, model, 'results', dataset, 'points', f'{dataset}_{model}_{model_type}_points.csv'))
                 print(
                     f"Successfully ran iterative points inference with {model} model (type: {model_type}) on {dataset} dataset"
                 )

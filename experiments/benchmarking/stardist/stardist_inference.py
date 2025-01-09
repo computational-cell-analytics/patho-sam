@@ -109,11 +109,6 @@ def run_inference(input_dir, model_dir):
             dataset=dataset
             )
 
-    
-
-
-
-
 
 def main():
     run_inference(

@@ -63,10 +63,10 @@ def run_boxes_inference(model_dir, input_dir):
                 ] + args
                 print(f"Running inference with {model} model (type: {model_type}) on {dataset} dataset...")
                 subprocess.run(command)
-                embedding_path = os.path.join(output_path, "embeddings")
-                if os.path.exists(embedding_path):
-                    shutil.rmtree(embedding_path)
-
+                shutil.rmtree(os.path.join(output_path, "embeddings"))
+                os.makedirs(os.path.join(model_dir, model, 'results', dataset, 'amg'), exist_ok=True)
+                shutil.copy(os.path.join(model_dir, model, "inference", dataset, model_type, 'amg', 'results', 'amg.csv'), 
+                            os.path.join(model_dir, model, 'results', dataset, 'amg', f'{dataset}_{model}_{model_type}_amg.csv'))
                 print(f"Successfully ran amg inference with {model} model (type: {model_type}) on {dataset} dataset")
 
 

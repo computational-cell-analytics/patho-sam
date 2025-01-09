@@ -63,9 +63,10 @@ def run_inference(model_dir, input_dir):
                 ] + args
                 print(f"Running inference with {model} model (type: {model_type}) on {dataset} dataset...")
                 subprocess.run(command)
-                embedding_path = os.path.join(output_path, "embeddings")
-                if os.path.exists(embedding_path):
-                    shutil.rmtree(embedding_path)
+                shutil.rmtree(os.path.join(output_path, "embeddings"))
+                os.makedirs(os.path.join(model_dir, model, 'results', dataset, 'instance'), exist_ok=True)
+                shutil.copy(os.path.join(model_dir, model, "inference", dataset, model_type, 'instance', 'results', 'instance_segmentation_with_decoder.csv'), 
+                            os.path.join(model_dir, model, 'results', dataset, 'instance', f'{dataset}_{model}_{model_type}_instance.csv'))
 
                 print(f"Successfully ran inference with {model} model (type: {model_type}) on {dataset} dataset")
 
