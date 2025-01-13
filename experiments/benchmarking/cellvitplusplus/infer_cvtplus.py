@@ -1,4 +1,3 @@
-
 import os
 import shutil
 import subprocess
@@ -27,19 +26,22 @@ DATASETS = [
 
 CVTPP_CP = [
     # 'Virchow-x40-AMP',
-    'SAM-H-x40-AMP',
+    "SAM-H-x40-AMP",
     # '256-x40-AMP'
 ]
 
 TEST_PATH = "/mnt/lustre-grete/usr/u12649/data/cvtplus/consep_test"
 
+
 def run_inference(model_dir, input_dir, output_dir, result_dir):
     for dataset in DATASETS:
         # data_dir = os.path.join(input_dir, dataset, "loaded_testset", "eval_split", "test_images")
         data_dir = TEST_PATH
-        files = {"path": list(natsorted(glob(os.path.join(data_dir, '*.tiff')))),
-                 "slide_mpp": [0.25 for i in range(len(list(natsorted(glob(os.path.join(data_dir, '*.tiff'))))))],
-                 "magnification": [40 for i in range(len(list(natsorted(glob(os.path.join(data_dir, '*.tiff'))))))]}
+        files = {
+            "path": list(natsorted(glob(os.path.join(data_dir, "*.tiff")))),
+            "slide_mpp": [0.25 for i in range(len(list(natsorted(glob(os.path.join(data_dir, "*.tiff"))))))],
+            "magnification": [40 for i in range(len(list(natsorted(glob(os.path.join(data_dir, "*.tiff"))))))],
+        }
         filelist_df = pd.DataFrame(files)
         os.makedirs(os.path.join(input_dir, "file_lists"), exist_ok=True)
         filelist_df.to_csv(os.path.join(input_dir, "file_lists", f"{dataset}_filelist.csv"), index=False)
@@ -59,7 +61,7 @@ def run_inference(model_dir, input_dir, output_dir, result_dir):
                 f"{checkpoint_path}",
                 "process_dataset",
                 "--filelist",
-                os.path.join(input_dir, "file_lists", f"{dataset}_filelist.csv")
+                os.path.join(input_dir, "file_lists", f"{dataset}_filelist.csv"),
             ]
 
             command = [

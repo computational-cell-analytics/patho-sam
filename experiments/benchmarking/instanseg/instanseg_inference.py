@@ -80,20 +80,21 @@ def evaluate_instanseg(prediction_dir, label_dir, result_dir, dataset):
         results.to_csv(save_path, index=False)
         print(results.head(2))
 
- 
+
 def infer_instanseg(data_dir, output_path):
     image_paths = natsorted(glob(os.path.join(data_dir, "test_images", "*.tiff")))
     os.makedirs(output_path, exist_ok=True)
     for image_path in image_paths:
         image = read_image(image_path)
-        segmentation = segment_using_instanseg(image=image, model_type="brightfield_nuclei", target="nuclei", scale="small")
+        segmentation = segment_using_instanseg(
+            image=image, model_type="brightfield_nuclei", target="nuclei", scale="small"
+        )
         imageio.imwrite(os.path.join(output_path, os.path.basename(image_path)), segmentation)
-
 
 
 def run_inference(input_dir, model_dir):
     for dataset in DATASETS:
-        output_path = os.path.join(model_dir, 'inference', dataset)
+        output_path = os.path.join(model_dir, "inference", dataset)
         input_path = os.path.join(input_dir, dataset, "loaded_testset", "eval_split")
         if os.path.exists(output_path):
             if len(os.listdir(output_path)) > 1:
@@ -103,21 +104,19 @@ def run_inference(input_dir, model_dir):
         infer_instanseg(input_path, output_path)
         print(f"Inference on {dataset} dataset with the InstanSeg model successfully completed \n")
         evaluate_instanseg(
-            prediction_dir=os.path.join(model_dir, 'inference'), 
-            label_dir=input_dir, 
-            result_dir=os.path.join(model_dir, 'results'),
-            dataset=dataset
-            )
+            prediction_dir=os.path.join(model_dir, "inference"),
+            label_dir=input_dir,
+            result_dir=os.path.join(model_dir, "results"),
+            dataset=dataset,
+        )
 
 
 def main():
     run_inference(
-    input_dir="/mnt/lustre-grete/usr/u12649/data/final_test",
-    model_dir="/mnt/lustre-grete/usr/u12649/models/instanseg",
+        input_dir="/mnt/lustre-grete/usr/u12649/data/final_test",
+        model_dir="/mnt/lustre-grete/usr/u12649/models/instanseg",
     )
 
 
 if __name__ == "__main__":
     main()
-
-

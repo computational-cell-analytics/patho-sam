@@ -40,30 +40,31 @@ HNXT_CP = [
 ]
 
 CVT_CP = [
-        "256-x20",
-        "256-x40",
-        "SAM-H-x20",
-        "SAM-H-x40",
+    "256-x20",
+    "256-x40",
+    "SAM-H-x20",
+    "SAM-H-x40",
 ]
 
 HVNT_CP = [
-    'consep',
-    'cpm17',
-    'kumar',
-    'monusac',
-    'pannuke',
+    "consep",
+    "cpm17",
+    "kumar",
+    "monusac",
+    "pannuke",
 ]
 
 CHECKPOINTS = {
-    'hovernet':HVNT_CP,
-    'hovernext':HNXT_CP,
-    'cellvit':CVT_CP, 
-    'generalist_sam':SAM_TYPES,
-    'pannuke_sam':SAM_TYPES,
-    'old_generalist_sam':SAM_TYPES,
-    'lm_sam':['vit_b_lm'],
-    'stardist':['stardist'],
+    "hovernet": HVNT_CP,
+    "hovernext": HNXT_CP,
+    "cellvit": CVT_CP,
+    "generalist_sam": SAM_TYPES,
+    "pannuke_sam": SAM_TYPES,
+    "old_generalist_sam": SAM_TYPES,
+    "lm_sam": ["vit_b_lm"],
+    "stardist": ["stardist"],
 }
+
 
 def get_instance_results(path, model_names, overwrite=False):
     for model in model_names:  # iterates over model types
@@ -126,10 +127,12 @@ def read_amg_csv(path, model_names, overwrite=False):
 
 
 def read_interactive(path, model_names=None, overwrite=False):
-    for mode in ['boxes', 'points']:
+    for mode in ["boxes", "points"]:
         for model_name in model_names:
             for model_type in SAM_TYPES:
-                csv_path = os.path.join(path, "sum_results", model_type, f"{mode}_{model_name}_{model_type}_results.csv")
+                csv_path = os.path.join(
+                    path, "sum_results", model_type, f"{mode}_{model_name}_{model_type}_results.csv"
+                )
                 if os.path.exists(csv_path) and not overwrite:
                     print(f"{csv_path} already exists.")
                     continue
@@ -167,46 +170,55 @@ def read_interactive(path, model_names=None, overwrite=False):
                 os.makedirs(os.path.join(path, model_name, "sum_results"), exist_ok=True)
                 df.to_csv(csv_path, index=False)
 
+
 def concatenate_interactive(model_dir):
-    for mode in ['amg', 'points', 'boxes']:
+    for mode in ["amg", "points", "boxes"]:
         final_df = pd.DataFrame()
         for sam in SAM_MODELS:
             for model_type in SAM_TYPES:
                 try:
-                    df = pd.read_csv(os.path.join(model_dir, 'sum_results', model_type, f'{mode}_{sam}_{model_type}_results.csv'))
+                    df = pd.read_csv(
+                        os.path.join(model_dir, "sum_results", model_type, f"{mode}_{sam}_{model_type}_results.csv")
+                    )
                 except FileNotFoundError:
                     continue
-                if mode in ['boxes', 'points']:
-                    df = df[['dataset', 'msa_1st', 'msa_8th']]
-                    df.rename(columns={'msa_1st':f'{sam}_{model_type}_{mode}', 'msa_8th':f'{sam}_{model_type}_I{mode[0]}'}, inplace=True)
+                if mode in ["boxes", "points"]:
+                    df = df[["dataset", "msa_1st", "msa_8th"]]
+                    df.rename(
+                        columns={"msa_1st": f"{sam}_{model_type}_{mode}", "msa_8th": f"{sam}_{model_type}_I{mode[0]}"},
+                        inplace=True,
+                    )
                 else:
-                    df = df[['dataset', 'msa']]
-                    df.rename(columns={'msa':f'{sam}_{model_type}'}, inplace=True)
+                    df = df[["dataset", "msa"]]
+                    df.rename(columns={"msa": f"{sam}_{model_type}"}, inplace=True)
                 if final_df.empty:
                     final_df = df
                 else:
-                    final_df = pd.merge(final_df, df, on='dataset', how='outer')
-        final_df = final_df.dropna(axis=1, how='all')
-        final_df.to_csv(os.path.join(model_dir, 'result_test', 'sum_results', f'concatenated_{mode}_results.csv'))
-        print(final_df) 
+                    final_df = pd.merge(final_df, df, on="dataset", how="outer")
+        final_df = final_df.dropna(axis=1, how="all")
+        final_df.to_csv(os.path.join(model_dir, "result_test", "sum_results", f"concatenated_{mode}_results.csv"))
+        print(final_df)
 
 
-def concatenate_automatic(model_dir): # does not include amg for now
+def concatenate_automatic(model_dir):  # does not include amg for now
     final_df = pd.DataFrame()
     for model in MODEL_NAMES:
         for checkpoint in CHECKPOINTS[model]:
             try:
-                df = pd.read_csv(os.path.join(model_dir, 'sum_results', checkpoint, f'ais_{model}_{checkpoint}_results.csv'))
+                df = pd.read_csv(
+                    os.path.join(model_dir, "sum_results", checkpoint, f"ais_{model}_{checkpoint}_results.csv")
+                )
             except FileNotFoundError:
                 print(model, checkpoint)
                 continue
-            df = df[['dataset', 'msa']]
-            df.rename(columns={'msa':f'{model}_{checkpoint}'}, inplace=True)
+            df = df[["dataset", "msa"]]
+            df.rename(columns={"msa": f"{model}_{checkpoint}"}, inplace=True)
             if final_df.empty:
                 final_df = df
             else:
-                final_df = pd.merge(final_df, df, on='dataset', how='outer')
-    final_df.to_csv(os.path.join(model_dir, 'result_test', 'sum_results', 'concatenated_ais_results.csv'))
+                final_df = pd.merge(final_df, df, on="dataset", how="outer")
+    final_df.to_csv(os.path.join(model_dir, "result_test", "sum_results", "concatenated_ais_results.csv"))
+
 
 EVAL_PATH = "/mnt/lustre-grete/usr/u12649/models/"
 

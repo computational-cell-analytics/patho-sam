@@ -9,7 +9,6 @@ from torch_em.transform.label import PerObjectDistanceTransform
 from patho_sam.training import histopathology_identity
 
 
-
 def _get_train_val_split(ds, val_fraction=0.2):
     generator = torch.Generator().manual_seed(42)
     train_ds, val_ds = data_util.random_split(ds, [1 - val_fraction, val_fraction], generator=generator)
@@ -24,14 +23,24 @@ def get_specialist_dataset(path, patch_shape, split_choice, dataset):
     # Expected raw and label transforms.
     raw_transform = histopathology_identity
     label_transform = PerObjectDistanceTransform(
-        distances=True, boundary_distances=True, directed_distances=False, foreground=True, instances=True, min_size=10,
+        distances=True,
+        boundary_distances=True,
+        directed_distances=False,
+        foreground=True,
+        instances=True,
+        min_size=10,
     )
 
-    if dataset == 'nuclick':
+    if dataset == "nuclick":
         ds = datasets.get_nuclick_dataset(
-            path=os.path.join(path, dataset), patch_shape=patch_shape, download=True,
-            sampler=sampler, split='Train', label_dtype=label_dtype,
-            label_transform=label_transform, raw_transform=raw_transform,
+            path=os.path.join(path, dataset),
+            patch_shape=patch_shape,
+            download=True,
+            sampler=sampler,
+            split="Train",
+            label_dtype=label_dtype,
+            label_transform=label_transform,
+            raw_transform=raw_transform,
         )
         nuclick_train_ds, nuclick_val_ds = _get_train_val_split(ds)
         if split_choice == "train":
@@ -39,25 +48,43 @@ def get_specialist_dataset(path, patch_shape, split_choice, dataset):
         else:
             return nuclick_val_ds
 
-    elif dataset == 'cryonuseg':
+    elif dataset == "cryonuseg":
         if split_choice == "train":
             return datasets.get_cryonuseg_dataset(
-                path=os.path.join(path, "cryonuseg"), patch_shape=(1, *patch_shape), download=True,
-                sampler=sampler, split='train', rater='b1', label_dtype=label_dtype,
-                label_transform=label_transform, raw_transform=raw_transform,
+                path=os.path.join(path, "cryonuseg"),
+                patch_shape=(1, *patch_shape),
+                download=True,
+                sampler=sampler,
+                split="train",
+                rater="b1",
+                label_dtype=label_dtype,
+                label_transform=label_transform,
+                raw_transform=raw_transform,
             )
         else:
             return datasets.get_cryonuseg_dataset(
-                path=os.path.join(path, "cryonuseg"), patch_shape=(1, *patch_shape), download=True,
-                sampler=sampler, split='val', rater='b1', label_dtype=label_dtype,
-                label_transform=label_transform, raw_transform=raw_transform,
+                path=os.path.join(path, "cryonuseg"),
+                patch_shape=(1, *patch_shape),
+                download=True,
+                sampler=sampler,
+                split="val",
+                rater="b1",
+                label_dtype=label_dtype,
+                label_transform=label_transform,
+                raw_transform=raw_transform,
             )
 
-    elif dataset == 'pannuke':
+    elif dataset == "pannuke":
         ds = datasets.get_pannuke_dataset(
-            path=os.path.join(path, "pannuke"), patch_shape=(1, *patch_shape), download=True,
-            sampler=sampler, ndim=2, folds=["fold_1", "fold_2"], label_dtype=label_dtype,
-            label_transform=label_transform, raw_transform=raw_transform,
+            path=os.path.join(path, "pannuke"),
+            patch_shape=(1, *patch_shape),
+            download=True,
+            sampler=sampler,
+            ndim=2,
+            folds=["fold_1", "fold_2"],
+            label_dtype=label_dtype,
+            label_transform=label_transform,
+            raw_transform=raw_transform,
         )
         pannuke_train_ds, pannuke_val_ds = _get_train_val_split(ds=ds)
         if split_choice == "train":
@@ -65,11 +92,16 @@ def get_specialist_dataset(path, patch_shape, split_choice, dataset):
         else:
             return pannuke_val_ds
 
-    elif dataset == 'glas':
+    elif dataset == "glas":
         ds = datasets.get_glas_dataset(
-            path=os.path.join(path, "glas"), patch_shape=patch_shape, download=True,
-            sampler=sampler, split="train", label_dtype=label_dtype,
-            label_transform=label_transform, raw_transform=raw_transform,
+            path=os.path.join(path, "glas"),
+            patch_shape=patch_shape,
+            download=True,
+            sampler=sampler,
+            split="train",
+            label_dtype=label_dtype,
+            label_transform=label_transform,
+            raw_transform=raw_transform,
         )
         glas_train_ds, glas_val_ds = _get_train_val_split(ds=ds)
         if split_choice == "train":
@@ -92,8 +124,12 @@ def get_specialist_loaders(patch_shape, data_path, dataset):
     IMPORTANT: the ID 0 is reserved for background, and the IDs must be consecutive.
     """
     # Get the datasets
-    specialist_train_dataset = get_specialist_dataset(path=data_path, patch_shape=patch_shape, split_choice="train", dataset=dataset)
-    specialist_val_dataset = get_specialist_dataset(path=data_path, patch_shape=patch_shape, split_choice="val", dataset=dataset)
+    specialist_train_dataset = get_specialist_dataset(
+        path=data_path, patch_shape=patch_shape, split_choice="train", dataset=dataset
+    )
+    specialist_val_dataset = get_specialist_dataset(
+        path=data_path, patch_shape=patch_shape, split_choice="val", dataset=dataset
+    )
     # Get the dataloaders
     train_loader = torch_em.get_data_loader(specialist_train_dataset, batch_size=2, shuffle=True, num_workers=16)
     val_loader = torch_em.get_data_loader(specialist_val_dataset, batch_size=1, shuffle=True, num_workers=16)

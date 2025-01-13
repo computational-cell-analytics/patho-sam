@@ -87,6 +87,7 @@ def main(args):
 
 if __name__ == "__main__":
     import argparse
+
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "-s", "--save_root", type=str, default="/mnt/vast-nhr/projects/cidas/cca/experiments/patho_sam/models"
