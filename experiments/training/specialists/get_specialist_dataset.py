@@ -38,7 +38,7 @@ def get_specialist_dataset(path, patch_shape, split_choice, dataset):
             return nuclick_train_ds
         else:
             return nuclick_val_ds
-    
+
     elif dataset == 'cryonuseg':
         if split_choice == "train":
             return datasets.get_cryonuseg_dataset(
@@ -52,7 +52,7 @@ def get_specialist_dataset(path, patch_shape, split_choice, dataset):
                 sampler=sampler, split='val', rater='b1', label_dtype=label_dtype,
                 label_transform=label_transform, raw_transform=raw_transform,
             )
-    
+
     elif dataset == 'pannuke':
         ds = datasets.get_pannuke_dataset(
             path=os.path.join(path, "pannuke"), patch_shape=(1, *patch_shape), download=True,
@@ -64,6 +64,18 @@ def get_specialist_dataset(path, patch_shape, split_choice, dataset):
             return pannuke_train_ds
         else:
             return pannuke_val_ds
+
+    elif dataset == 'glas':
+        ds = datasets.get_glas_dataset(
+            path=os.path.join(path, "glas"), patch_shape=patch_shape, download=True,
+            sampler=sampler, split="train", label_dtype=label_dtype,
+            label_transform=label_transform, raw_transform=raw_transform,
+        )
+        glas_train_ds, glas_val_ds = _get_train_val_split(ds=ds)
+        if split_choice == "train":
+            return glas_train_ds
+        else:
+            return glas_val_ds
 
     else:
         raise NotImplementedError

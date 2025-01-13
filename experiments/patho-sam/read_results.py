@@ -193,7 +193,7 @@ def concatenate_interactive(model_dir):
 
 def concatenate_automatic(model_dir): # does not include amg for now
     final_df = pd.DataFrame()
-    for model in MODEL_NAMES:        
+    for model in MODEL_NAMES:
         for checkpoint in CHECKPOINTS[model]:
             try:
                 df = pd.read_csv(os.path.join(model_dir, 'sum_results', checkpoint, f'ais_{model}_{checkpoint}_results.csv'))
