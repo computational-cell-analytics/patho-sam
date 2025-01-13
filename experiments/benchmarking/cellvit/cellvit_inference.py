@@ -4,7 +4,6 @@ import subprocess
 from eval_util import evaluate_cellvit, zip_predictions, DATASETS
 
 
-
 def run_inference(model_dir, input_dir, output_dir, result_dir):
     for dataset in DATASETS:
         data_dir = os.path.join(input_dir, dataset, "loaded_testset")

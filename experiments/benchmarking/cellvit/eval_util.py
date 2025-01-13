@@ -29,6 +29,7 @@ DATASETS = [
     "tnbc",
 ]
 
+
 def zip_predictions(path, target_dir):
     print(f"Zipping {path}...")
     zip_name = os.path.basename(path) + ".zip"
