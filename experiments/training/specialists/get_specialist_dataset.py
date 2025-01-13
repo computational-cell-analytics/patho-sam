@@ -36,7 +36,7 @@ def get_specialist_dataset(path, patch_shape, split_choice, dataset):
             path=os.path.join(path, dataset),
             patch_shape=patch_shape,
             download=True,
-            sampler=sampler,
+            sampler=MinInstanceSampler(min_num_instances=2, min_size=10),
             split="Train",
             label_dtype=label_dtype,
             label_transform=label_transform,

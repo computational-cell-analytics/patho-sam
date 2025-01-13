@@ -1,15 +1,14 @@
 import os
-import shutil
-import zipfile
 from glob import glob
 
-import imageio.v3 as imageio
+import imageio
 import numpy as np
 import pandas as pd
 from elf.evaluation import mean_segmentation_accuracy
 from natsort import natsorted
 from skimage.measure import label
 from tqdm import tqdm
+
 
 DATASETS = [
     "consep",
@@ -29,21 +28,8 @@ DATASETS = [
     "tnbc",
 ]
 
-def zip_predictions(path, target_dir):
-    print(f"Zipping {path}...")
-    zip_name = os.path.basename(path) + ".zip"
-    zip_path = os.path.join(target_dir, zip_name)
-    with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
-        for root, _dirs, files in os.walk(path):
-            for file in files:
-                file_path = os.path.join(root, file)
-                arcname = os.path.relpath(file_path, start=path)
-                zipf.write(file_path, arcname)
-    print("Successfully zipped results")
-
 
 def _run_evaluation(gt_paths, prediction_paths, verbose=True):
-    print(len(gt_paths), len(prediction_paths))
     assert len(gt_paths) == len(
         prediction_paths
     ), f"label / prediction mismatch: {len(gt_paths)} / {len(prediction_paths)}"
@@ -69,16 +55,12 @@ def _run_evaluation(gt_paths, prediction_paths, verbose=True):
     return msas, sa50s, sa75s
 
 
-def evaluate_cellvit(prediction_dir, checkpoint, dataset, result_dir):
+def evaluate_all_datasets_hovernet(prediction_dir, label_dir, result_dir, dataset, checkpoint):
+    gt_paths = natsorted(glob(os.path.join(label_dir, "*.tiff")))
     save_path = os.path.join(result_dir, dataset, checkpoint, "ais_result.csv")
-    if os.path.exists(save_path):
-        print("Results for {dataset} evaluation already exist")
-        return
-    prediction_paths = natsorted(glob(os.path.join(prediction_dir, "predictions", "*.tiff")))
-    gt_paths = natsorted(glob(os.path.join(prediction_dir, "labels", "*.tiff")))
-    if len(prediction_paths) == 0:
-        print(f"No predictions for {dataset} dataset on {checkpoint} checkpoint found")
-        return
+    prediction_paths = natsorted(glob(os.path.join(prediction_dir, "*.tiff")))
+    os.makedirs(os.path.join(result_dir, dataset, checkpoint), exist_ok=True)
+    print(f"evaluation {dataset} dataset on checkpoint {checkpoint} ...")
     msas, sa50s, sa75s = _run_evaluation(gt_paths=gt_paths, prediction_paths=prediction_paths)
     results = pd.DataFrame.from_dict(
         {
@@ -87,5 +69,5 @@ def evaluate_cellvit(prediction_dir, checkpoint, dataset, result_dir):
             "SA75": [np.mean(sa75s)],
         }
     )
-    os.makedirs(os.path.join(result_dir, dataset, checkpoint), exist_ok=True)
+    print(results.head())
     results.to_csv(save_path, index=False)

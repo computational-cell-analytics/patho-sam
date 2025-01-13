@@ -1,25 +1,9 @@
 import os
 import shutil
 import subprocess
-from eval_util import evaluate_cellvit, zip_predictions
+from eval_util import evaluate_cellvit, zip_predictions, DATASETS
 
-DATASETS = [
-    "consep",
-    "cpm15",
-    "cpm17",
-    "cryonuseg",
-    "lizard",
-    "lynsec_he",
-    "lynsec_ihc",
-    "monusac",
-    "monuseg",
-    "nuclick",
-    "nuinsseg",
-    "pannuke",
-    "puma",
-    "srsanet",
-    "tnbc",
-]
+
 
 def run_inference(model_dir, input_dir, output_dir, result_dir):
     for dataset in DATASETS:

@@ -7,7 +7,7 @@ from datetime import datetime
 N_OBJECTS = {"vit_b": 40, "vit_l": 30, "vit_h": 25}
 
 
-def write_batch_script(out_path, _name, model_type, save_root, dry, dataset):
+def write_batch_script(out_path, _name, model_type, save_root, dry, dataset, checkpoint):
     "Writing scripts for different patho-sam finetunings."
     batch_script = """#!/bin/bash
 #SBATCH -t 14-00:00:00
@@ -28,7 +28,8 @@ micromamba activate sam \n"""
     # python script
     python_script = f"python {_name}.py "
     python_script += f"-s {save_root} "  # save root folder
-    python_script += f"-d {dataset} "  # save root folder
+    python_script += f"-d {dataset} "  # dataset to finetune on
+    python_script += f"-c {checkpoint} "  # checkpoint to train on
     python_script += f"-m {model_type} "  # name of the model configuration
     python_script += f"--n_objects {N_OBJECTS[model_type]} "  # choice of the number of objects
 
@@ -78,6 +79,7 @@ def submit_slurm(args):
             save_root=args.save_root,
             dry=args.dry,
             dataset=args.dataset,
+            checkpoint=args.checkpoint
         )
 
 
@@ -92,7 +94,8 @@ if __name__ == "__main__":
     parser.add_argument(
         "-s", "--save_root", type=str, default="/mnt/vast-nhr/projects/cidas/cca/experiments/patho_sam/models"
     )
-    parser.add_argument("-d", "--dataset", type=str, default=None)
+    parser.add_argument("-d", "--dataset", type=str, default=None, required=True)
+    parser.add_argument("-c", "--checkpoint", type=str, default=None)
     parser.add_argument("-m", "--model_type", type=str, default=None)
     parser.add_argument("--dry", action="store_true")
     args = parser.parse_args()

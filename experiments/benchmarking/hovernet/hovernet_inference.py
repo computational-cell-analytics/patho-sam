@@ -3,62 +3,40 @@ import shutil
 import subprocess
 from glob import glob
 
-import imageio
+import tifffile as tiff
 from natsort import natsorted
 from scipy.io import loadmat
 from tqdm import tqdm
-
-DATASETS = [
-    "consep",
-    "cpm15",
-    "cpm17",
-    "cryonuseg",
-    "lizard",
-    "lynsec_he",
-    "lynsec_ihc",
-    "monusac",
-    "monuseg",
-    "nuclick",
-    "nuinsseg",
-    "pannuke",
-    "puma",
-    "srsanet",
-    "tnbc",
-]
+from eval_util import evaluate_all_datasets_hovernet, DATASETS
 
 
 def mat_to_tiff(path):
-    label_mat_paths = [p for p in natsorted(glob(os.path.join(path, "*.mat")))]
-    label_paths = []
+    label_mat_paths = [p for p in natsorted(glob(os.path.join(path, 'mat', "*.mat")))]
     for mpath in tqdm(label_mat_paths, desc="Preprocessing labels"):
-        label_path = mpath.replace(".mat", "_instance_labels.tiff")
-        label_paths.append(label_path)
-        if os.path.exists(label_path):
-            continue
+        label_path = os.path.join(path, os.path.basename(mpath.replace(".mat", ".tiff")))
         label = loadmat(mpath)["inst_map"]
-        imageio.imwrite(label_path, label)
-        os.remove(mpath)
+        tiff.imwrite(label_path, label)
 
 
 def run_inference(model_dir, input_dir, output_dir, type_info_path):
     for dataset in DATASETS:
-        for model in ["consep", "cpm17", "kumar", "pannuke", "monusac"]:
-            output_path = os.path.join(output_dir, dataset, model)
+        for checkpoint in ["consep", "cpm17", "kumar", "pannuke", "monusac"]:
+            output_path = os.path.join(output_dir, dataset, checkpoint)
             input_path = os.path.join(input_dir, dataset, "loaded_testset", "eval_split", "test_images")
             if os.path.exists(output_path):
                 continue
             os.makedirs(output_path, exist_ok=True)
-            if model in ["consep", "cpm17", "kumar"]:
+            if checkpoint in ["consep", "cpm17", "kumar"]:
                 model_mode = "original"
-                model_path = os.path.join(model_dir, f"hovernet_original_{model}_notype_tf2pytorch.tar")
+                model_path = os.path.join(model_dir, "checkpoints", f"hovernet_original_{checkpoint}_notype_tf2pytorch.tar")
                 nr_types = 0
                 type_info = ""
             else:
                 model_mode = "fast"
 
-                model_path = os.path.join(model_dir, f"hovernet_fast_{model}_type_tf2pytorch.tar")
+                model_path = os.path.join(model_dir, "checkpoints", f"hovernet_fast_{checkpoint}_type_tf2pytorch.tar")
                 type_info = type_info_path
-                if model == "pannuke":
+                if checkpoint == "pannuke":
                     nr_types = 6
                 else:
                     nr_types = 5
@@ -85,18 +63,26 @@ def run_inference(model_dir, input_dir, output_dir, type_info_path):
             ]
 
             command = ["python3", "/user/titus.griebel/u12649/hover_net/run_infer.py"] + args
-            print(f"Running inference with HoVerNet {model} model on {dataset} dataset...")
+            print(f"Running inference with HoVerNet {checkpoint} model on {dataset} dataset...")
 
             subprocess.run(command)
-            mat_to_tiff(os.path.join(output_path, "mat"))
+            mat_to_tiff(os.path.join(output_path))
+            evaluate_all_datasets_hovernet(
+                prediction_dir=output_path, 
+                label_dir=os.path.join(input_dir, dataset, 'loaded_testset', 'eval_split', 'test_labels'), 
+                result_dir=os.path.join(model_dir, 'results'),
+                checkpoint=checkpoint,
+                dataset=dataset,
+                )
             shutil.rmtree(os.path.join(output_path, "json"))
+            shutil.rmtree(os.path.join(output_path, "mat"))
             shutil.rmtree(os.path.join(output_path, "overlay"))
-            print(f"Inference on {dataset} dataset with the HoVerNet {model} model successfully completed")
+            print(f"Inference on {dataset} dataset with the HoVerNet {checkpoint} model successfully completed")
 
 
 run_inference(
-    model_dir="/mnt/lustre-grete/usr/u12649/models/hovernet/checkpoints",
+    model_dir="/mnt/lustre-grete/usr/u12649/models/hovernet",
     input_dir="/mnt/lustre-grete/usr/u12649/data/final_test",
-    output_dir="/mnt/lustre-grete/usr/u12649/models/hovernet/inference",
+    output_dir="/mnt/lustre-grete/usr/u12649/models/hovernet/inference/test",
     type_info_path="/user/titus.griebel/u12649/hover_net/type_info.json",
 )
