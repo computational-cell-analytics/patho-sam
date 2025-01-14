@@ -17,6 +17,29 @@ VANILLA_MODELS = {
 }
 
 
+SAM_TYPES = ["vit_b", "vit_l", "vit_h"]
+
+MODEL_NAMES = ["lm_sam", "old_generalist_sam", "vanilla_sam", "generalist_sam"]
+
+DATASETS = [
+    "consep",
+    "cpm15",
+    "cpm17",
+    "cryonuseg",
+    "lizard",
+    "lynsec_he",
+    "lynsec_ihc",
+    "monusac",
+    "monuseg",
+    "nuclick",
+    "nuinsseg",
+    "pannuke",
+    "puma",
+    "srsanet",
+    "tnbc",
+]
+
+
 def get_dataset_paths(dataset_name, split_choice):
     file_search_specs = "*"
     is_explicit_split = True
@@ -99,3 +122,14 @@ def get_test_paths(input_path):
     test_image_paths = natsorted(glob(os.path.join(input_path, "test_images/*")))
     test_label_paths = natsorted(glob(os.path.join(input_path, "test_labels/*")))
     return test_image_paths, test_label_paths
+
+
+def get_inference_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-d", "--dataset", type=str, default=None, help="The dataset to infer on. If None, all datasets will be chosen.")
+    parser.add_argument("-m", "--model", type=str, default=None, help="Provide the model type to infer with {vit_b, vit_l, vit_h}.")
+    parser.add_argument("-n", "--name", type=str, default=None, help="Provide the name of the model to infer with {generalist_sam, vanilla_sam, ..}.")
+    args = parser.parse_args()
+    return args
+
+

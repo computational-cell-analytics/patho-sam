@@ -1,11 +1,10 @@
 import micro_sam.training as sam_training
 from torch_em.data import MinInstanceSampler
 from torch_em.data.datasets import (
-    get_bcss_loader,
     get_consep_loader,
     get_cpm_loader,
     get_cryonuseg_loader,
-    get_janowczyk_loader,
+    get_glas_loader,
     get_lizard_loader,
     get_lynsec_loader,
     get_monusac_loader,
@@ -23,18 +22,7 @@ def get_dataloaders(patch_shape, data_path, dataset, split=None, organ_type=None
     raw_transform = sam_training.identity
     sampler = MinInstanceSampler(min_num_instances=3)
 
-    if dataset == "bcss":
-        loader = get_bcss_loader(
-            path=data_path,
-            patch_shape=patch_shape,
-            batch_size=1,
-            download=False, 
-            val_fraction=0.0,
-            raw_transform=raw_transform,
-            sampler=sampler,
-        )
-
-    elif dataset == "consep":
+    if dataset == "consep":
         loader = get_consep_loader(
             path=data_path,
             patch_shape=patch_shape,
@@ -75,23 +63,22 @@ def get_dataloaders(patch_shape, data_path, dataset, split=None, organ_type=None
             patch_shape=(1,) + patch_shape,
             batch_size=1,
             rater="b1",
+            split=split,
             download=True,
             raw_transform=raw_transform,
             sampler=sampler,
         )
 
-    elif dataset == "janowczyk":
-        loader = get_janowczyk_loader(
+    elif dataset == "glas":
+        loader = get_glas_loader(
             path=data_path,
             patch_shape=patch_shape,
             batch_size=1,
             download=True,
             split=split,
             raw_transform=raw_transform,
-            annotation="nuclei",
             sampler=MinInstanceSampler(min_num_instances=2),
         )
-        loader.dataset.max_sampling_attempts = 5000
 
     elif dataset == "lizard":
         loader = get_lizard_loader(
