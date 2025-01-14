@@ -8,19 +8,18 @@ N_OBJECTS = {"vit_b": 40, "vit_l": 30, "vit_h": 25}
 
 
 def write_batch_script(out_path, _name, model_type, save_root, dry, dataset, checkpoint):
-    "Writing scripts for different patho-sam finetunings."
+    "Writing scripts for different patho-sam specialist finetunings."
     batch_script = """#!/bin/bash
-#SBATCH -t 14-00:00:00
-#SBATCH --mem 128G
+#SBATCH -t 2-00:00:00
+#SBATCH --mem 64G
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH -p grete:shared
 #SBATCH -G A100:1
-#SBATCH -A gzz0001
-#SBATCH -c 32
-#SBATCH --qos=14d
+#SBATCH -A nim00007
+#SBATCH -c 16
 #SBATCH --constraint=80gb
-#SBATCH --job-name=patho-sam-generalist
+#SBATCH --job-name=patho-sam-specialist
 
 source ~/.bashrc
 micromamba activate sam \n"""
@@ -91,9 +90,7 @@ if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "-s", "--save_root", type=str, default="/mnt/vast-nhr/projects/cidas/cca/experiments/patho_sam/models"
-    )
+    parser.add_argument("-s", "--save_root", type=str, default=None)
     parser.add_argument("-d", "--dataset", type=str, default=None, required=True)
     parser.add_argument("-c", "--checkpoint", type=str, default=None)
     parser.add_argument("-m", "--model_type", type=str, default=None)
