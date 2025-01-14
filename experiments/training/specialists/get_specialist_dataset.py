@@ -45,34 +45,23 @@ def get_specialist_dataset(path, patch_shape, split_choice, dataset):
         nuclick_train_ds, nuclick_val_ds = _get_train_val_split(ds)
         if split_choice == "train":
             return nuclick_train_ds
-        return nuclick_val_ds
+        else:
+            return nuclick_val_ds
 
-    if dataset == "cryonuseg":
-        if split_choice == "train":
-            return datasets.get_cryonuseg_dataset(
-                path=os.path.join(path, "cryonuseg"),
-                patch_shape=(1, *patch_shape),
-                download=True,
-                sampler=sampler,
-                split="train",
-                rater="b1",
-                label_dtype=label_dtype,
-                label_transform=label_transform,
-                raw_transform=raw_transform,
-            )
+    elif dataset == "cryonuseg":
         return datasets.get_cryonuseg_dataset(
             path=os.path.join(path, "cryonuseg"),
             patch_shape=(1, *patch_shape),
             download=True,
             sampler=sampler,
-            split="val",
+            split=split_choice,
             rater="b1",
             label_dtype=label_dtype,
             label_transform=label_transform,
             raw_transform=raw_transform,
         )
 
-    if dataset == "pannuke":
+    elif dataset == "pannuke":
         ds = datasets.get_pannuke_dataset(
             path=os.path.join(path, "pannuke"),
             patch_shape=(1, *patch_shape),
@@ -87,9 +76,10 @@ def get_specialist_dataset(path, patch_shape, split_choice, dataset):
         pannuke_train_ds, pannuke_val_ds = _get_train_val_split(ds=ds)
         if split_choice == "train":
             return pannuke_train_ds
-        return pannuke_val_ds
+        else:
+            return pannuke_val_ds
 
-    if dataset == "glas":
+    elif dataset == "glas":
         ds = datasets.get_glas_dataset(
             path=os.path.join(path, "glas"),
             patch_shape=patch_shape,
@@ -103,9 +93,11 @@ def get_specialist_dataset(path, patch_shape, split_choice, dataset):
         glas_train_ds, glas_val_ds = _get_train_val_split(ds=ds)
         if split_choice == "train":
             return glas_train_ds
-        return glas_val_ds
+        else:
+            return glas_val_ds
 
-    raise NotImplementedError
+    else:
+        raise NotImplementedError
 
 
 def get_specialist_loaders(patch_shape, data_path, dataset):
