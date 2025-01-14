@@ -15,6 +15,24 @@ VANILLA_MODELS = {
     "vit_h": "/scratch-grete/projects/nim00007/sam/models/vanilla/sam_vit_h_4b8939.pth",
 }
 
+DATASETS = [
+    "consep",
+    "cpm15",
+    "cpm17",
+    "cryonuseg",
+    "glas",
+    "lizard",
+    "lynsec_he",
+    "lynsec_ihc",
+    "monusac",
+    "monuseg",
+    "nuclick",
+    "nuinsseg",
+    "pannuke",
+    "puma",
+    "srsanet",
+    "tnbc",
+]
 
 def get_dataset_paths(dataset_name, split_choice):
     file_search_specs = "*"
