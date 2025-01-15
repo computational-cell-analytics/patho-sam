@@ -8,7 +8,7 @@ SAM_TYPES = ["vit_b", "vit_l", "vit_h", "vit_b_lm"]
 
 SAM_MODELS = ["generalist_sam", "old_generalist_sam", "lm_sam", "pannuke_sam", "vanilla_sam"]
 
-MODEL_NAMES = ["hovernet", "cellvit", "hovernext", "stardist"] + SAM_MODELS
+MODEL_NAMES = ["hovernet", "cellvit", "hovernext", "stardist", "cellvitpp", "instanseg"] + SAM_MODELS
 
 ALIAS = []
 
@@ -54,15 +54,19 @@ HVNT_CP = [
     "pannuke",
 ]
 
+CVTPP_CP = ["SAM-H-x40-AMP"]
+
 CHECKPOINTS = {
     "hovernet": HVNT_CP,
     "hovernext": HNXT_CP,
     "cellvit": CVT_CP,
+    "cellvitpp": CVTPP_CP,
     "generalist_sam": SAM_TYPES,
     "pannuke_sam": SAM_TYPES,
     "old_generalist_sam": SAM_TYPES,
     "lm_sam": ["vit_b_lm"],
     "stardist": ["stardist"],
+    "instanseg": ["instanseg"],
 }
 
 
@@ -79,9 +83,18 @@ def get_instance_results(path, model_names, overwrite=False):
                 return
             for dataset in natsorted(DATASETS):
                 if model in SAM_MODELS:
-                    csv_path = os.path.join(
-                        path, model, "results", dataset, "instance", f"{dataset}_{model}_{checkpoint}_instance.csv"
-                    )
+                    if os.path.exists(
+                        os.path.join(
+                            path, model, "results", dataset, "instance", f"{dataset}_{model}_{checkpoint}_instance.csv"
+                        )
+                    ):
+                        csv_path = os.path.join(
+                            path, model, "results", dataset, "instance", f"{dataset}_{model}_{checkpoint}_instance.csv"
+                        )
+                    else:
+                        csv_path = os.path.join(
+                            path, model, "results", dataset, "instance", f"{dataset}_{model}_{checkpoint}_decoder.csv"
+                        )
                 else:
                     csv_path = os.path.join(path, model, "results", dataset, checkpoint, "ais_result.csv")
                 if not os.path.exists(csv_path):
@@ -224,9 +237,9 @@ EVAL_PATH = "/mnt/lustre-grete/usr/u12649/models/"
 
 
 def main():
-    # get_instance_results(EVAL_PATH, MODEL_NAMES, overwrite=True)
+    get_instance_results(EVAL_PATH, MODEL_NAMES, overwrite=True)
     # read_amg_csv(EVAL_PATH, SAM_MODELS, overwrite=True)
-    read_interactive(EVAL_PATH, SAM_MODELS, overwrite=True)
+    # read_interactive(EVAL_PATH, SAM_MODELS, overwrite=True)
     # read_it_points_csv(EVAL_PATH, SAM_MODELS, overwrite=False)
     # concatenate_interactive(EVAL_PATH)
     # concatenate_automatic(EVAL_PATH)

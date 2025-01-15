@@ -1,6 +1,6 @@
 # create resized pyramid tiffs with vips
 
-from shutil import rmtree
+import shutil
 from tqdm import tqdm
 import imageio.v3 as imageio
 import os
@@ -30,7 +30,7 @@ DATASETS = [
 
 def preprocess_cvtplus(input_dir, output_dir):
     for dataset in DATASETS:
-        data_dir = os.path.join(input_dir, dataset, 'loaded_testset', 'eval_split', 'test_images')
+        data_dir = os.path.join(input_dir, dataset, "loaded_testset", "eval_split", "test_images")
         intermediate_folder = os.path.join(output_dir, "intermediate", dataset)
         output_folder = os.path.join(output_dir, "preprocessed", dataset)
         os.makedirs(intermediate_folder, exist_ok=True)
@@ -42,18 +42,15 @@ def preprocess_cvtplus(input_dir, output_dir):
             imageio.imwrite(intermediate_file, img_uint)
             output_file = os.path.join(output_folder, os.path.basename(img_path))
             image = pyvips.Image.new_from_file(intermediate_file)
-            image.tiffsave(
-                output_file,
-                tile=True,
-                tile_width=512,
-                tile_height=512,
-                pyramid=True
-            )
-        rmtree(intermediate_folder)
+            image.tiffsave(output_file, tile=True, tile_width=512, tile_height=512, pyramid=True)
+    shutil.rmtree(intermediate_folder)
 
 
 def main():
     preprocess_cvtplus(
-        input_dir="/mnt/lustre-grete/usr/u12649/data/final_test",
-        output_dir="/mnt/lustre-grete/usr/u12649/data/cvtplus/test"
+        input_dir="/mnt/lustre-grete/usr/u12649/data/final_test", output_dir="/mnt/lustre-grete/usr/u12649/data/cvtplus"
     )
+
+
+if __name__ == "__main__":
+    main()

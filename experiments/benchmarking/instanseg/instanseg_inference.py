@@ -81,10 +81,10 @@ def evaluate_instanseg(prediction_dir, label_dir, result_dir, dataset):
         print(results.head(2))
 
 
-def infer_instanseg(data_dir, output_path):
+def infer_instanseg(data_dir, output_path, dataset):
     image_paths = natsorted(glob(os.path.join(data_dir, "test_images", "*.tiff")))
     os.makedirs(output_path, exist_ok=True)
-    for image_path in image_paths:
+    for image_path in tqdm(image_paths, desc=f"Performing inference on {dataset}"):
         image = read_image(image_path)
         segmentation = segment_using_instanseg(
             image=image, model_type="brightfield_nuclei", target="nuclei", scale="small"
@@ -101,7 +101,7 @@ def run_inference(input_dir, model_dir):
                 continue
         os.makedirs(output_path, exist_ok=True)
         print(f"Running inference with InstanSeg model on {dataset} dataset... \n")
-        infer_instanseg(input_path, output_path)
+        infer_instanseg(input_path, output_path, dataset)
         print(f"Inference on {dataset} dataset with the InstanSeg model successfully completed \n")
         evaluate_instanseg(
             prediction_dir=os.path.join(model_dir, "inference"),
@@ -114,7 +114,7 @@ def run_inference(input_dir, model_dir):
 def main():
     run_inference(
         input_dir="/mnt/lustre-grete/usr/u12649/data/final_test",
-        model_dir="/mnt/lustre-grete/usr/u12649/models/instanseg",
+        model_dir="/mnt/lustre-grete/usr/u12649/models/instanseg/",
     )
 
 

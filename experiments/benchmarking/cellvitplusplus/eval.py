@@ -12,27 +12,28 @@ from skimage.measure import label
 from tqdm import tqdm
 
 DATASETS = [
-    # "consep",
-    # "cpm15",
-    # "cpm17",
+    "consep",
+    "cpm15",
+    "cpm17",
     "cryonuseg",
-    # "lizard",
-    # "lynsec_he",
-    # "lynsec_ihc",
-    # "monusac",
-    # "monuseg",
-    # "nuclick",
-    # "nuinsseg",
-    # "pannuke",
-    # "puma",
-    # "srsanet",
-    # "tnbc",
+    "lizard",
+    "lynsec_he",
+    "lynsec_ihc",
+    "monusac",
+    "monuseg",
+    "nuclick",
+    "nuinsseg",
+    "pannuke",
+    "puma",
+    "srsanet",
+    "tnbc",
 ]
 CVTPP_CP = [
     # 'Virchow-x40-AMP',
-    'SAM-H-x40-AMP',
+    "SAM-H-x40-AMP",
     # '256-x40-AMP'
 ]
+
 
 def _run_evaluation(gt_paths, prediction_paths, verbose=True):
     print(len(gt_paths), len(prediction_paths))
@@ -92,5 +93,6 @@ def main():
         label_dir = os.path.join(input_dir, dataset, "loaded_testset", "eval_split", "test_labels")
         for checkpoint in CVTPP_CP:
             evaluate_cellvit(prediction_dir, checkpoint, dataset, result_dir, label_dir)
-main()
 
+
+main()
