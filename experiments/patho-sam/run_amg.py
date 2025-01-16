@@ -4,7 +4,13 @@ import subprocess
 from util import get_inference_args, SAM_TYPES, DATASETS, MODEL_NAMES
 
 
-def run_amg_inference(model_dir, input_dir, model_types=SAM_TYPES, datasets=DATASETS, model_names=MODEL_NAMES):
+def run_inference(model_dir, input_dir, model_types, datasets, model_names):
+    if model_types == [None]:
+        model_types = SAM_TYPES
+    if datasets == [None]:
+        datasets = DATASETS
+    if model_names == [None]:
+        model_names = MODEL_NAMES
     for model in model_names:
         for model_type in model_types:
             if model in ["vanilla_sam", "lm_sam"]:
@@ -17,13 +23,13 @@ def run_amg_inference(model_dir, input_dir, model_types=SAM_TYPES, datasets=DATA
                 checkpoint_path = os.path.join(model_dir, model, "checkpoints", model_type, "best.pt")
                 if not os.path.exists(checkpoint_path):
                     print(
-                        f"No checkpoint for {model} model (type: {model_type} found. Continuing with existent models... "
+                        f"No checkpoint for {model} model (type: {model_type}) found. Continuing with existent models... "
                     )
                     continue
             for dataset in datasets:
                 output_path = os.path.join(model_dir, model, "inference", dataset, model_type, "amg")
                 os.makedirs(output_path, exist_ok=True)
-                if os.path.exists(os.path.join(output_path, "results", "amg.csv")):
+                if os.path.exists(os.path.join(model_dir, model, 'results', dataset, 'amg', f'{dataset}_{model}_{model_type}_amg.csv')):
                     print(f"Inference with {model} model (type: {model_type}) on {dataset} dataset already done")
                     continue
                 input_path = os.path.join(input_dir, dataset, "loaded_testset", "eval_split")
@@ -52,7 +58,7 @@ def run_amg_inference(model_dir, input_dir, model_types=SAM_TYPES, datasets=DATA
 
 def main():
     args = get_inference_args()
-    run_amg_inference(
+    run_inference(
         model_dir="/mnt/lustre-grete/usr/u12649/models",
         input_dir="/mnt/lustre-grete/usr/u12649/data/final_test",
         model_types=[args.model],
