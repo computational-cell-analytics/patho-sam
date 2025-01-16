@@ -21,10 +21,11 @@ def mat_to_tiff(path):
 def run_inference(model_dir, input_dir, output_dir, type_info_path):
     for dataset in DATASETS:
         for checkpoint in ["consep", "cpm17", "kumar", "pannuke", "monusac"]:
-            output_path = os.path.join(output_dir, dataset, checkpoint)
+            output_path = os.path.join(output_dir, "inference", dataset, checkpoint)
             input_path = os.path.join(input_dir, dataset, "loaded_testset", "eval_split", "test_images")
-            if os.path.exists(output_path):
-                continue
+            if os.path.exists(os.path.join(output_dir, "results", dataset, checkpoint, 'ais_result.csv')):
+                    print(f"Inference with CellViT++ model (type: {checkpoint}) on {dataset} dataset already done")
+                    continue
             os.makedirs(output_path, exist_ok=True)
             if checkpoint in ["consep", "cpm17", "kumar"]:
                 model_mode = "original"
@@ -85,6 +86,6 @@ def run_inference(model_dir, input_dir, output_dir, type_info_path):
 run_inference(
     model_dir="/mnt/lustre-grete/usr/u12649/models/hovernet",
     input_dir="/mnt/lustre-grete/usr/u12649/data/final_test",
-    output_dir="/mnt/lustre-grete/usr/u12649/models/hovernet/inference/test",
+    output_dir="/mnt/lustre-grete/usr/u12649/models/hovernet",
     type_info_path="/user/titus.griebel/u12649/hover_net/type_info.json",
 )

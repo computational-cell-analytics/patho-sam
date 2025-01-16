@@ -94,8 +94,8 @@ def get_results(path, overwrite=False):
                         "sa75_1st": [],
                         "sa75_8th": [],
                     }
-                os.makedirs(os.path.join(path, "sum_results", "test", model), exist_ok=True)
-                csv_out = os.path.join(path, "sum_results", "test", model, f"{mode}_{model}_{checkpoint}_results.csv")
+                os.makedirs(os.path.join(path, "sum_results", model), exist_ok=True)
+                csv_out = os.path.join(path, "sum_results", model, f"{mode}_{model}_{checkpoint}_results.csv")
                 if os.path.exists(csv_out) and not overwrite:
                     print(f"{csv_out} already exists.")
                     continue
@@ -128,7 +128,7 @@ def get_results(path, overwrite=False):
                 df.to_csv(csv_out, index=False)
                 if mode in ["amg", "ais"]:
                     df = df[["dataset", "msa"]]
-                    df.rename(columns={"msa": f"{model}_{checkpoint}"}, inplace=True)
+                    df.rename(columns={"msa": f"{model}_{checkpoint}_{mode}"}, inplace=True)
                 else:
                     df = df[["dataset", "msa_1st", "msa_8th"]]
                     df.rename(
@@ -139,7 +139,7 @@ def get_results(path, overwrite=False):
                     concat_df = df
                 else:
                     concat_df = pd.merge(concat_df, df, on="dataset", how="outer")
-                    print("merge successful")
+                    print(f"{model} (checkpoint: {checkpoint}) added to concat results")
         if not concat_df.empty:
             concat_df.to_csv(csv_concat, index=False)
 

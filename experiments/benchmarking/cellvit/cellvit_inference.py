@@ -9,8 +9,9 @@ def run_inference(model_dir, input_dir, output_dir, result_dir):
         data_dir = os.path.join(input_dir, dataset, "loaded_testset")
         for model in ["256-x20", "256-x40", "SAM-H-x20", "SAM-H-x40"]:
             model_path = os.path.join(model_dir, f"CellViT-{model}.pth")
-            if os.path.exists(os.path.join(output_dir, dataset, model, dataset, "inference_masks")):
-                continue
+            if os.path.exists(os.path.join(result_dir, dataset, model, 'ais_result.csv')):
+                    print(f"Inference with CellViT model (type: {model}) on {dataset} dataset already done")
+                    continue
             output_path = os.path.join(output_dir, dataset, model)
             os.makedirs(output_path, exist_ok=True)
             args = [

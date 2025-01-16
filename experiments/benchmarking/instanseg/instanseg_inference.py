@@ -96,9 +96,8 @@ def run_inference(input_dir, model_dir):
     for dataset in DATASETS:
         output_path = os.path.join(model_dir, "inference", dataset)
         input_path = os.path.join(input_dir, dataset, "loaded_testset", "eval_split")
-        if os.path.exists(output_path):
-            if len(os.listdir(output_path)) > 1:
-                continue
+        if os.path.exists(os.path.join(model_dir, "results", dataset, "instanseg", "ais_result.csv")):
+            continue
         os.makedirs(output_path, exist_ok=True)
         print(f"Running inference with InstanSeg model on {dataset} dataset... \n")
         infer_instanseg(input_path, output_path, dataset)

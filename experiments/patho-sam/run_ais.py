@@ -28,7 +28,7 @@ def run_inference(model_dir, input_dir, model_types, datasets, model_names):
             for dataset in datasets:
                 output_path = os.path.join(model_dir, model, "inference", dataset, model_type, "instance")
                 os.makedirs(output_path, exist_ok=True)
-                if os.path.exists(os.path.join(model_dir, model, 'results', dataset, 'ais', f'{dataset}_{model}_{model_type}_instance.csv')):
+                if os.path.exists(os.path.join(model_dir, model, 'results', dataset, 'ais', f'{dataset}_{model}_{model_type}_ais.csv')):
                     print(f"Inference with {model} model (type: {model_type}) on {dataset} dataset already done")
                     continue
                 input_path = os.path.join(input_dir, dataset, "loaded_testset", "eval_split")
@@ -45,7 +45,7 @@ def run_inference(model_dir, input_dir, model_types, datasets, model_names):
                 shutil.rmtree(os.path.join(output_path, "embeddings"))
                 os.makedirs(os.path.join(model_dir, model, 'results', dataset, 'ais'), exist_ok=True)
                 shutil.copy(os.path.join(model_dir, model, "inference", dataset, model_type, 'instance', 'results', 'instance_segmentation_with_decoder.csv'), 
-                            os.path.join(model_dir, model, 'results', dataset, 'ais', f'{dataset}_{model}_{model_type}_instance.csv'))
+                            os.path.join(model_dir, model, 'results', dataset, 'ais', f'{dataset}_{model}_{model_type}_ais.csv'))
 
                 print(f"Successfully ran inference with {model} model (type: {model_type}) on {dataset} dataset")
 
