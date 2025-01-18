@@ -14,17 +14,18 @@ def mat_to_tiff(path):
     label_mat_paths = [p for p in natsorted(glob(os.path.join(path, "mat", "*.mat")))]
     for mpath in tqdm(label_mat_paths, desc="Preprocessing labels"):
         label_path = os.path.join(path, os.path.basename(mpath.replace(".mat", ".tiff")))
-        label = loadmat(mpath)["inst_map"]
+        label = loadmat(mpath)["inst_type"]
+        breakpoint()
         tiff.imwrite(label_path, label)
-
+        
 
 def run_inference(model_dir, input_dir, output_dir, type_info_path):
-    for dataset in DATASETS:
-        for checkpoint in ["consep", "cpm17", "kumar", "pannuke", "monusac"]:
+    for dataset in ["pannuke"]:
+        for checkpoint in ["pannuke"]:
             output_path = os.path.join(output_dir, "inference", dataset, checkpoint)
             input_path = os.path.join(input_dir, dataset, "loaded_testset", "eval_split", "test_images")
             if os.path.exists(os.path.join(output_dir, "results", dataset, checkpoint, 'ais_result.csv')):
-                    print(f"Inference with HoVerNet model (type: {checkpoint}) on {dataset} dataset already done")
+                    print(f"Inference with CellViT++ model (type: {checkpoint}) on {dataset} dataset already done")
                     continue
             os.makedirs(output_path, exist_ok=True)
             if checkpoint in ["consep", "cpm17", "kumar"]:
@@ -48,7 +49,7 @@ def run_inference(model_dir, input_dir, output_dir, type_info_path):
                 "--nr_types",
                 f"{nr_types}",
                 "--type_info_path",
-                f"{type_info}",
+                "/user/titus.griebel/u12649/hover_net/type_info.json",
                 "--model_mode",
                 f"{model_mode}",
                 "--model_path",
@@ -62,30 +63,30 @@ def run_inference(model_dir, input_dir, output_dir, type_info_path):
                 f"{input_path}",
                 "--output_dir",
                 f"{output_path}",
-                "--save_raw_map",
+                # "--save_raw_map",
             ]
 
             command = ["python3", "/user/titus.griebel/u12649/hover_net/run_infer.py"] + args
             print(f"Running inference with HoVerNet {checkpoint} model on {dataset} dataset...")
 
-            subprocess.run(command)
+            # subprocess.run(command)
             mat_to_tiff(os.path.join(output_path))
-            evaluate_all_datasets_hovernet(
-                prediction_dir=output_path,
-                label_dir=os.path.join(input_dir, dataset, "loaded_testset", "eval_split", "test_labels"),
-                result_dir=os.path.join(model_dir, "results"),
-                checkpoint=checkpoint,
-                dataset=dataset,
-            )
-            shutil.rmtree(os.path.join(output_path, "json"))
-            shutil.rmtree(os.path.join(output_path, "mat"))
-            shutil.rmtree(os.path.join(output_path, "overlay"))
+            # evaluate_all_datasets_hovernet(
+            #     prediction_dir=output_path,
+            #     label_dir=os.path.join(input_dir, dataset, "loaded_testset", "eval_split", "test_labels"),
+            #     result_dir=os.path.join(model_dir, "results"),
+            #     checkpoint=checkpoint,
+            #     dataset=dataset,
+            # )
+            # shutil.rmtree(os.path.join(output_path, "json"))
+            # shutil.rmtree(os.path.join(output_path, "mat"))
+            # shutil.rmtree(os.path.join(output_path, "overlay"))
             print(f"Inference on {dataset} dataset with the HoVerNet {checkpoint} model successfully completed")
 
 
 run_inference(
     model_dir="/mnt/lustre-grete/usr/u12649/models/hovernet",
     input_dir="/mnt/lustre-grete/usr/u12649/data/final_test",
-    output_dir="/mnt/lustre-grete/usr/u12649/models/hovernet",
+    output_dir="/mnt/lustre-grete/usr/u12649/models/hovernet_types",
     type_info_path="/user/titus.griebel/u12649/hover_net/type_info.json",
 )

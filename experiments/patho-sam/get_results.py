@@ -16,6 +16,7 @@ DATASETS = [
     "cpm15",
     "cpm17",
     "cryonuseg",
+    "glas",
     "lizard",
     "lynsec_he",
     "lynsec_ihc",

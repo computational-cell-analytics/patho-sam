@@ -5,6 +5,7 @@ from util import get_inference_args, SAM_TYPES, DATASETS, MODEL_NAMES
 
 
 def run_inference(model_dir, input_dir, model_types, datasets, model_names):
+    model_names = ['lm_sam']
     if model_types == [None]:
         model_types = SAM_TYPES
     if datasets == [None]:
@@ -12,6 +13,8 @@ def run_inference(model_dir, input_dir, model_types, datasets, model_names):
     if model_names == [None]:
         model_names = MODEL_NAMES
     for model in model_names:
+        if model == "vanilla_sam":
+            continue
         for model_type in model_types:
             if model == "lm_sam":
                 checkpoint_path = None

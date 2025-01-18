@@ -6,13 +6,13 @@ from eval_util import evaluate_cellvit, zip_predictions, DATASETS
 
 def run_inference(model_dir, input_dir, output_dir, result_dir):
     for dataset in DATASETS:
-        data_dir = os.path.join(input_dir, dataset, "loaded_testset")
-        for model in ["256-x20", "256-x40", "SAM-H-x20", "SAM-H-x40"]:
-            model_path = os.path.join(model_dir, f"CellViT-{model}.pth")
-            if os.path.exists(os.path.join(result_dir, dataset, model, 'ais_result.csv')):
-                    print(f"Inference with CellViT model (type: {model}) on {dataset} dataset already done")
+        data_dir = os.path.join(input_dir, dataset, "loaded_testset", "eval_split")
+        for checkpoint in ["256-x20", "256-x40", "SAM-H-x20", "SAM-H-x40"]:
+            model_path = os.path.join(model_dir, f"CellViT-{checkpoint}.pth")
+            if os.path.exists(os.path.join(result_dir, dataset, checkpoint, 'ais_result.csv')):
+                    print(f"Inference with CellViT model (type: {checkpoint}) on {dataset} dataset already done")
                     continue
-            output_path = os.path.join(output_dir, dataset, model)
+            output_path = os.path.join(output_dir, dataset, checkpoint)
             os.makedirs(output_path, exist_ok=True)
             args = [
                 "--model",
@@ -29,17 +29,19 @@ def run_inference(model_dir, input_dir, output_dir, result_dir):
                 "python3",
                 "/user/titus.griebel/u12649/CellViT/cell_segmentation/inference/inference_cellvit_experiment_monuseg.py",
             ] + args
-            print(f"Running inference with CellViT {model} model on {dataset} dataset...")
+            print(f"Running inference with CellViT {checkpoint} model on {dataset} dataset...")
             subprocess.run(command)
-            plot_dir = os.path.join(output_dir, dataset, model, dataset, "plots")
+            plot_dir = os.path.join(output_dir, dataset, checkpoint, dataset, "plots")
             if os.path.exists(plot_dir):
                 shutil.rmtree(plot_dir)
-            evaluate_cellvit(output_path, model, dataset, result_dir)
-            zip_path = os.path.join(output_dir, dataset)
-            zip_predictions(output_path, zip_path)
-            shutil.rmtree(output_path)
-            print(f"Successfully ran inference with CellViT {model} model on {dataset} dataset")
-
+            evaluate_cellvit(output_path, checkpoint, dataset, data_dir, result_dir)
+            # zip_path = os.path.join(output_dir, dataset)
+            # zip_predictions(output_path, zip_path)
+            try:
+                os.remove(os.path.join(output_path, f"inference_{dataset}.log"))
+            except FileNotFoundError:
+                pass
+            print(f"Successfully ran inference with CellViT {checkpoint} model on {dataset} dataset")
 
 def main():
     run_inference(

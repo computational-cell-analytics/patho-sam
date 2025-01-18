@@ -70,13 +70,13 @@ def _run_evaluation(gt_paths, prediction_paths, verbose=True):
     return msas, sa50s, sa75s
 
 
-def evaluate_cellvit(prediction_dir, checkpoint, dataset, result_dir):
+def evaluate_cellvit(prediction_dir, checkpoint, dataset, label_dir, result_dir):
     save_path = os.path.join(result_dir, dataset, checkpoint, "ais_result.csv")
     if os.path.exists(save_path):
         print("Results for {dataset} evaluation already exist")
         return
-    prediction_paths = natsorted(glob(os.path.join(prediction_dir, "predictions", "*.tiff")))
-    gt_paths = natsorted(glob(os.path.join(prediction_dir, "labels", "*.tiff")))
+    prediction_paths = natsorted(glob(os.path.join(prediction_dir, "*.tiff")))
+    gt_paths = natsorted(glob(os.path.join(label_dir, "test_labels", "*.tiff")))
     if len(prediction_paths) == 0:
         print(f"No predictions for {dataset} dataset on {checkpoint} checkpoint found")
         return
@@ -88,5 +88,6 @@ def evaluate_cellvit(prediction_dir, checkpoint, dataset, result_dir):
             "SA75": [np.mean(sa75s)],
         }
     )
+    print(results.head(2))
     os.makedirs(os.path.join(result_dir, dataset, checkpoint), exist_ok=True)
     results.to_csv(save_path, index=False)

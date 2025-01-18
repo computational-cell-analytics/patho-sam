@@ -87,8 +87,8 @@ def evaluate_cellvit(prediction_dir, checkpoint, dataset, result_dir, label_dir)
 
 def main():
     input_dir = "/mnt/lustre-grete/usr/u12649/data/final_test"
-    prediction_dir = "/mnt/lustre-grete/usr/u12649/models/cellvit_plusplus/inference/"
-    result_dir = "/mnt/lustre-grete/usr/u12649/models/cellvit_plusplus/results"
+    prediction_dir = "/mnt/lustre-grete/usr/u12649/models/cellvitpp/inference/"
+    result_dir = "/mnt/lustre-grete/usr/u12649/models/cellvitpp/results"
     for dataset in DATASETS:
         label_dir = os.path.join(input_dir, dataset, "loaded_testset", "eval_split", "test_labels")
         for checkpoint in CVTPP_CP:
