@@ -1,10 +1,12 @@
 import os
 
 import torch
+import torch.utils.data as data_util
 
+import torch_em
 from torch_em.model import UNETR
-from torch_em.data import MinInstanceSampler
-from torch_em.data.datasets import get_pannuke_loader
+from torch_em.data import MinTwoInstanceSampler
+from torch_em.data.datasets import get_pannuke_dataset
 
 import micro_sam.training as sam_training
 
@@ -23,15 +25,14 @@ def get_dataloaders(patch_shape, data_path):
     Important: the ID 0 is reserved for background and ensure you have all semantic classes.
     """
     raw_transform = sam_training.identity
-    sampler = MinInstanceSampler()
+    sampler = MinTwoInstanceSampler()
     label_dtype = torch.float32
 
-    train_loader = get_pannuke_loader(
+    dataset = get_pannuke_dataset(
         path=data_path,
-        batch_size=8,
         patch_shape=patch_shape,
         ndim=2,
-        folds=["fold_1"],
+        folds=["fold_1", "fold_2"],
         custom_label_choice="semantic",
         sampler=sampler,
         label_dtype=label_dtype,
@@ -39,18 +40,13 @@ def get_dataloaders(patch_shape, data_path):
         download=True,
     )
 
-    val_loader = get_pannuke_loader(
-        path=data_path,
-        batch_size=1,
-        patch_shape=(1, 256, 256),
-        ndim=2,
-        folds=["fold_2"],
-        custom_label_choice="semantic",
-        sampler=sampler,
-        label_dtype=label_dtype,
-        raw_transform=raw_transform,
-        download=True,
-    )
+    # Create custom splits.
+    generator = torch.Generator().manual_seed(42)
+    train_dataset, val_dataset = data_util.random_split(dataset, [0.8, 0.2], generator=generator)
+
+    # Get the dataloaders.
+    train_loader = torch_em.get_data_loader(train_dataset, batch_size=8, shuffle=True, num_workers=16)
+    val_loader = torch_em.get_data_loader(val_dataset, batch_size=1, shuffle=True, num_workers=16)
 
     return train_loader, val_loader
 
@@ -90,9 +86,9 @@ def train_pannuke_semantic_segmentation(args):
     )
     unetr.to(device)
 
-    # Get the parameters for the additional semantic segmentation decoder from UNETR
-    model_params = []
-    for name, params in unetr.named_parameters():  # unetr's decoder parameters
+    # Get the model parameters.
+    model_params = [params for params in model.parameters()]  # Add SAM parameters.
+    for name, params in unetr.named_parameters():  # Add UNETR-decoder's parameters
         if not name.startswith("encoder") and params.requires_grad:
             model_params.append(params)
 
