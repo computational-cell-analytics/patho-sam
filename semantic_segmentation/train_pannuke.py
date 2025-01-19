@@ -113,7 +113,7 @@ def train_pannuke_semantic_segmentation(args):
         compile_model=False,
         convert_inputs=convert_inputs,
         num_classes=num_classes,
-        dice_weight=0.5,
+        dice_weight=0,
     )
     trainer.fit(iterations=int(args.iterations))
 
@@ -129,6 +129,6 @@ if __name__ == "__main__":
     parser.add_argument("-m", "--model_type", default="vit_b", type=str)
     parser.add_argument("-c", "--checkpoint_path", default=None, type=str)
     parser.add_argument("-s", "--save_root", default=None, type=str)
-    parser.add_argument("--iterations", default=1e4, type=str)
+    parser.add_argument("--iterations", default=5e4, type=str)
     args = parser.parse_args()
     main(args)
