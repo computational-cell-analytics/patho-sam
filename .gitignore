@@ -163,3 +163,4 @@ cython_debug/
 
 # Other stuff
 *.png
+logs/

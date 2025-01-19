@@ -47,36 +47,38 @@ def evaluate_pannuke_semantic_segmentation(args):
         decoder_state=decoder_state,
         device=device,
     )
+    unetr.eval()
 
-    for x, y in tqdm(loader):
+    with torch.no_grad():
+        for x, y in tqdm(loader):
 
-        # Run inference
-        outputs = unetr(x.to(device))
+            # Run inference
+            outputs = unetr(x.to(device))
 
-        # Perform argmax to get the outputs
-        masks = torch.argmax(outputs, dim=1)
-        masks = masks.detach().cpu().numpy().squeeze()
+            # Perform argmax to get per class outputs.
+            masks = torch.argmax(outputs, dim=1)
+            masks = masks.detach().cpu().numpy().squeeze()
 
-        # Plot images
-        import matplotlib.pyplot as plt
-        fig, ax = plt.subplots(1, 3, figsize=(30, 15))
+            # Plot images
+            import matplotlib.pyplot as plt
+            fig, ax = plt.subplots(1, 3, figsize=(30, 15))
 
-        image = x.squeeze().numpy().transpose(1, 2, 0)
-        image = image.astype(int)
-        ax[0].imshow(image)
-        ax[0].axis("off")
+            image = x.squeeze().numpy().transpose(1, 2, 0)
+            image = image.astype(int)
+            ax[0].imshow(image)
+            ax[0].axis("off")
 
-        gt = y.squeeze().numpy()
-        ax[1].imshow(gt)
-        ax[1].axis("off")
+            gt = y.squeeze().numpy()
+            ax[1].imshow(gt)
+            ax[1].axis("off")
 
-        ax[2].imshow(masks)
-        ax[2].axis("off")
+            ax[2].imshow(masks)
+            ax[2].axis("off")
 
-        plt.savefig("./test.png")
-        plt.close()
+            plt.savefig("./test.png")
+            plt.close()
 
-        breakpoint()
+            breakpoint()
 
 
 def main(args):
