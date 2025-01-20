@@ -70,6 +70,7 @@ def train_pannuke_semantic_segmentation(args):
         model_type=model_type,
         device=device,
         checkpoint_path=checkpoint_path,
+        freeze=["image_encoder", "prompt_encoder", "mask_decoder"],
     )
 
     # Get the UNETR model for semantic segmentation pipeline
