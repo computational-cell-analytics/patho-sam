@@ -27,7 +27,7 @@ def evaluate_pannuke_semantic_segmentation(args):
         batch_size=1,
         patch_shape=(1, 256, 256),
         ndim=2,
-        folds=["fold_1"],
+        folds=["fold_3"],
         custom_label_choice="semantic",
         sampler=sampler,
         label_dtype=label_dtype,
@@ -40,14 +40,13 @@ def evaluate_pannuke_semantic_segmentation(args):
     predictor = get_sam_model(model_type=model_type, device=device)
 
     # Get the UNETR model for semantic segmentation pipeline
-    state = torch.load(args.checkpoint_path, map_location="cpu")
-    decoder_state = {k: v for k, v in state["model_state"].items() if not k.startswith("encoder")}
     unetr = get_unetr(
-        image_encoder=predictor.model.image_encoder,
-        out_channels=num_classes,
-        decoder_state=decoder_state,
-        device=device,
+        image_encoder=predictor.model.image_encoder, out_channels=num_classes, device=device,
     )
+
+    # Load the model weights
+    model_state = torch.load(args.checkpoint_path, map_location="cpu")["model_state"]
+    unetr.load_state_dict(model_state)
     unetr.eval()
 
     with torch.no_grad():
@@ -68,13 +67,16 @@ def evaluate_pannuke_semantic_segmentation(args):
             image = image.astype(int)
             ax[0].imshow(image)
             ax[0].axis("off")
+            ax[0].set_title("Image", fontsize=20)
 
             gt = y.squeeze().numpy()
             ax[1].imshow(gt)
             ax[1].axis("off")
+            ax[1].set_title("Ground Truth", fontsize=20)
 
             ax[2].imshow(masks)
             ax[2].axis("off")
+            ax[2].set_title("Segmentation", fontsize=20)
 
             plt.savefig("./test.png")
             plt.close()
