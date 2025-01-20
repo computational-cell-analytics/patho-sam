@@ -6,7 +6,7 @@ from natsort import natsorted
 
 SAM_TYPES = ["vit_b", "vit_l", "vit_h", "vit_b_lm"]
 
-SAM_MODELS = ["generalist_sam", "old_generalist_sam", "lm_sam", "pannuke_sam", "vanilla_sam", "nuclick_sam"]
+SAM_MODELS = ["generalist_sam", "lm_sam", "pannuke_sam", "vanilla_sam", "nuclick_sam", "glas_sam", "cryonuseg_sam"]
 
 MODEL_NAMES = ["hovernet", "cellvit", "hovernext", "stardist", "cellvitpp", "instanseg"] + SAM_MODELS
 
@@ -66,6 +66,8 @@ CHECKPOINTS = {
     "old_generalist_sam": SAM_TYPES,
     "nuclick_sam": SAM_TYPES,
     "vanilla_sam": SAM_TYPES,
+    "glas_sam":SAM_TYPES,
+    "cryonuseg_sam":SAM_TYPES,
     "lm_sam": ["vit_b_lm"],
     "stardist": ["stardist"],
     "instanseg": ["instanseg"],

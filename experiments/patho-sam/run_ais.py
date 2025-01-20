@@ -55,7 +55,6 @@ def run_inference(model_dir, input_dir, model_types, datasets, model_names):
 
 def main():
     args = get_inference_args()
-    print(args.model, args.dataset, args.name)
     run_inference(
         model_dir="/mnt/lustre-grete/usr/u12649/models",
         input_dir="/mnt/lustre-grete/usr/u12649/data/final_test",

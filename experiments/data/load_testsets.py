@@ -8,10 +8,10 @@ from preprocess_datasets import create_val_split
 
 def load_testsets(path, dsets=DATASETS, patch_shape=(512, 512)) -> None:
     for dataset in dsets:
-        if os.path.exists(os.path.join(path, dataset, "loaded_testset", "images")):
-            if len(os.listdir(os.path.join(path, dataset, "loaded_testset", "images"))) > 1:
-                print(f"Dataset {dataset} is loaded already.")
-                continue
+        # if os.path.exists(os.path.join(path, dataset, "loaded_testset", "images")):
+        #     if len(os.listdir(os.path.join(path, dataset, "loaded_testset", "images"))) > 1:
+        #         print(f"Dataset {dataset} is loaded already.")
+        #         continue
         counter = 1
         print(f"Loading {dataset} dataset...")
         dpath = os.path.join(path, dataset)
@@ -21,6 +21,7 @@ def load_testsets(path, dsets=DATASETS, patch_shape=(512, 512)) -> None:
             "lynsec_he",
             "lynsec_ihc",
             "nuinsseg",
+            "pannuke_sem",
         ]:  # out of domain datasets, loads entire datasets
             loaders.append(get_dataloaders(patch_shape, dpath, dataset))
         elif dataset in [  # in-domain datasets, loads only test split
@@ -48,10 +49,11 @@ def load_testsets(path, dsets=DATASETS, patch_shape=(512, 512)) -> None:
             for split in ["train", "val", "test"]:
                 loaders.append(get_dataloaders(patch_shape, dpath, dataset, split))
         image_output_path = os.path.join(path, dataset, "loaded_testset", "images")
-        label_output_path = os.path.join(path, dataset, "loaded_testset", "labels")
+        label_output_path = os.path.join(path, dataset, "loaded_testset", "semantic_labels")
         os.makedirs(image_output_path, exist_ok=True)
         os.makedirs(label_output_path, exist_ok=True)
         for loader in loaders:
+            print("loader length: ", len(loader))
             for image, label in loader:
                 image_array = image.numpy()
                 label_array = label.numpy()
@@ -72,7 +74,7 @@ def main():
     if args.path is not None:
         data_path = args.path
     else:
-        data_path = "/mnt/lustre-grete/usr/u12649/data/final_test/"
+        data_path = "/mnt/lustre-grete/usr/u12649/data/test/"
     if args.datasets is not None:
         load_testsets(data_path, [args.datasets], args.patch_shape)
     else:

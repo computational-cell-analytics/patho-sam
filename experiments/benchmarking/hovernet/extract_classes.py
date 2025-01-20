@@ -13,8 +13,9 @@ path = "/mnt/lustre-grete/usr/u12649/models/hovernet_types/inference/pannuke/pan
 def json_to_tiff(path):
     label_json_paths = [p for p in natsorted(glob(os.path.join(path, "json", "*.json")))]
     img_shape = (512, 512)
+    os.makedirs(os.path.join(path, "semantic"), exist_ok=True)
     for mpath in tqdm(label_json_paths, desc="Postprocessing labels"):
-        label_path = os.path.join(path, os.path.basename(mpath.replace(".json", ".tiff")))
+        label_path = os.path.join(path, "semantic", os.path.basename(mpath.replace(".json", ".tiff")))
         with open(mpath, 'r') as file:
             data = json.load(file)
             pred_class_map = np.zeros(img_shape, dtype=np.int32)
@@ -30,5 +31,3 @@ def json_to_tiff(path):
                 cv2.fillPoly(pred_class_map, [contour], cell_type)        
         imageio.imwrite(label_path, pred_class_map)
 
-
-json_to_tiff(path)

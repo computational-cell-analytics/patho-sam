@@ -16,6 +16,10 @@ from torch_em.data.datasets import (
     get_srsanet_loader,
     get_tnbc_loader,
 )
+from raw_loader import get_loader
+
+def custom_transform(x, y):
+    return x, y
 
 
 def get_dataloaders(patch_shape, data_path, dataset, split=None, organ_type=None):
@@ -163,10 +167,20 @@ def get_dataloaders(patch_shape, data_path, dataset, split=None, organ_type=None
             patch_shape=(1,) + patch_shape,
             batch_size=1,
             folds=split,
+            shuffle=False,
             ndim=2,
             download=True,
             raw_transform=raw_transform,
             sampler=sampler,
+        )
+    elif dataset == "pannuke_sem":
+        loader = get_loader(
+            path=data_path,
+            patch_shape=patch_shape,
+            batch_size=1,
+            sampler=MinInstanceSampler(min_num_instances=3),
+            transform=custom_transform,
+            raw_transform=raw_transform,
         )
 
     elif dataset == "puma":
