@@ -1,14 +1,15 @@
 import os
+from collections import OrderedDict
 
 import torch
 import torch.utils.data as data_util
 
 import torch_em
-from torch_em.model import UNETR
 from torch_em.data import MinTwoInstanceSampler
 from torch_em.data.datasets import get_pannuke_dataset
 
 import micro_sam.training as sam_training
+from micro_sam.instance_segmentation import get_unetr
 
 from patho_sam.training import SemanticInstanceTrainer
 
@@ -65,26 +66,45 @@ def train_pannuke_semantic_segmentation(args):
         patch_shape=(1, 256, 256), data_path=os.path.join(args.input_path, "pannuke")
     )
 
+    # Whether we opt for finetuning decoder only or finetune the entire backbone.
+    if args.decoder_only:
+        freeze = ["image_encoder", "prompt_encoder", "mask_decoder"]
+        checkpoint_name += "/finetune_decoder_only"
+    else:
+        freeze = None
+        checkpoint_name += "/finetune_all"
+
     # Get the trainable Segment Anything Model.
-    model = sam_training.get_trainable_sam_model(
-        model_type=model_type,
-        device=device,
-        checkpoint_path=checkpoint_path,
-        freeze=["image_encoder", "prompt_encoder", "mask_decoder"],
+    model, state = sam_training.get_trainable_sam_model(
+        model_type=model_type, device=device, checkpoint_path=checkpoint_path, freeze=freeze, return_state=True,
     )
 
+    # Whether to use the pretrained decoder (used for AIS) or train from scratch.
+    if args.decoder_from_pretrained:
+        decoder_state = []
+        # Remove the output layer weights as we have new target class for the new task.
+        for k, v in state["decoder_state"].items():
+            if k.startswith("out_conv."):
+                rem_map = num_classes - v.shape[0]  # This is the number of classes missing compared to original
+                # The idea here would be to get the expected parameter shape - to match "num_classes"
+                v = torch.concatenate([v] + [v[0][None]] * rem_map, dim=0)
+            # Add all parameters to the new state dict now!
+            decoder_state.append((k, v))
+        # Ensure to make them an ordered dictionary.
+        decoder_state = OrderedDict(decoder_state)
+        checkpoint_name += "-from_pretrained"
+
+    else:
+        decoder_state = None
+        checkpoint_name += "-from_scratch"
+
     # Get the UNETR model for semantic segmentation pipeline
-    unetr = UNETR(
-        backbone="sam",
-        encoder=model.sam.image_encoder,
+    unetr = get_unetr(
+        image_encoder=model.sam.image_encoder,
+        decoder_state=decoder_state,
+        device=device,
         out_channels=num_classes,
-        use_sam_stats=True,
-        final_activation="Sigmoid",
-        use_skip_connection=False,
-        resize_input=True,
-        use_conv_transpose=True,
     )
-    unetr.to(device)
 
     # Get the model parameters.
     model_params = [params for params in model.parameters()]  # Add SAM parameters.
@@ -116,7 +136,7 @@ def train_pannuke_semantic_segmentation(args):
         num_classes=num_classes,
         dice_weight=0,
     )
-    trainer.fit(iterations=int(args.iterations))
+    trainer.fit(iterations=int(args.iterations), overwrite_training=False)
 
 
 def main(args):
@@ -149,6 +169,10 @@ if __name__ == "__main__":
     parser.add_argument(
         "--decoder_only", action="store_true",
         help="Whether to train the decoder only (by freezing the image encoder), or train all parts."
+    )
+    parser.add_argument(
+        "--decoder_from_pretrained", action="store_true",
+        help="Whether to train the decoder from scratch, or train the pretrained decoder (i.e. used for AIS)."
     )
     args = parser.parse_args()
     main(args)
