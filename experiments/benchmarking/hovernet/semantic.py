@@ -2,18 +2,41 @@ import os
 import shutil
 import subprocess
 from glob import glob
-
 import tifffile as tiff
 from natsort import natsorted
 from scipy.io import loadmat
 from tqdm import tqdm
-from eval_util import evaluate_all_datasets_hovernet, DATASETS
-from extract_classes import json_to_tiff
+import imageio.v3 as imageio
+import cv2
+import json
+import numpy as np
+
+def json_to_tiff(path):
+    label_json_paths = [p for p in natsorted(glob(os.path.join(path, "json", "*.json")))]
+    img_shape = (512, 512)
+    os.makedirs(os.path.join(path, "semantic"), exist_ok=True)
+    for mpath in tqdm(label_json_paths, desc="Postprocessing labels"):
+        label_path = os.path.join(path, "semantic", os.path.basename(mpath.replace(".json", ".tiff")))
+        with open(mpath, 'r') as file:
+            data = json.load(file)
+            pred_class_map = np.zeros(img_shape, dtype=np.int32)
+            for id, cell_data in enumerate(data['nuc'].items(), start=1):
+                cell_data = cell_data[1]
+                contour = np.array(cell_data["contour"]) 
+                contour[:, 0] = np.clip(contour[:, 0], 0, img_shape[1])
+                contour[:, 1] = np.clip(contour[:, 1], 0, img_shape[0])
+                contour = contour.reshape((-1, 1, 2))
+                cell_type = cell_data["type"]
+                contour = np.vstack((contour, [contour[0]]))
+                contour = contour.astype(np.int32)
+                cv2.fillPoly(pred_class_map, [contour], cell_type)        
+        imageio.imwrite(label_path, pred_class_map)
+
 
 def mat_to_tiff(path):
     os.makedirs(os.path.join(path, "instance"), exist_ok=True)
     label_mat_paths = [p for p in natsorted(glob(os.path.join(path, "mat", "*.mat")))]
-    for mpath in tqdm(label_mat_paths, desc="Preprocessing labels"):
+    for mpath in tqdm(label_mat_paths, desc="Postprocessing predictions"):
         label_path = os.path.join(path, "instance", os.path.basename(mpath.replace(".mat", ".tiff")))
         label = loadmat(mpath)["inst_type"]
         tiff.imwrite(label_path, label)
@@ -78,7 +101,7 @@ def run_inference(model_dir, input_dir, output_dir, type_info_path):
 
 run_inference(
     model_dir="/mnt/lustre-grete/usr/u12649/models/hovernet",
-    input_dir="/mnt/lustre-grete/usr/u12649/data/final_test",
+    input_dir="/mnt/lustre-grete/usr/u12649/data/semantic_data",
     output_dir="/mnt/lustre-grete/usr/u12649/models/hovernet_types",
     type_info_path="/user/titus.griebel/u12649/hover_net/type_info.json",
 )

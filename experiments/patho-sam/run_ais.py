@@ -5,7 +5,6 @@ from util import get_inference_args, SAM_TYPES, DATASETS, MODEL_NAMES
 
 
 def run_inference(model_dir, input_dir, model_types, datasets, model_names):
-    model_names = ['lm_sam']
     if model_types == [None]:
         model_types = SAM_TYPES
     if datasets == [None]:

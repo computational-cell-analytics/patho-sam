@@ -19,7 +19,7 @@ VANILLA_MODELS = {
 
 SAM_TYPES = ["vit_b", "vit_l", "vit_h"]
 
-MODEL_NAMES = ["lm_sam", "vanilla_sam", "generalist_sam", "pannuke_sam", "nuclick_sam", "glas_sam", "cryonuseg_sam"]
+MODEL_NAMES = ["lm_sam", "vanilla_sam", "generalist_sam", "pannuke_sam"]#, "nuclick_sam", "glas_sam", "cryonuseg_sam"]
 
 DATASETS = [
     "consep",

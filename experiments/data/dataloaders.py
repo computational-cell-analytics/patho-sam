@@ -16,13 +16,9 @@ from torch_em.data.datasets import (
     get_srsanet_loader,
     get_tnbc_loader,
 )
-from raw_loader import get_loader
-
-def custom_transform(x, y):
-    return x, y
 
 
-def get_dataloaders(patch_shape, data_path, dataset, split=None, organ_type=None):
+def get_dataloaders(patch_shape, data_path, dataset):
     raw_transform = sam_training.identity
     sampler = MinInstanceSampler(min_num_instances=3)
 
@@ -32,7 +28,7 @@ def get_dataloaders(patch_shape, data_path, dataset, split=None, organ_type=None
             patch_shape=patch_shape,
             batch_size=1,
             download=True,
-            split=split,
+            split="test",
             raw_transform=raw_transform,
             sampler=sampler,
         )
@@ -43,7 +39,7 @@ def get_dataloaders(patch_shape, data_path, dataset, split=None, organ_type=None
             patch_shape=patch_shape,
             batch_size=1,
             download=False,
-            split=split,
+            split="test",
             raw_transform=raw_transform,
             sampler=sampler,
             data_choice="cpm15",
@@ -55,7 +51,7 @@ def get_dataloaders(patch_shape, data_path, dataset, split=None, organ_type=None
             patch_shape=patch_shape,
             batch_size=1,
             download=False,
-            split=split,
+            split= "test",
             raw_transform=raw_transform,
             sampler=sampler,
             data_choice="cpm17",
@@ -67,7 +63,7 @@ def get_dataloaders(patch_shape, data_path, dataset, split=None, organ_type=None
             patch_shape=(1,) + patch_shape,
             batch_size=1,
             rater="b1",
-            split=split,
+            split="test",
             download=True,
             raw_transform=raw_transform,
             sampler=sampler,
@@ -79,7 +75,7 @@ def get_dataloaders(patch_shape, data_path, dataset, split=None, organ_type=None
             patch_shape=patch_shape,
             batch_size=1,
             download=True,
-            split=split,
+            split="test",
             raw_transform=raw_transform,
             sampler=MinInstanceSampler(min_num_instances=2),
         )
@@ -90,7 +86,7 @@ def get_dataloaders(patch_shape, data_path, dataset, split=None, organ_type=None
             patch_shape=patch_shape,
             batch_size=1,
             download=True,
-            split=split,
+            split="test",
             raw_transform=raw_transform,
             sampler=sampler,
         )
@@ -122,9 +118,8 @@ def get_dataloaders(patch_shape, data_path, dataset, split=None, organ_type=None
             path=data_path,
             patch_shape=patch_shape,
             batch_size=1,
-            split=split,
+            split="test",
             download=True,
-            organ_type=organ_type,
             raw_transform=raw_transform,
             sampler=sampler,
         )
@@ -134,9 +129,8 @@ def get_dataloaders(patch_shape, data_path, dataset, split=None, organ_type=None
             path=data_path,
             patch_shape=patch_shape,
             batch_size=1,
-            split=split,
+            split= "test",
             download=True,
-            organ_type=organ_type,
             raw_transform=raw_transform,
             sampler=sampler,
         )
@@ -156,7 +150,7 @@ def get_dataloaders(patch_shape, data_path, dataset, split=None, organ_type=None
             patch_shape=patch_shape,
             batch_size=1,
             download=True,
-            split=split,
+            split="Validation",
             raw_transform=raw_transform,
             sampler=sampler,
         )
@@ -166,21 +160,11 @@ def get_dataloaders(patch_shape, data_path, dataset, split=None, organ_type=None
             path=data_path,
             patch_shape=(1,) + patch_shape,
             batch_size=1,
-            folds=split,
-            shuffle=False,
+            folds=["fold_3"],
             ndim=2,
             download=True,
             raw_transform=raw_transform,
             sampler=sampler,
-        )
-    elif dataset == "pannuke_sem":
-        loader = get_loader(
-            path=data_path,
-            patch_shape=patch_shape,
-            batch_size=1,
-            sampler=MinInstanceSampler(min_num_instances=3),
-            transform=custom_transform,
-            raw_transform=raw_transform,
         )
 
     elif dataset == "puma":
@@ -190,7 +174,7 @@ def get_dataloaders(patch_shape, data_path, dataset, split=None, organ_type=None
             batch_size=1,
             annotations="nuclei",
             download=True,
-            split=split,
+            split="test",
             raw_transform=raw_transform,
             sampler=sampler,
         )
@@ -202,7 +186,7 @@ def get_dataloaders(patch_shape, data_path, dataset, split=None, organ_type=None
             patch_shape=patch_shape,
             batch_size=1,
             download=True,
-            split=split,
+            split="test",
             raw_transform=raw_transform,
             sampler=sampler,
         )
@@ -214,7 +198,7 @@ def get_dataloaders(patch_shape, data_path, dataset, split=None, organ_type=None
             batch_size=1,
             ndim=2,
             download=True,
-            split=split,
+            split="test",
             raw_transform=raw_transform,
             sampler=sampler,
         )

@@ -37,7 +37,6 @@ def create_val_split(
     val_percentage=0.05,
     test_percentage=0.95,
     custom_name="standard_split",
-    organ_type=None,
     random_seed=42,
     dataset=None,
 ):
