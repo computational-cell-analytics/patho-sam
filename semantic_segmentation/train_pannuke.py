@@ -126,10 +126,29 @@ def main(args):
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument("-i", "--input_path", default="/mnt/vast-nhr/projects/cidas/cca/test/data", type=str)
-    parser.add_argument("-m", "--model_type", default="vit_b", type=str)
-    parser.add_argument("-c", "--checkpoint_path", default=None, type=str)
-    parser.add_argument("-s", "--save_root", default=None, type=str)
-    parser.add_argument("--iterations", default=5e4, type=str)
+    parser.add_argument(
+        "-i", "--input_path", default="/mnt/vast-nhr/projects/cidas/cca/test/data", type=str,
+        help="Path where you would like to store the PanNuke data."
+    )
+    parser.add_argument(
+        "-m", "--model_type", default="vit_b_histopathology", type=str,
+        help="The choice of model to perform semantic segmentation on."
+    )
+    parser.add_argument(
+        "-c", "--checkpoint_path", default=None, type=str,
+        help="Filepath to the model with which you would like to perform downstream semantic segmentation."
+    )
+    parser.add_argument(
+        "-s", "--save_root", default=None, type=str,
+        help="Filepath where to store the trained model checkpoints and logs."
+    )
+    parser.add_argument(
+        "--iterations", default=1e5, type=str,
+        help="The total number of iterations to train the model for."
+    )
+    parser.add_argument(
+        "--decoder_only", action="store_true",
+        help="Whether to train the decoder only (by freezing the image encoder), or train all parts."
+    )
     args = parser.parse_args()
     main(args)
