@@ -92,8 +92,6 @@ def train_pannuke_semantic_segmentation(args):
         decoder_state = None
         checkpoint_name += "-from_scratch"
 
-    print(checkpoint_name)
-
     # Get the UNETR model for semantic segmentation pipeline
     unetr = get_unetr(
         image_encoder=model.sam.image_encoder,
