@@ -83,20 +83,16 @@ def train_pannuke_semantic_segmentation(args):
     if args.decoder_from_pretrained:
         decoder_state = []
         # Remove the output layer weights as we have new target class for the new task.
-        for k, v in state["decoder_state"].items():
-            if k.startswith("out_conv."):
-                rem_map = num_classes - v.shape[0]  # This is the number of classes missing compared to original
-                # The idea here would be to get the expected parameter shape - to match "num_classes"
-                v = torch.concatenate([v] + [v[0][None]] * rem_map, dim=0)
-            # Add all parameters to the new state dict now!
-            decoder_state.append((k, v))
-        # Ensure to make them an ordered dictionary.
-        decoder_state = OrderedDict(decoder_state)
+        decoder_state = OrderedDict(
+            [(k, v) for k, v in state["decoder_state"].items() if not k.startswith("out_conv.")]
+        )
         checkpoint_name += "-from_pretrained"
 
     else:
         decoder_state = None
         checkpoint_name += "-from_scratch"
+
+    print(checkpoint_name)
 
     # Get the UNETR model for semantic segmentation pipeline
     unetr = get_unetr(
@@ -104,16 +100,11 @@ def train_pannuke_semantic_segmentation(args):
         decoder_state=decoder_state,
         device=device,
         out_channels=num_classes,
+        flexible_load_checkpoint=True,
     )
 
-    # Get the model parameters.
-    model_params = [params for params in model.parameters()]  # Add SAM parameters.
-    for name, params in unetr.named_parameters():  # Add UNETR-decoder's parameters
-        if not name.startswith("encoder") and params.requires_grad:
-            model_params.append(params)
-
     # All other stuff we need for training
-    optimizer = torch.optim.AdamW(model_params, lr=1e-4)
+    optimizer = torch.optim.AdamW(unetr.parameters(), lr=1e-4)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.9, patience=5)
 
     # This class creates all the training data for each batch (inputs and semantic labels)
