@@ -167,3 +167,5 @@ checkpoints/
 logs/
 gpu_jobs/
 *.out
+*.zarr
+*.sh
