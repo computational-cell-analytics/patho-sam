@@ -2,14 +2,16 @@ import os
 import shutil
 import subprocess
 from glob import glob
-import tifffile as tiff
 from natsort import natsorted
-from scipy.io import loadmat
+
 from tqdm import tqdm
-import imageio.v3 as imageio
+
 import cv2
 import json
 import numpy as np
+from scipy.io import loadmat
+import imageio.v3 as imageio
+
 
 def json_to_tiff(path):
     label_json_paths = [p for p in natsorted(glob(os.path.join(path, "json", "*.json")))]
@@ -22,14 +24,15 @@ def json_to_tiff(path):
             pred_class_map = np.zeros(img_shape, dtype=np.int32)
             for id, cell_data in enumerate(data['nuc'].items(), start=1):
                 cell_data = cell_data[1]
-                contour = np.array(cell_data["contour"]) 
+                contour = np.array(cell_data["contour"])
                 contour[:, 0] = np.clip(contour[:, 0], 0, img_shape[1])
                 contour[:, 1] = np.clip(contour[:, 1], 0, img_shape[0])
                 contour = contour.reshape((-1, 1, 2))
                 cell_type = cell_data["type"]
                 contour = np.vstack((contour, [contour[0]]))
                 contour = contour.astype(np.int32)
-                cv2.fillPoly(pred_class_map, [contour], cell_type)        
+                cv2.fillPoly(pred_class_map, [contour], cell_type)
+
         imageio.imwrite(label_path, pred_class_map)
 
 
@@ -39,7 +42,7 @@ def mat_to_tiff(path):
     for mpath in tqdm(label_mat_paths, desc="Postprocessing predictions"):
         label_path = os.path.join(path, "instance", os.path.basename(mpath.replace(".mat", ".tiff")))
         label = loadmat(mpath)["inst_type"]
-        tiff.imwrite(label_path, label)
+        imageio.imwrite(label_path, label)
 
 
 def run_inference(model_dir, input_dir, output_dir, type_info_path):
@@ -50,6 +53,7 @@ def run_inference(model_dir, input_dir, output_dir, type_info_path):
             if os.path.exists(os.path.join(output_dir, "results", dataset, checkpoint, 'ais_result.csv')):
                 print(f"Inference with HoVerNet model (type: {checkpoint}) on {dataset} dataset already done")
                 continue
+
             os.makedirs(output_path, exist_ok=True)
             if checkpoint in ["consep", "cpm17", "kumar"]:
                 model_mode = "original"

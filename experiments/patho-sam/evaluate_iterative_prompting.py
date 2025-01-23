@@ -2,6 +2,7 @@ import os
 
 from micro_sam.evaluation import inference
 from micro_sam.evaluation.evaluation import run_evaluation_for_iterative_prompting
+
 from util import get_default_arguments, get_model, get_test_paths
 
 
@@ -37,7 +38,7 @@ def main():
 
     start_with_box_prompt = args.box  # overwrite to start first iters' prompt with box instead of single point
 
-    # get the predictor to perform inference
+    # Get the predictor to perform inference
     predictor = get_model(model_type=args.model, ckpt=args.checkpoint)
 
     prediction_root = _run_iterative_prompting(

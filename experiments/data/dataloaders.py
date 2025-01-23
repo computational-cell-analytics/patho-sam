@@ -1,4 +1,5 @@
 import micro_sam.training as sam_training
+
 from torch_em.data import MinInstanceSampler
 from torch_em.data.datasets import (
     get_consep_loader,
@@ -51,7 +52,7 @@ def get_dataloaders(patch_shape, data_path, dataset):
             patch_shape=patch_shape,
             batch_size=1,
             download=False,
-            split= "test",
+            split="test",
             raw_transform=raw_transform,
             sampler=sampler,
             data_choice="cpm17",
@@ -129,7 +130,7 @@ def get_dataloaders(patch_shape, data_path, dataset):
             path=data_path,
             patch_shape=patch_shape,
             batch_size=1,
-            split= "test",
+            split="test",
             download=True,
             raw_transform=raw_transform,
             sampler=sampler,
@@ -178,7 +179,6 @@ def get_dataloaders(patch_shape, data_path, dataset):
             raw_transform=raw_transform,
             sampler=sampler,
         )
-
 
     elif dataset == "srsanet":
         loader = get_srsanet_loader(

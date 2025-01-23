@@ -1,11 +1,12 @@
 # create resized pyramid tiffs with vips
-
-import shutil
-from tqdm import tqdm
-import imageio.v3 as imageio
 import os
+import shutil
 from glob import glob
+from tqdm import tqdm
+
 import numpy as np
+import imageio.v3 as imageio
+
 import pyvips
 
 
@@ -43,6 +44,7 @@ def preprocess_cvtplus(input_dir, output_dir):
             output_file = os.path.join(output_folder, os.path.basename(img_path))
             image = pyvips.Image.new_from_file(intermediate_file)
             image.tiffsave(output_file, tile=True, tile_width=512, tile_height=512, pyramid=True)
+
     shutil.rmtree(intermediate_folder)
 
 

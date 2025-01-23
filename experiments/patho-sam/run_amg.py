@@ -1,6 +1,7 @@
 import os
 import shutil
 import subprocess
+
 from util import get_inference_args, SAM_TYPES, DATASETS, MODEL_NAMES
 
 
@@ -23,13 +24,16 @@ def run_inference(model_dir, input_dir, model_types, datasets, model_names):
                 checkpoint_path = os.path.join(model_dir, model, "checkpoints", model_type, "best.pt")
                 if not os.path.exists(checkpoint_path):
                     print(
-                        f"No checkpoint for {model} model (type: {model_type}) found. Continuing with existent models... "
+                        f"No checkpoint for {model} model (type: {model_type}) found. "
+                        "Continuing with existent models... "
                     )
                     continue
             for dataset in datasets:
                 output_path = os.path.join(model_dir, model, "inference", dataset, model_type, "amg")
                 os.makedirs(output_path, exist_ok=True)
-                if os.path.exists(os.path.join(model_dir, model, 'results', dataset, 'amg', f'{dataset}_{model}_{model_type}_amg.csv')):
+                if os.path.exists(
+                    os.path.join(model_dir, model, 'results', dataset, 'amg', f'{dataset}_{model}_{model_type}_amg.csv')
+                ):
                     print(f"Inference with {model} model (type: {model_type}) on {dataset} dataset already done")
                     continue
                 input_path = os.path.join(input_dir, dataset, "loaded_testset", "eval_split")
@@ -51,8 +55,10 @@ def run_inference(model_dir, input_dir, model_types, datasets, model_names):
                 subprocess.run(command)
                 shutil.rmtree(os.path.join(output_path, "embeddings"))
                 os.makedirs(os.path.join(model_dir, model, 'results', dataset, 'amg'), exist_ok=True)
-                shutil.copy(os.path.join(model_dir, model, "inference", dataset, model_type, 'amg', 'results', 'amg.csv'), 
-                            os.path.join(model_dir, model, 'results', dataset, 'amg', f'{dataset}_{model}_{model_type}_amg.csv'))
+                shutil.copy(
+                    os.path.join(model_dir, model, "inference", dataset, model_type, 'amg', 'results', 'amg.csv'),
+                    os.path.join(model_dir, model, 'results', dataset, 'amg', f'{dataset}_{model}_{model_type}_amg.csv')
+                )
                 print(f"Successfully ran amg inference with {model} model (type: {model_type}) on {dataset} dataset")
 
 
@@ -65,6 +71,7 @@ def main():
         datasets=[args.dataset],
         model_names=[args.name],
     )
+
 
 if __name__ == "__main__":
     main()

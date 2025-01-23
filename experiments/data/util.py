@@ -34,6 +34,7 @@ DATASETS = [
     "tnbc",
 ]
 
+
 def get_dataset_paths(dataset_name, split_choice):
     file_search_specs = "*"
     is_explicit_split = True
@@ -76,12 +77,9 @@ def get_default_arguments():
     parser.add_argument("-c", "--checkpoint", type=none_or_str, default=None)  # expects best.pt
     parser.add_argument("-e", "--experiment_folder", type=str, required=True)  # empty directory for saving the output
     parser.add_argument(
-        "-i",
-        "--input_path",
-        type=str,
-        required=True,
-        default=None,
-        help="requires path to a directory containing 'test_images', 'test_labels', 'val_images' and 'val_labels' directories that contain the data",
+        "-i", "--input_path", type=str, required=True, default=None,
+        help="requires path to a directory containing 'test_images', 'test_labels', 'val_images' \
+            and 'val_labels' directories that contain the data",
     )
     parser.add_argument("--organ", type=str, required=False, default=None)  # to access organ class or all dataset.
     parser.add_argument("--box", action="store_true", help="If passed, starts with first prompt as box")

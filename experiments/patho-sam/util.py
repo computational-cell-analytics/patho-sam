@@ -1,9 +1,10 @@
-import argparse
 import os
+import argparse
 from glob import glob
+from natsort import natsorted
 
 from micro_sam.util import get_sam_model
-from natsort import natsorted
+
 
 ROOT = "/scratch/projects/nim00007/sam/data/"
 EXPERIMENT_ROOT = "/scratch/projects/nim00007/sam/experiments/new_models"
@@ -19,7 +20,7 @@ VANILLA_MODELS = {
 
 SAM_TYPES = ["vit_b", "vit_l", "vit_h"]
 
-MODEL_NAMES = ["lm_sam", "vanilla_sam", "generalist_sam", "pannuke_sam"]#, "nuclick_sam", "glas_sam", "cryonuseg_sam"]
+MODEL_NAMES = ["lm_sam", "vanilla_sam", "generalist_sam", "pannuke_sam"]  # "nuclick_sam", "glas_sam", "cryonuseg_sam"]
 
 DATASETS = [
     "consep",
@@ -87,7 +88,8 @@ def get_default_arguments():
         type=str,
         required=True,
         default=None,
-        help="requires path to a directory containing 'test_images', 'test_labels', 'val_images' and 'val_labels' directories that contain the data",
+        help="requires path to a directory containing 'test_images', 'test_labels', 'val_images' and 'val_labels' \
+            directories that contain the data",
     )
     parser.add_argument("--organ", type=str, required=False, default=None)  # to access organ class or all dataset.
     parser.add_argument("--box", action="store_true", help="If passed, starts with first prompt as box")
@@ -126,10 +128,15 @@ def get_test_paths(input_path):
 
 def get_inference_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("-d", "--dataset", type=str, default=None, help="The dataset to infer on. If None, all datasets will be chosen.")
-    parser.add_argument("-m", "--model", type=str, default=None, help="Provide the model type to infer with {vit_b, vit_l, vit_h}.")
-    parser.add_argument("-n", "--name", type=str, default=None, help="Provide the name of the model to infer with {generalist_sam, vanilla_sam, ..}.")
+    parser.add_argument(
+        "-d", "--dataset", type=str, default=None, help="The dataset to infer on. If None, all datasets will be chosen."
+    )
+    parser.add_argument(
+        "-m", "--model", type=str, default=None, help="Provide the model type to infer with {vit_b, vit_l, vit_h}."
+    )
+    parser.add_argument(
+        "-n", "--name", type=str, default=None,
+        help="Provide the name of the model to infer with {generalist_sam, vanilla_sam, ..}."
+    )
     args = parser.parse_args()
     return args
-
-

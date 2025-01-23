@@ -35,6 +35,7 @@ def run_inference(input_dir, output_dir):
                 "--tile_size",
                 "512",
             ]
+
             command = ["python3", "/user/titus.griebel/u12649/hover_next_inference/main.py"] + args
             print(f"Running inference with HoVerNeXt {model} model on {dataset} dataset...")
             subprocess.run(command)

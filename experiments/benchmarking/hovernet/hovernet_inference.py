@@ -2,11 +2,12 @@ import os
 import shutil
 import subprocess
 from glob import glob
-
-import tifffile as tiff
-from natsort import natsorted
-from scipy.io import loadmat
 from tqdm import tqdm
+from natsort import natsorted
+
+import imageio.v3 as imageio
+from scipy.io import loadmat
+
 from eval_util import evaluate_all_datasets_hovernet, DATASETS
 
 
@@ -15,7 +16,7 @@ def mat_to_tiff(path):
     for mpath in tqdm(label_mat_paths, desc="Preprocessing labels"):
         label_path = os.path.join(path, os.path.basename(mpath.replace(".mat", ".tiff")))
         label = loadmat(mpath)["inst_map"]
-        tiff.imwrite(label_path, label)
+        imageio.imwrite(label_path, label)
 
 
 def run_inference(model_dir, input_dir, output_dir, type_info_path):
@@ -24,8 +25,9 @@ def run_inference(model_dir, input_dir, output_dir, type_info_path):
             output_path = os.path.join(output_dir, "inference", dataset, checkpoint)
             input_path = os.path.join(input_dir, dataset, "loaded_testset", "eval_split", "test_images")
             if os.path.exists(os.path.join(output_dir, "results", dataset, checkpoint, 'ais_result.csv')):
-                    print(f"Inference with HoVerNet model (type: {checkpoint}) on {dataset} dataset already done")
-                    continue
+                print(f"Inference with HoVerNet model (type: {checkpoint}) on {dataset} dataset already done")
+                continue
+
             os.makedirs(output_path, exist_ok=True)
             if checkpoint in ["consep", "cpm17", "kumar"]:
                 model_mode = "original"

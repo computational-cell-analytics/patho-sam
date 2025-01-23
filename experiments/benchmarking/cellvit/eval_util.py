@@ -1,15 +1,16 @@
 import os
-import shutil
 import zipfile
 from glob import glob
+from tqdm import tqdm
+from natsort import natsorted
 
-import imageio.v3 as imageio
 import numpy as np
 import pandas as pd
-from elf.evaluation import mean_segmentation_accuracy
-from natsort import natsorted
+import imageio.v3 as imageio
 from skimage.measure import label
-from tqdm import tqdm
+
+from elf.evaluation import mean_segmentation_accuracy
+
 
 DATASETS = [
     "consep",

@@ -1,4 +1,3 @@
-
 import os
 import subprocess
 import pandas as pd
@@ -66,7 +65,7 @@ def run_inference(model_dir, input_dir, output_dir, result_dir, label_dir):
             for file in glob(os.path.join(output_path, '*json')):
                 os.remove(file)
             # evaluate_cellvit(output_path, checkpoint, dataset, result_dir, label_dir)
-    
+
             print(f"Successfully ran inference with CellViT {checkpoint} model on {dataset} dataset")
 
 

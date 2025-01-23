@@ -3,23 +3,26 @@ import random
 import shutil
 from glob import glob
 from pathlib import Path
+from natsort import natsorted
 
 import numpy as np
-from natsort import natsorted
-from skimage import io
+import imageio.v3 as imageio
+
 
 """ Script to create:
-- a reproducable validation, training and test set from the root directory 
-- evaluation directories for the segmentation mode: automatic instance segmentation, automatic mask generation, iterative prompting with and without boxes for each given model
-- if prompt is set to True, labels without instances (just background) are removed in order for the iterative prompting evaluation to work
-"""  # noqa
+- a reproducable validation, training and test set from the root directory
+- evaluation directories for the segmentation mode: automatic instance segmentation, automatic mask generation,
+  iterative prompting with and without boxes for each given model
+- if prompt is set to True, labels without instances (just background) are removed in order for the
+  iterative prompting evaluation to work
+"""
 
 
 def remove_empty_labels(path):
     empty_count = 0
     file_list = natsorted(glob(os.path.join(path, "*.tiff")))
     for image_path in file_list:
-        img = io.imread(image_path)
+        img = imageio.imread(image_path)
         unique_elements = np.unique(img)
         if len(unique_elements) == 1:
             print(f"Image {os.path.basename(image_path)} does not contain labels and will be removed.")
@@ -27,6 +30,7 @@ def remove_empty_labels(path):
             os.remove(image_path)
             os.remove(os.path.join(path, "images", f"{os.path.basename(image_path)}"))
             assert len(os.listdir(os.path.join(path, "labels"))) == len(os.listdir(os.path.join(path, "images")))
+
     print(f"{empty_count} labels were empty")
     label_len = len(os.listdir(os.path.join(path, "labels")))
     print(f"There are {label_len} images left")
@@ -134,7 +138,6 @@ def main(data_path, model_names=None, prompt=False):
             random_seed=42,
             dataset=dataset,
         )
-
 
 
 if __name__ == "__main__":

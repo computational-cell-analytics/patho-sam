@@ -1,13 +1,15 @@
 import os
 from glob import glob
+from tqdm import tqdm
+from natsort import natsorted
 
-import imageio.v3 as imageio
 import numpy as np
 import pandas as pd
-from elf.evaluation import mean_segmentation_accuracy
-from natsort import natsorted
+import imageio.v3 as imageio
 from skimage.measure import label
-from tqdm import tqdm
+
+from elf.evaluation import mean_segmentation_accuracy
+
 
 CHECKPOINTS = [
     "lizard_convnextv2_large",
@@ -17,6 +19,7 @@ CHECKPOINTS = [
     "pannuke_convnextv2_tiny_2",
     "pannuke_convnextv2_tiny_3",
 ]
+
 DATASETS = [
     "consep",
     "cpm15",

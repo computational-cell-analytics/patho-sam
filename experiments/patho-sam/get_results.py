@@ -1,7 +1,7 @@
 import os
+from natsort import natsorted
 
 import pandas as pd
-from natsort import natsorted
 
 
 SAM_TYPES = ["vit_b", "vit_l", "vit_h", "vit_b_lm"]
@@ -9,7 +9,6 @@ SAM_TYPES = ["vit_b", "vit_l", "vit_h", "vit_b_lm"]
 SAM_MODELS = ["generalist_sam", "lm_sam", "pannuke_sam", "vanilla_sam", "nuclick_sam", "glas_sam", "cryonuseg_sam"]
 
 MODEL_NAMES = ["hovernet", "cellvit", "hovernext", "stardist", "cellvitpp", "instanseg"] + SAM_MODELS
-
 
 DATASETS = [
     "consep",
@@ -66,8 +65,8 @@ CHECKPOINTS = {
     "old_generalist_sam": SAM_TYPES,
     "nuclick_sam": SAM_TYPES,
     "vanilla_sam": SAM_TYPES,
-    "glas_sam":SAM_TYPES,
-    "cryonuseg_sam":SAM_TYPES,
+    "glas_sam": SAM_TYPES,
+    "cryonuseg_sam": SAM_TYPES,
     "lm_sam": ["vit_b_lm"],
     "stardist": ["stardist"],
     "instanseg": ["instanseg"],
@@ -79,7 +78,7 @@ def get_results(path, overwrite=False):
     for mode in ['ais', 'amg', 'boxes', 'points']:
         csv_concat = os.path.join(path, "sum_results", "concatenated_results", f"concatenated_{mode}_results.csv")
         concat_df = pd.DataFrame()
-        for model in MODEL_NAMES:  
+        for model in MODEL_NAMES:
             if model not in SAM_MODELS and mode != 'ais':
                 continue
             if model == "vanilla_sam" and mode == 'ais':
@@ -97,6 +96,7 @@ def get_results(path, overwrite=False):
                         "sa75_1st": [],
                         "sa75_8th": [],
                     }
+
                 os.makedirs(os.path.join(path, "sum_results", model), exist_ok=True)
                 csv_out = os.path.join(path, "sum_results", model, f"{mode}_{model}_{checkpoint}_results.csv")
                 if os.path.exists(csv_out) and not overwrite:
@@ -112,7 +112,7 @@ def get_results(path, overwrite=False):
                     if not os.path.exists(csv_path):
                         continue
                     df = pd.read_csv(csv_path)
-                    if mode in ['ais', 'amg']:                    
+                    if mode in ['ais', 'amg']:
                         result_dict["msa"].append(df.loc[0, "mSA"])
                         result_dict["sa50"].append(df.loc[0, "SA50"])
                         result_dict["sa75"].append(df.loc[0, "SA75"])
@@ -135,7 +135,10 @@ def get_results(path, overwrite=False):
                 else:
                     df = df[["dataset", "msa_1st", "msa_8th"]]
                     df.rename(
-                        columns={"msa_1st": f"{model}_{checkpoint}_{mode}", "msa_8th": f"{model}_{checkpoint}_I{mode[0]}"},
+                        columns={
+                            "msa_1st": f"{model}_{checkpoint}_{mode}",
+                            "msa_8th": f"{model}_{checkpoint}_I{mode[0]}"
+                        },
                         inplace=True,
                     )
                 if concat_df.empty:
@@ -145,6 +148,7 @@ def get_results(path, overwrite=False):
                     print(f"{model} (checkpoint: {checkpoint}) added to concat results")
         if not concat_df.empty:
             concat_df.to_csv(csv_concat, index=False)
+
 
 def main():
     get_results("/mnt/lustre-grete/usr/u12649/models/", overwrite=True)

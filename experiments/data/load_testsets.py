@@ -1,7 +1,8 @@
 import os
-import numpy as np
+
+import imageio.v3 as imageio
+
 from dataloaders import get_dataloaders
-import imageio
 from util import dataloading_args, DATASETS
 from preprocess_datasets import create_val_split
 
@@ -42,6 +43,7 @@ def main():
         data_path = args.path
     else:
         data_path = "/mnt/lustre-grete/usr/u12649/data/final_test/"
+
     if args.datasets is not None:
         load_testsets(data_path, [args.datasets], args.patch_shape)
     else:
@@ -50,4 +52,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

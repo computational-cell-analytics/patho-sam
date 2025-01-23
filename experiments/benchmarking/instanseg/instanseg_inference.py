@@ -1,15 +1,18 @@
 import os
-from tukra.io import read_image
-from tukra.evaluation import evaluate_predictions
-from tukra.inference import segment_using_instanseg
-from elf.evaluation import mean_segmentation_accuracy
-from skimage.measure import label
-from natsort import natsorted
-import pandas as pd
 from glob import glob
-import imageio.v3 as imageio
-import numpy as np
 from tqdm import tqdm
+from natsort import natsorted
+
+import numpy as np
+import pandas as pd
+import imageio.v3 as imageio
+from skimage.measure import label
+
+from tukra.io import read_image
+from tukra.inference import segment_using_instanseg
+
+from elf.evaluation import mean_segmentation_accuracy
+
 
 DATASETS = [
     "consep",

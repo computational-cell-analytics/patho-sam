@@ -1,7 +1,8 @@
 import os
 import shutil
 import subprocess
-from eval_util import evaluate_cellvit, zip_predictions, DATASETS
+
+from eval_util import evaluate_cellvit, DATASETS
 
 
 def run_inference(model_dir, input_dir, output_dir, result_dir):
@@ -10,8 +11,9 @@ def run_inference(model_dir, input_dir, output_dir, result_dir):
         for checkpoint in ["256-x20", "256-x40", "SAM-H-x20", "SAM-H-x40"]:
             model_path = os.path.join(model_dir, f"CellViT-{checkpoint}.pth")
             if os.path.exists(os.path.join(result_dir, dataset, checkpoint, 'ais_result.csv')):
-                    print(f"Inference with CellViT model (type: {checkpoint}) on {dataset} dataset already done")
-                    continue
+                print(f"Inference with CellViT model (type: {checkpoint}) on {dataset} dataset already done")
+                continue
+
             output_path = os.path.join(output_dir, dataset, checkpoint)
             os.makedirs(output_path, exist_ok=True)
             args = [
@@ -27,7 +29,7 @@ def run_inference(model_dir, input_dir, output_dir, result_dir):
 
             command = [
                 "python3",
-                "/user/titus.griebel/u12649/CellViT/cell_segmentation/inference/inference_cellvit_experiment_monuseg.py",
+                "/user/titus.griebel/u12649/CellViT/cell_segmentation/inference/inference_cellvit_experiment_monuseg.py",  # noqa
             ] + args
             print(f"Running inference with CellViT {checkpoint} model on {dataset} dataset...")
             subprocess.run(command)
@@ -40,6 +42,7 @@ def run_inference(model_dir, input_dir, output_dir, result_dir):
             except FileNotFoundError:
                 pass
             print(f"Successfully ran inference with CellViT {checkpoint} model on {dataset} dataset")
+
 
 def main():
     run_inference(

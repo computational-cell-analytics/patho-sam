@@ -1,15 +1,18 @@
 import os
-from tukra.io import read_image
-from tukra.evaluation import evaluate_predictions
-from tukra.inference import segment_using_stardist
-from elf.evaluation import mean_segmentation_accuracy
-from skimage.measure import label
-from natsort import natsorted
-import pandas as pd
-from glob import glob
-import imageio.v3 as imageio
-import numpy as np
 from tqdm import tqdm
+from glob import glob
+from natsort import natsorted
+
+import numpy as np
+import pandas as pd
+import imageio.v3 as imageio
+from skimage.measure import label
+
+from tukra.io import read_image
+from tukra.inference import segment_using_stardist
+
+from elf.evaluation import mean_segmentation_accuracy
+
 
 DATASETS = [
     "consep",
@@ -80,7 +83,7 @@ def evaluate_stardist(prediction_dir, label_dir, result_dir, dataset):
         results.to_csv(save_path, index=False)
         print(results.head(2))
 
- 
+
 def infer_stardist(data_dir, output_path):
     image_paths = natsorted(glob(os.path.join(data_dir, "test_images", "*.tiff")))
     os.makedirs(output_path, exist_ok=True)
@@ -90,19 +93,19 @@ def infer_stardist(data_dir, output_path):
         imageio.imwrite(os.path.join(output_path, os.path.basename(image_path)), segmentation)
 
 
-
 def run_inference(input_dir, model_dir):
     for dataset in DATASETS:
         output_path = os.path.join(model_dir, 'inference', dataset)
         input_path = os.path.join(input_dir, dataset, "loaded_testset", "eval_split")
         if os.path.exists(os.path.join(model_dir, "results", dataset, "stardist", "ais_result.csv")):
             continue
+
         os.makedirs(output_path, exist_ok=True)
         print(f"Running inference with StarDist model on {dataset} dataset... \n")
         infer_stardist(input_path, output_path)
         print(f"Inference on {dataset} dataset with the StarDist model successfully completed \n")
         evaluate_stardist(
-            prediction_dir=os.path.join(model_dir, 'inference'), 
+            prediction_dir=os.path.join(model_dir, 'inference'),
             label_dir=input_dir, 
             result_dir=os.path.join(model_dir, 'results'),
             dataset=dataset
@@ -111,12 +114,10 @@ def run_inference(input_dir, model_dir):
 
 def main():
     run_inference(
-    input_dir="/mnt/lustre-grete/usr/u12649/data/final_test",
-    model_dir="/mnt/lustre-grete/usr/u12649/models/stardist",
+        input_dir="/mnt/lustre-grete/usr/u12649/data/final_test",
+        model_dir="/mnt/lustre-grete/usr/u12649/models/stardist",
     )
 
 
 if __name__ == "__main__":
     main()
-
-

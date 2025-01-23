@@ -1,16 +1,16 @@
+import os
+from glob import glob
+from tqdm import tqdm
+from natsort import natsorted
 from typing import List, Optional, Union
 
 import numpy as np
 import pandas as pd
 import imageio.v3 as imageio
 from skimage.measure import label
-import os
+
 from elf.evaluation import mean_segmentation_accuracy
-import numpy as np
-from tqdm import tqdm
-from pathlib import Path
-from glob import glob
-from natsort import natsorted
+
 
 DATASETS = [
     "consep",
@@ -29,10 +29,9 @@ DATASETS = [
     "srsanet",
     "tnbc",
 ]
-SAM_MODELS = [
-    'generalist_sam',
-    'pannuke_sam',
-]
+
+SAM_MODELS = ['generalist_sam', 'pannuke_sam']
+
 MODELS = [
     'stardist',
     'hovernet',
@@ -64,15 +63,13 @@ HNXT_CP = [
     "pannuke_convnextv2_tiny_3",
 ]
 CVT_CP = [
-        "256-x20",
-        "256-x40",
-        "SAM-H-x20",
-        "SAM-H-x40",
-    ]
-
-CVTPP_CP = [
-    "SAM-H-x40-AMP"
+    "256-x20",
+    "256-x40",
+    "SAM-H-x20",
+    "SAM-H-x40",
 ]
+
+CVTPP_CP = ["SAM-H-x40-AMP"]
 
 SAM_TYPES = ["vit_b", "vit_l", "vit_h"]
 
@@ -84,17 +81,19 @@ HVNT_CP = [
     'monusac',
     'pannuke',
 ]
+
 CHECKPOINTS = {
-    'hovernet':HVNT_CP,
-    'hovernext':HNXT_CP,
-    'cellvit':CVT_CP, 
-    'cellvitpp':CVTPP_CP,
-    'generalist_sam':SAM_TYPES,
-    'pannuke_sam':['vit_b'],
-    'old_generalist_sam':['vit_b'],
-    'stardist':['stardist'],
-    'instanseg':['instanseg'],
+    'hovernet': HVNT_CP,
+    'hovernext': HNXT_CP,
+    'cellvit': CVT_CP,
+    'cellvitpp': CVTPP_CP,
+    'generalist_sam': SAM_TYPES,
+    'pannuke_sam': ['vit_b'],
+    'old_generalist_sam': ['vit_b'],
+    'stardist': ['stardist'],
+    'instanseg': ['instanseg'],
 }
+
 
 def _run_evaluation(gt_paths, prediction_paths, verbose=True):
     assert len(gt_paths) == len(prediction_paths), f"{len(gt_paths)}, {len(prediction_paths)}"
@@ -150,11 +149,25 @@ def per_sample_eval(inf_path, data_path):
         for checkpoint in CHECKPOINTS[model]:
             for dataset in DATASETS:
                 if model not in SAM_MODELS:
-                    inference_paths = natsorted(glob(os.path.join(inf_path, model, "inference", dataset, checkpoint, "*.tiff")))
+                    inference_paths = natsorted(
+                        glob(os.path.join(inf_path, model, "inference", dataset, checkpoint, "*.tiff"))
+                    )
                 else:
-                    inference_paths = natsorted(glob(os.path.join(inf_path, model, "inference", dataset, checkpoint, "instance", "instance_segmentation_with_decoder", "inference", "*.tiff")))
-                label_paths = natsorted(glob(os.path.join(data_path, dataset, "loaded_testset", "eval_split", "test_labels", "*.tiff")))
-                save_path = os.path.join(inf_path, model, "results", "per_sample", f"{model}_{dataset}_{checkpoint}_ps.npy")
+                    inference_paths = natsorted(
+                        glob(
+                            os.path.join(
+                                inf_path, model, "inference", dataset, checkpoint, "instance",
+                                "instance_segmentation_with_decoder", "inference", "*.tiff"
+                            )
+                        )
+                    )
+
+                label_paths = natsorted(
+                    glob(os.path.join(data_path, dataset, "loaded_testset", "eval_split", "test_labels", "*.tiff"))
+                )
+                save_path = os.path.join(
+                    inf_path, model, "results", "per_sample", f"{model}_{dataset}_{checkpoint}_ps.npy"
+                )
                 if os.path.exists(save_path):
                     continue
                 os.makedirs(os.path.dirname(save_path), exist_ok=True)

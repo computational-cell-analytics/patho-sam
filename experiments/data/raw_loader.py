@@ -1,9 +1,10 @@
 import os
 from glob import glob
 from natsort import natsorted
-from torch_em.data.datasets import util
+
 import torch_em
-from torch_em.data import MinInstanceSampler
+from torch_em.data.datasets import util
+
 
 def custom_transform(x, y):
     return x, y
@@ -39,6 +40,7 @@ def get_loader(path, patch_shape, batch_size, **kwargs):
         **ds_kwargs,
     )
     return torch_em.get_data_loader(dataset, batch_size, **loader_kwargs)
+
 
 # data_path = "/mnt/lustre-grete/usr/u12649/data/semantic/pannuke_sem"
 # loader = get_loader(

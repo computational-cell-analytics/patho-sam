@@ -2,6 +2,7 @@ import os
 
 from micro_sam.evaluation.evaluation import run_evaluation
 from micro_sam.evaluation.inference import run_instance_segmentation_with_decoder
+
 from util import VANILLA_MODELS, get_default_arguments, get_pred_paths, get_test_paths, get_val_paths
 
 

@@ -22,7 +22,9 @@ def finetune_specialist(args):
     checkpoint_name = f"{args.model_type}/patho_sam"
 
     # all the stuff we need for training
-    train_loader, val_loader = get_specialist_loaders(patch_shape=patch_shape, data_path=args.input_path, dataset=args.dataset)
+    train_loader, val_loader = get_specialist_loaders(
+        patch_shape=patch_shape, data_path=args.input_path, dataset=args.dataset
+    )
     scheduler_kwargs = {"mode": "min", "factor": 0.9, "patience": 10, "verbose": True}
 
     # Run training.
