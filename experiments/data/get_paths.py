@@ -1,0 +1,184 @@
+import h5py
+from glob import glob
+import imageio.v3 as imageio
+import os
+
+from natsort import natsorted
+
+from torch_em.data.datasets.histopathology import (
+    consep, cpm, cryonuseg, glas, lizard, lynsec, monusac, monuseg, nuclick,
+    nuinsseg, pannuke, puma, srsanet, tnbc)
+
+
+def get_dataset_paths(data_path, dataset) -> list:
+    
+    if dataset == "consep":
+        data_paths = consep.get_consep_paths(
+            path=data_path,
+            download=True,
+            split="test",
+        )
+        label_key = 'labels'
+        image_key = 'raw'
+
+    elif dataset == "cpm15":
+        image_paths, label_paths = cpm.get_cpm_paths(
+            path=data_path,
+            download=False,
+            split="test",
+            data_choice="cpm15",
+        )
+
+    elif dataset == "cpm17":
+        image_paths, label_paths = cpm.get_cpm_paths(
+            path=data_path,
+            download=False,
+            split="test",
+            data_choice="cpm17",
+        )
+
+    elif dataset == "cryonuseg":
+        image_paths, label_paths = cryonuseg.get_cryonuseg_paths(
+            path=data_path,
+            rater_choice="b1",
+            split="test",
+            download=True,
+        )
+
+    elif dataset == "glas":
+        data_paths = glas.get_glas_paths(
+            path=data_path,
+            download=True,
+            split="test",
+        )
+        label_key = 'labels'
+        image_key = 'raw'
+
+    elif dataset == "lizard":
+        data_paths = lizard.get_lizard_paths(
+            path=data_path,
+            download=True,
+            split="test",
+        )
+        label_key = 'labels/segmentation'
+        image_key = 'image'
+
+    elif dataset == "lynsec_he":
+        image_paths, label_paths = lynsec.get_lynsec_paths(
+            path=data_path,
+            choice="h&e",
+            download=True,
+        )
+
+    elif dataset == "lynsec_ihc":
+        image_paths, label_paths = lynsec.get_lynsec_paths(
+            path=data_path,
+            choice="ihc",
+            download=True,
+        )
+
+    elif dataset == "monusac":
+        image_paths, label_paths = monusac.get_monusac_paths(
+            path=data_path,
+            split="test",
+            download=True,
+        )
+
+    elif dataset == "nuclick":
+        image_paths, label_paths = nuclick.get_nuclick_paths(
+            path=data_path,
+            download=True,
+            split="Validation",
+        )
+
+    elif dataset == "nuinsseg":
+        image_paths, label_paths = nuinsseg.get_nuinsseg_paths(
+            path=data_path,
+            download=True,
+        )
+
+    elif dataset == "pannuke":
+        data_paths = pannuke.get_pannuke_paths(
+            path=data_path,
+            folds=["fold_3"],
+            download=True,
+        )
+        cached_images = os.path.join(data_path, "loaded_images")
+        cached_labels = os.path.join(data_path, "loaded_labels")
+        os.makedirs(cached_images, exist_ok=True)
+        os.makedirs(cached_labels, exist_ok=True)
+
+        for h5_path in data_paths:
+            with h5py.File(h5_path, 'r') as file:
+                images = file['images']
+                labels = file['labels/instances']
+                images = images[:]
+                labels = labels[:]
+                images = images.transpose(1, 2, 3, 0)
+
+                counter = 1
+                for image, label in zip(images, labels):
+                    image_path = os.path.join(cached_images, f"{counter:04}.tiff")
+                    label_path = os.path.join(cached_labels, f"{counter:04}.tiff")
+
+                    assert image.shape == (256, 256, 3)
+                    imageio.imwrite(image_path, image)
+                    imageio.imwrite(label_path, label)
+
+                    counter += 1
+
+        image_paths = glob(os.path.join(cached_images, "*.tiff"))
+        label_paths = glob(os.path.join(cached_labels, "*.tiff"))
+
+    elif dataset == "puma":
+        data_paths = puma.get_puma_paths(
+            path=data_path,
+            annotations="nuclei",
+            download=True,
+            split="test",
+        )
+        label_key = 'labels/nuclei'
+        image_key = 'raw'
+
+    elif dataset == "srsanet":
+        image_paths, label_paths = srsanet.get_srsanet_paths(
+            path=data_path,
+            download=True,
+            split="test",
+        )
+
+    elif dataset == "tnbc":
+        data_paths = tnbc.get_tnbc_paths(
+            path=data_path,
+            download=True,
+            split="test",
+        )
+
+    if dataset in ["consep", "lizard", "glas", "puma", "tnbc"]:
+        cached_images = os.path.join(data_path, "loaded_images")
+        cached_labels = os.path.join(data_path, "loaded_labels")
+        os.makedirs(cached_images, exist_ok=True)
+        os.makedirs(cached_labels, exist_ok=True)
+        for h5_path in data_paths:
+            with h5py.File(h5_path, 'r') as file:
+                img = file[image_key]
+                label = file[label_key]
+                img = img[:]
+                label = label[:]
+                image = img.transpose(1, 2, 0)
+
+                img_path = os.path.join(
+                    cached_images, os.path.basename(h5_path).replace(".h5", ".tiff"))
+                label_path = os.path.join(
+                    cached_labels, os.path.basename(h5_path).replace(".h5", ".tiff"))
+                assert image.shape[:2] == label.shape, f"{image.shape}, {label.shape}"
+
+                imageio.imwrite(img_path, image)
+                imageio.imwrite(label_path, label)
+        image_paths = glob(os.path.join(cached_images, "*.tiff"))
+        label_paths = glob(os.path.join(cached_labels, "*.tiff"))
+
+    return natsorted(image_paths), natsorted(label_paths)
+
+
+get_dataset_paths("/mnt/lustre-grete/usr/u12649/data/original_data/pannuke", "pannuke")

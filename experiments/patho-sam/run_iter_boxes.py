@@ -4,7 +4,7 @@ import subprocess
 from util import get_inference_args, SAM_TYPES, DATASETS, MODEL_NAMES
 
 
-def run_inference(model_dir, input_dir, model_types, datasets, model_names):
+def run_inference(model_dir, input_dir, model_types, datasets, model_names, use_masks=False):
     if model_types == [None]:
         model_types = SAM_TYPES
     if datasets == [None]:
@@ -50,6 +50,8 @@ def run_inference(model_dir, input_dir, model_types, datasets, model_names):
                     f"{input_path}",
                     "--box",
                 ]
+                if use_masks:
+                    args.append("--use_masks")
                 command = [
                     "python3",
                     "/user/titus.griebel/u12649/patho-sam/experiments/patho-sam/evaluate_iterative_prompting.py",
@@ -78,6 +80,7 @@ def main():
         model_types=[args.model],
         datasets=[args.dataset],
         model_names=[args.name],
+        use_masks=args.use_masks,
     )
 
 
