@@ -179,3 +179,6 @@ def get_dataset_paths(data_path, dataset) -> list:
         label_paths = glob(os.path.join(cached_labels, "*.tiff"))
 
     return natsorted(image_paths), natsorted(label_paths)
+
+
+get_dataset_paths("/mnt/lustre-grete/usr/u12649/data/original_data/pannuke", "pannuke")
