@@ -131,15 +131,16 @@ def get_test_paths(input_path):
 def get_inference_args():
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "-d", "--dataset", type=str, default=None, 
+        "-d", "--dataset", type=str, default=None,
         help="The dataset to infer on. If None, all datasets will be chosen."
     )
     parser.add_argument(
         "-m", "--model", type=str, default=None, 
         help="Provide the model type to infer with {vit_b, vit_l, vit_h}."
     )
-    parser.add_argument("--use_masks", action="store_true", 
-                        help="To use logits masks for iterative prompting.")
+    parser.add_argument(
+        "--use_masks", action="store_true", help="To use logits masks for iterative prompting."
+    )
     parser.add_argument(
         "-n", "--name", type=str, default=None,
         help="Provide the name of the model to infer with {generalist_sam, vanilla_sam, ..}."
