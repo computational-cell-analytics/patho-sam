@@ -42,7 +42,7 @@ def dataloading_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("-p", "--path", type=str, default=None)
     parser.add_argument("-d", "--datasets", type=str, default=None)
-    parser.add_argument("-ps", "--patch_shape", type=tuple, default=(512, 512))
+    parser.add_argument("--patch_shape", type=tuple, default=(512, 512))
 
     args = parser.parse_args()
     return args
