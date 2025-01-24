@@ -113,10 +113,10 @@ def create_val_split(
 
 def main(data_path, model_names=None, prompt=False):
     datasets = [
+        "consep",
         "cpm15",
         "cpm17",
         "cryonuseg",
-        # "janowczyk",
         "lizard",
         "lynsec_he",
         "lynsec_ihc",
@@ -128,8 +128,6 @@ def main(data_path, model_names=None, prompt=False):
         "tnbc",
     ]
     for dataset in datasets:
-        # print("Checking labels of dataset: ", dataset)
-        # remove_empty_labels(os.path.join(data_path, dataset, "loaded_dataset", "complete_dataset"))
         create_val_split(
             os.path.join(data_path, dataset),
             val_percentage=0.05,

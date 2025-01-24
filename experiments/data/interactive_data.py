@@ -1,9 +1,10 @@
 import os
+import argparse
 
 import imageio.v3 as imageio
 
 from dataloaders import get_dataloaders
-from util import dataloading_args, DATASETS
+from util import DATASETS
 from preprocess_datasets import create_val_split
 
 
@@ -35,6 +36,16 @@ def load_testsets(path, dsets=DATASETS, patch_shape=(512, 512)) -> None:
             counter += 1
         create_val_split(os.path.join(dpath, "loaded_testset"), custom_name="eval_split", dataset=dataset)
         print(f"{dataset} testset has successfully been loaded.")
+
+
+def dataloading_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-p", "--path", type=str, default=None)
+    parser.add_argument("-d", "--datasets", type=str, default=None)
+    parser.add_argument("-ps", "--patch_shape", type=tuple, default=(512, 512))
+
+    args = parser.parse_args()
+    return args
 
 
 def main():

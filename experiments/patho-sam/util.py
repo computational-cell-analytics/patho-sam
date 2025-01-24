@@ -92,8 +92,10 @@ def get_default_arguments():
             directories that contain the data",
     )
     parser.add_argument("--organ", type=str, required=False, default=None)  # to access organ class or all dataset.
-    parser.add_argument("--box", action="store_true", help="If passed, starts with first prompt as box")
-    parser.add_argument("--use_masks", action="store_true", help="To use logits masks for iterative prompting.")
+    parser.add_argument("--box", action="store_true", 
+                        help="If passed, starts with first prompt as box")
+    parser.add_argument("--use_masks", action="store_true", 
+                        help="To use logits masks for iterative prompting.")
     args = parser.parse_args()
     return args
 
@@ -129,11 +131,15 @@ def get_test_paths(input_path):
 def get_inference_args():
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "-d", "--dataset", type=str, default=None, help="The dataset to infer on. If None, all datasets will be chosen."
+        "-d", "--dataset", type=str, default=None, 
+        help="The dataset to infer on. If None, all datasets will be chosen."
     )
     parser.add_argument(
-        "-m", "--model", type=str, default=None, help="Provide the model type to infer with {vit_b, vit_l, vit_h}."
+        "-m", "--model", type=str, default=None, 
+        help="Provide the model type to infer with {vit_b, vit_l, vit_h}."
     )
+    parser.add_argument("--use_masks", action="store_true", 
+                        help="To use logits masks for iterative prompting.")
     parser.add_argument(
         "-n", "--name", type=str, default=None,
         help="Provide the name of the model to infer with {generalist_sam, vanilla_sam, ..}."
