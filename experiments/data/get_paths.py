@@ -7,11 +7,11 @@ from natsort import natsorted
 
 from torch_em.data.datasets.histopathology import (
     consep, cpm, cryonuseg, glas, lizard, lynsec, monuseg, nuclick,
-    nuinsseg, pannuke, puma, srsanet, tnbc
-)
+    nuinsseg, pannuke, puma, srsanet, tnbc)
 
 
 def get_dataset_paths(data_path, dataset) -> list:
+
 
     if dataset == "consep":
         data_paths = consep.get_consep_paths(
@@ -119,6 +119,9 @@ def get_dataset_paths(data_path, dataset) -> list:
                 # PanNuke is provided in an array of shape (C, B, H, W)
                 images = images.transpose(1, 2, 3, 0)  # --> (B, H, W, C)
 
+                # PanNuke is provided in an array of shape (C, B, H, W)
+                images = images.transpose(1, 2, 3, 0)  # --> (B, H, W, C)
+
                 counter = 1
                 for image, label in zip(images, labels):
                     image_path = os.path.join(cached_images, f"{counter:04}.tiff")
@@ -158,6 +161,8 @@ def get_dataset_paths(data_path, dataset) -> list:
         )
         label_key = 'labels/instances'
         image_key = 'raw'
+        label_key = 'labels/instances'
+        image_key = 'raw'
 
     if dataset in ["consep", "lizard", "glas", "puma", "tnbc"]:
         cached_images = os.path.join(data_path, "loaded_images")
@@ -184,3 +189,4 @@ def get_dataset_paths(data_path, dataset) -> list:
         label_paths = glob(os.path.join(cached_labels, "*.tiff"))
 
     return natsorted(image_paths), natsorted(label_paths)
+
