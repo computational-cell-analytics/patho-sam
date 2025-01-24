@@ -11,7 +11,7 @@ from torch_em.data.datasets.histopathology import (
 
 
 def get_dataset_paths(data_path, dataset) -> list:
-
+    
     if dataset == "consep":
         data_paths = consep.get_consep_paths(
             path=data_path,
@@ -79,13 +79,6 @@ def get_dataset_paths(data_path, dataset) -> list:
 
     elif dataset == "monusac":
         image_paths, label_paths = monusac.get_monusac_paths(
-            path=data_path,
-            split="test",
-            download=True,
-        )
-
-    elif dataset == "monuseg":
-        image_paths, label_paths = monuseg.get_monuseg_paths(
             path=data_path,
             split="test",
             download=True,
