@@ -57,7 +57,6 @@ def run_inference(model_dir, input_dir, model_types, datasets, model_names, use_
                     "python3",
                     "/user/titus.griebel/u12649/patho-sam/experiments/patho-sam/evaluate_iterative_prompting.py",
                 ] + args
-
                 print(f"Running inference with {model} model (type: {model_type}) on {dataset} dataset...")
                 subprocess.run(command)
                 embedding_path = os.path.join(output_path, "embeddings")
