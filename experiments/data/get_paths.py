@@ -6,12 +6,12 @@ import os
 from natsort import natsorted
 
 from torch_em.data.datasets.histopathology import (
-    consep, cpm, cryonuseg, glas, lizard, lynsec, monusac, monuseg, nuclick,
+    consep, cpm, cryonuseg, glas, lizard, lynsec, monuseg, nuclick,
     nuinsseg, pannuke, puma, srsanet, tnbc)
 
 
 def get_dataset_paths(data_path, dataset) -> list:
-    
+
     if dataset == "consep":
         data_paths = consep.get_consep_paths(
             path=data_path,
@@ -77,8 +77,8 @@ def get_dataset_paths(data_path, dataset) -> list:
             download=True,
         )
 
-    elif dataset == "monusac":
-        image_paths, label_paths = monusac.get_monusac_paths(
+    elif dataset == "monuseg":
+        image_paths, label_paths = monuseg.get_monuseg_paths(
             path=data_path,
             split="test",
             download=True,
@@ -114,7 +114,9 @@ def get_dataset_paths(data_path, dataset) -> list:
                 labels = file['labels/instances']
                 images = images[:]
                 labels = labels[:]
-                images = images.transpose(1, 2, 3, 0)
+
+                # PanNuke is provided in an array of shape (C, B, H, W)
+                images = images.transpose(1, 2, 3, 0)  # --> (B, H, W, C)
 
                 counter = 1
                 for image, label in zip(images, labels):
@@ -153,6 +155,8 @@ def get_dataset_paths(data_path, dataset) -> list:
             download=True,
             split="test",
         )
+        label_key = 'labels/instances'
+        image_key = 'raw'
 
     if dataset in ["consep", "lizard", "glas", "puma", "tnbc"]:
         cached_images = os.path.join(data_path, "loaded_images")
@@ -180,5 +184,3 @@ def get_dataset_paths(data_path, dataset) -> list:
 
     return natsorted(image_paths), natsorted(label_paths)
 
-
-get_dataset_paths("/mnt/lustre-grete/usr/u12649/data/original_data/pannuke", "pannuke")

@@ -1,7 +1,7 @@
 import os
 import shutil
-from glob import glob
 import argparse
+from tqdm import tqdm
 
 from get_paths import get_dataset_paths
 from util import DATASETS
@@ -10,13 +10,19 @@ from util import DATASETS
 def load_datasets(path, datasets=DATASETS):
     for dataset in datasets:
         dataset_path = os.path.join(path, dataset)
-        image_outpath = os.path.join(path, dataset, "loaded_images")
-        label_outpath = os.path.join(path, dataset, "loaded_images")
+        image_outpath = os.path.join(dataset_path, "loaded_images")
+        label_outpath = os.path.join(dataset_path, "loaded_labels")
         os.makedirs(image_outpath, exist_ok=True)
         os.makedirs(label_outpath, exist_ok=True)
+        if len(os.listdir(image_outpath)) > 1:
+            continue
+
+        print(f"Loading {dataset}...")
         image_paths, label_paths = get_dataset_paths(dataset_path, dataset)
+        assert len(image_paths) == len(label_paths)
+
         count = 1
-        for image_path, label_path in zip(image_paths, label_paths):
+        for image_path, label_path in tqdm(zip(image_paths, label_paths), desc="Moving files to new directory..."):
             img_ext = os.path.splitext(image_path)[1]
             label_ext = os.path.splitext(label_path)[1]
             image_dest = os.path.join(image_outpath, f"{count:04}{img_ext}")
@@ -24,6 +30,8 @@ def load_datasets(path, datasets=DATASETS):
 
             shutil.move(image_path, image_dest)
             shutil.move(label_path, label_dest)
+
+            count += 1
 
 
 def dataloading_args():
@@ -44,7 +52,7 @@ def main():
 
     if args.datasets is not None:
         load_datasets(data_path, [args.datasets])
-   
+
     else:
         load_datasets(data_path)
 
