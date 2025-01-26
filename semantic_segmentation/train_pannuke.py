@@ -63,7 +63,7 @@ def train_pannuke_semantic_segmentation(args):
     checkpoint_name = f"{model_type}/pannuke_semantic"
 
     train_loader, val_loader = get_dataloaders(
-        patch_shape=(1, 256, 256), data_path=os.path.join(args.input_path, "pannuke")
+        patch_shape=(1, 512, 512), data_path=os.path.join(args.input_path, "pannuke")
     )
 
     # Whether we opt for finetuning decoder only or finetune the entire backbone.

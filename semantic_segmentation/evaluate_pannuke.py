@@ -174,13 +174,13 @@ def evaluate_pannuke_semantic_segmentation(args):
             gt = read_image(gt_path)
 
             # Get the valid region as the remaning is padded
-            one_chan = image[:, :, 0]  # Take one channel to extract valid channels.
-            idxx = np.argwhere(one_chan > 0)
-            x_min, y_min = idxx.min(axis=0)
-            x_max, y_max = idxx.max(axis=0)
+            # one_chan = image[:, :, 0]  # Take one channel to extract valid channels.
+            # idxx = np.argwhere(one_chan > 0)
+            # x_min, y_min = idxx.min(axis=0)
+            # x_max, y_max = idxx.max(axis=0)
 
-            image = image[x_min:x_max+1, y_min:y_max+1]
-            gt = gt[x_min:x_max+1, y_min:y_max+1]
+            # image = image[x_min:x_max+1, y_min:y_max+1]
+            # gt = gt[x_min:x_max+1, y_min:y_max+1]
 
             # Run inference
             tensor_image = image.transpose(2, 0, 1)
@@ -277,6 +277,6 @@ if __name__ == "__main__":
     parser.add_argument("-i", "--input_path", default="/mnt/vast-nhr/projects/cidas/cca/test/data", type=str)
     parser.add_argument("-m", "--model_type", default="vit_b", type=str)
     parser.add_argument("-c", "--checkpoint_path", default=None, type=str)
-    parser.add_argument("-v", "--view", default=None, type=str)
+    parser.add_argument("--view", action="store_true")
     args = parser.parse_args()
     main(args)
