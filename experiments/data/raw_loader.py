@@ -42,14 +42,4 @@ def get_loader(path, patch_shape, batch_size, **kwargs):
     return torch_em.get_data_loader(dataset, batch_size, **loader_kwargs)
 
 
-# data_path = "/mnt/lustre-grete/usr/u12649/data/semantic/pannuke_sem"
-# loader = get_loader(
-#             path=data_path,
-#             patch_shape=(512, 512),
-#             batch_size=1,
-#             sampler=MinInstanceSampler(min_num_instances=24),
-#             transform=custom_transform,
-#             raw_transform=histopathology_identity,
-#         )
 
-# print(len(loader))

@@ -7,10 +7,10 @@ from eval_util import evaluate_cellvit, DATASETS
 
 def run_inference(model_dir, input_dir, output_dir, result_dir):
     for dataset in DATASETS:
-        data_dir = os.path.join(input_dir, dataset, "loaded_testset", "eval_split")
+        data_dir = os.path.join(input_dir, dataset, "loaded_images")
         for checkpoint in ["256-x20", "256-x40", "SAM-H-x20", "SAM-H-x40"]:
             model_path = os.path.join(model_dir, f"CellViT-{checkpoint}.pth")
-            if os.path.exists(os.path.join(result_dir, dataset, checkpoint, 'ais_result.csv')):
+            if os.path.exists(os.path.join(result_dir, dataset, checkpoint, f'{dataset}_cellvit_{checkpoint}_ais_result.csv')):
                 print(f"Inference with CellViT model (type: {checkpoint}) on {dataset} dataset already done")
                 continue
 
@@ -47,7 +47,7 @@ def run_inference(model_dir, input_dir, output_dir, result_dir):
 def main():
     run_inference(
         "/mnt/lustre-grete/usr/u12649/models/cellvit/checkpoints",
-        "/mnt/lustre-grete/usr/u12649/data/final_test",
+        "/mnt/lustre-grete/usr/u12649/data/original_data",
         "/mnt/lustre-grete/usr/u12649/models/cellvit/inference/",
         "/mnt/lustre-grete/usr/u12649/models/cellvit/results",
     )

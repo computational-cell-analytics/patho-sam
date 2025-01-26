@@ -2,6 +2,7 @@ import os
 import shutil
 import argparse
 from tqdm import tqdm
+import imageio.v3 as imageio
 
 from get_paths import get_dataset_paths
 from util import DATASETS
@@ -28,6 +29,12 @@ def load_datasets(path, datasets=DATASETS):
             image_dest = os.path.join(image_outpath, f"{count:04}{img_ext}")
             label_dest = os.path.join(label_outpath, f"{count:04}{label_ext}")
 
+            img = imageio.imread(image_path)
+            if img.shape[2] == 4:  # checks for and removes alpha channel
+                img = img[:, :, :-1]
+                imageio.imwrite(image_path, img)
+                print("Alpha channel successfully removed.")
+
             shutil.move(image_path, image_dest)
             shutil.move(label_path, label_dest)
 
@@ -48,7 +55,7 @@ def main():
     if args.path is not None:
         data_path = args.path
     else:
-        data_path = "/mnt/lustre-grete/usr/u12649/data/original_data/"
+        data_path = "/mnt/lustre-grete/usr/u12649/data/original_data"
 
     if args.datasets is not None:
         load_datasets(data_path, [args.datasets])

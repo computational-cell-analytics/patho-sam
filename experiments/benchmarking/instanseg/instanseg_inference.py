@@ -22,7 +22,6 @@ DATASETS = [
     "lizard",
     "lynsec_he",
     "lynsec_ihc",
-    "monusac",
     "monuseg",
     "nuclick",
     "nuinsseg",
@@ -60,12 +59,12 @@ def _run_evaluation(gt_paths, prediction_paths, verbose=True):
 
 
 def evaluate_instanseg(prediction_dir, label_dir, result_dir, dataset):
-    gt_paths = natsorted(glob(os.path.join(label_dir, dataset, "loaded_testset/eval_split/test_labels/*.tiff")))
+    gt_paths = natsorted(glob(os.path.join(label_dir, "loaded_labels", "*")))
     for checkpoint in ["instanseg"]:
-        save_path = os.path.join(result_dir, dataset, checkpoint, "ais_result.csv")
+        save_path = os.path.join(result_dir, dataset, checkpoint, f'{dataset}_instanseg_{checkpoint}_ais_result.csv')
         if os.path.exists(save_path):
             continue
-        prediction_paths = natsorted(glob(os.path.join(prediction_dir, dataset, "*.tiff")))
+        prediction_paths = natsorted(glob(os.path.join(prediction_dir, "*")))
         if len(prediction_paths) == 0:
             print(f"No predictions for {dataset} dataset on {checkpoint} checkpoint found")
             continue
@@ -85,29 +84,29 @@ def evaluate_instanseg(prediction_dir, label_dir, result_dir, dataset):
 
 
 def infer_instanseg(data_dir, output_path, dataset):
-    image_paths = natsorted(glob(os.path.join(data_dir, "test_images", "*.tiff")))
+    image_paths = natsorted(glob(os.path.join(data_dir, "loaded_images", "*")))
     os.makedirs(output_path, exist_ok=True)
     for image_path in tqdm(image_paths, desc=f"Performing inference on {dataset}"):
         image = read_image(image_path)
         segmentation = segment_using_instanseg(
             image=image, model_type="brightfield_nuclei", target="nuclei", scale="small"
         )
-        imageio.imwrite(os.path.join(output_path, os.path.basename(image_path)), segmentation)
+        imageio.imwrite(os.path.join(output_path, os.path.basename(image_path).replace(".png", ".tiff")), segmentation)
 
 
 def run_inference(input_dir, model_dir):
     for dataset in DATASETS:
-        output_path = os.path.join(model_dir, "inference", dataset)
-        input_path = os.path.join(input_dir, dataset, "loaded_testset", "eval_split")
-        if os.path.exists(os.path.join(model_dir, "results", dataset, "instanseg", "ais_result.csv")):
+        output_path = os.path.join(model_dir, "inference", dataset, "instanseg")
+        input_path = os.path.join(input_dir, dataset)
+        if os.path.exists(os.path.join(model_dir, "results", dataset, "instanseg", f'{dataset}_instanseg_instanseg_ais_result.csv')):
             continue
         os.makedirs(output_path, exist_ok=True)
         print(f"Running inference with InstanSeg model on {dataset} dataset... \n")
         infer_instanseg(input_path, output_path, dataset)
         print(f"Inference on {dataset} dataset with the InstanSeg model successfully completed \n")
         evaluate_instanseg(
-            prediction_dir=os.path.join(model_dir, "inference"),
-            label_dir=input_dir,
+            prediction_dir=output_path,
+            label_dir=input_path,
             result_dir=os.path.join(model_dir, "results"),
             dataset=dataset,
         )
@@ -115,7 +114,7 @@ def run_inference(input_dir, model_dir):
 
 def main():
     run_inference(
-        input_dir="/mnt/lustre-grete/usr/u12649/data/final_test",
+        input_dir="/mnt/lustre-grete/usr/u12649/data/original_data",
         model_dir="/mnt/lustre-grete/usr/u12649/models/instanseg/",
     )
 

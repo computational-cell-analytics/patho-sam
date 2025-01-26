@@ -5,7 +5,7 @@ from natsort import natsorted
 
 import numpy as np
 import pandas as pd
-import imageio.v3 as imageio
+import imageio
 from skimage.measure import label
 
 from elf.evaluation import mean_segmentation_accuracy
@@ -19,7 +19,7 @@ DATASETS = [
     "lizard",
     "lynsec_he",
     "lynsec_ihc",
-    "monusac",
+    # "monusac",
     "monuseg",
     "nuclick",
     "nuinsseg",
@@ -57,8 +57,8 @@ def _run_evaluation(gt_paths, prediction_paths, verbose=True):
 
 
 def evaluate_all_datasets_hovernet(prediction_dir, label_dir, result_dir, dataset, checkpoint):
-    gt_paths = natsorted(glob(os.path.join(label_dir, "*.tiff")))
-    save_path = os.path.join(result_dir, dataset, checkpoint, "ais_result.csv")
+    gt_paths = natsorted(glob(os.path.join(label_dir, "*")))
+    save_path = os.path.join(result_dir, dataset, checkpoint, f'{dataset}_hovernet_{checkpoint}_ais_result.csv')
     prediction_paths = natsorted(glob(os.path.join(prediction_dir, "*.tiff")))
     os.makedirs(os.path.join(result_dir, dataset, checkpoint), exist_ok=True)
     print(f"evaluation {dataset} dataset on checkpoint {checkpoint} ...")

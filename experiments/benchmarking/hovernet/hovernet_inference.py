@@ -5,26 +5,26 @@ from glob import glob
 from tqdm import tqdm
 from natsort import natsorted
 
-import imageio.v3 as imageio
+import imageio as imageio
 from scipy.io import loadmat
 
 from eval_util import evaluate_all_datasets_hovernet, DATASETS
 
 
 def mat_to_tiff(path):
-    label_mat_paths = [p for p in natsorted(glob(os.path.join(path, "mat", "*.mat")))]
-    for mpath in tqdm(label_mat_paths, desc="Preprocessing labels"):
-        label_path = os.path.join(path, os.path.basename(mpath.replace(".mat", ".tiff")))
-        label = loadmat(mpath)["inst_map"]
-        imageio.imwrite(label_path, label)
+    pred_mat_paths = [p for p in natsorted(glob(os.path.join(path, "mat", "*.mat")))]
+    for mpath in tqdm(pred_mat_paths, desc="Preprocessing labels"):
+        pred_path = os.path.join(path, os.path.basename(mpath.replace(".mat", ".tiff")))
+        pred = loadmat(mpath)["inst_map"]
+        imageio.imwrite(pred_path, pred)
 
 
 def run_inference(model_dir, input_dir, output_dir, type_info_path):
     for dataset in DATASETS:
         for checkpoint in ["consep", "cpm17", "kumar", "pannuke", "monusac"]:
             output_path = os.path.join(output_dir, "inference", dataset, checkpoint)
-            input_path = os.path.join(input_dir, dataset, "loaded_testset", "eval_split", "test_images")
-            if os.path.exists(os.path.join(output_dir, "results", dataset, checkpoint, 'ais_result.csv')):
+            input_path = os.path.join(input_dir, dataset, "loaded_images")
+            if os.path.exists(os.path.join(output_dir, "results", dataset, checkpoint, f'{dataset}_hovernet_{checkpoint}_ais_result.csv')):
                 print(f"Inference with HoVerNet model (type: {checkpoint}) on {dataset} dataset already done")
                 continue
 
@@ -74,7 +74,7 @@ def run_inference(model_dir, input_dir, output_dir, type_info_path):
             mat_to_tiff(os.path.join(output_path))
             evaluate_all_datasets_hovernet(
                 prediction_dir=output_path,
-                label_dir=os.path.join(input_dir, dataset, "loaded_testset", "eval_split", "test_labels"),
+                label_dir=os.path.join(input_dir, dataset, "loaded_labels"),
                 result_dir=os.path.join(model_dir, "results"),
                 checkpoint=checkpoint,
                 dataset=dataset,
@@ -87,7 +87,7 @@ def run_inference(model_dir, input_dir, output_dir, type_info_path):
 
 run_inference(
     model_dir="/mnt/lustre-grete/usr/u12649/models/hovernet",
-    input_dir="/mnt/lustre-grete/usr/u12649/data/final_test",
+    input_dir="/mnt/lustre-grete/usr/u12649/data/original_data",
     output_dir="/mnt/lustre-grete/usr/u12649/models/hovernet",
     type_info_path="/user/titus.griebel/u12649/hover_net/type_info.json",
 )
