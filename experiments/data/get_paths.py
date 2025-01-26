@@ -6,8 +6,9 @@ import os
 from natsort import natsorted
 
 from torch_em.data.datasets.histopathology import (
-    consep, cpm, cryonuseg, glas, lizard, lynsec, monuseg, nuclick,
-    nuinsseg, pannuke, puma, srsanet, tnbc)
+    consep, cpm, cryonuseg, lizard, lynsec, monuseg, nuclick,
+    nuinsseg, pannuke, puma, srsanet, tnbc
+)
 
 
 def get_dataset_paths(data_path, dataset) -> list:
