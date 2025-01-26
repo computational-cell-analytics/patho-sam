@@ -38,14 +38,10 @@ def run_inference(model_dir, input_dir, model_types, datasets, model_names):
                     continue
                 input_path = os.path.join(input_dir, dataset, "loaded_testset", "eval_split")
                 args = [
-                    "-m",
-                    f"{model_type}",
-                    "-c",
-                    f"{checkpoint_path}",
-                    "--experiment_folder",
-                    f"{output_path}",
-                    "-i",
-                    f"{input_path}",
+                    "-m", f"{model_type}",
+                    "-c", f"{checkpoint_path}",
+                    "--experiment_folder", f"{output_path}",
+                    "-i", f"{input_path}",
                 ]
                 command = [
                     "python3",
