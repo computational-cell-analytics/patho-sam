@@ -5,9 +5,7 @@ import pandas as pd
 
 
 SAM_TYPES = ["vit_b", "vit_l", "vit_h", "vit_b_lm"]
-
 SAM_MODELS = ["generalist_sam", "lm_sam", "pannuke_sam", "vanilla_sam", "nuclick_sam", "glas_sam", "cryonuseg_sam"]
-
 MODEL_NAMES = ["hovernet", "cellvit", "hovernext", "stardist", "cellvitpp", "instanseg"] + SAM_MODELS
 
 DATASETS = [
@@ -81,8 +79,10 @@ def get_results(path, overwrite=False):
         for model in MODEL_NAMES:
             if model not in SAM_MODELS and mode != 'ais':
                 continue
+
             if model == "vanilla_sam" and mode == 'ais':
                 continue
+
             for checkpoint in CHECKPOINTS[model]:
                 if mode in ['ais', 'amg']:
                     result_dict = {"dataset": [], "msa": [], "sa50": [], "sa75": []}
@@ -102,15 +102,21 @@ def get_results(path, overwrite=False):
                 if os.path.exists(csv_out) and not overwrite:
                     print(f"{csv_out} already exists.")
                     continue
+
                 for dataset in natsorted(DATASETS):
                     if model in SAM_MODELS:
                         csv_path = os.path.join(
-                                path, model, "results", dataset, mode, f"{dataset}_{model}_{checkpoint}_{mode}.csv"
-                            )
+                            path, model, "results", dataset, mode, f"{dataset}_{model}_{checkpoint}_{mode}.csv"
+                        )
                     else:
-                        csv_path = os.path.join(path, model, "results", dataset, checkpoint, f"{mode}_result.csv")
+                        csv_path = os.path.join(
+                            path, model, "results", dataset, checkpoint,
+                            f"{dataset}_{model}_{checkpoint}_{mode}_result.csv"
+                        )
+
                     if not os.path.exists(csv_path):
                         continue
+
                     df = pd.read_csv(csv_path)
                     if mode in ['ais', 'amg']:
                         result_dict["msa"].append(df.loc[0, "mSA"])
@@ -125,9 +131,11 @@ def get_results(path, overwrite=False):
                         result_dict["sa50_8th"].append(df.loc[7, "SA50"])
                         result_dict["sa75_8th"].append(df.loc[7, "SA75"])
                         result_dict["dataset"].append(dataset)
+
                 df = pd.DataFrame(result_dict)
                 if df.empty:
                     continue
+
                 df.to_csv(csv_out, index=False)
                 if mode in ["amg", "ais"]:
                     df = df[["dataset", "msa"]]
@@ -141,11 +149,13 @@ def get_results(path, overwrite=False):
                         },
                         inplace=True,
                     )
+
                 if concat_df.empty:
                     concat_df = df
                 else:
                     concat_df = pd.merge(concat_df, df, on="dataset", how="outer")
                     print(f"{model} (checkpoint: {checkpoint}) added to concat results")
+
         if not concat_df.empty:
             concat_df.to_csv(csv_concat, index=False)
 

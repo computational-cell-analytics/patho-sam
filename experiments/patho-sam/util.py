@@ -15,22 +15,23 @@ VANILLA_MODELS = {
     "vit_l": "/scratch-grete/projects/nim00007/sam/models/vanilla/sam_vit_l_0b3195.pth",
     "vit_h": "/scratch-grete/projects/nim00007/sam/models/vanilla/sam_vit_h_4b8939.pth",
     "vit_b_lm": None,
+    "vit_b_histopathology": None,
 }
 
 
 SAM_TYPES = ["vit_b", "vit_l", "vit_h"]
 
-MODEL_NAMES = ["lm_sam", "vanilla_sam", "generalist_sam", "pannuke_sam"]  # "nuclick_sam", "glas_sam", "cryonuseg_sam"]
+MODEL_NAMES = ["lm_sam", "vanilla_sam", "generalist_sam", "pannuke_sam",  "nuclick_sam", "glas_sam"]
 
 DATASETS = [
     "consep",
     "cpm15",
     "cpm17",
     "cryonuseg",
+    "glas",
     "lizard",
     "lynsec_he",
     "lynsec_ihc",
-    "monusac",
     "monuseg",
     "nuclick",
     "nuinsseg",
@@ -38,6 +39,20 @@ DATASETS = [
     "puma",
     "srsanet",
     "tnbc",
+]
+
+TILING_WINDOW_DS = [
+    "cpm15",
+    "consep",
+    "lizard",
+    "monuseg",
+    "puma",
+]
+
+PADDING_DS = [
+    "pannuke",
+    "srsanet",
+    "nuclick",
 ]
 
 
@@ -84,12 +99,11 @@ def get_default_arguments():
     parser.add_argument("-e", "--experiment_folder", type=str, required=True)  # empty directory for saving the output
     parser.add_argument(
         "-i", "--input_path", type=str, required=True, default=None,
-        help="Requires path to a directory containing 'test_images', 'test_labels', 'val_images' and 'val_labels' \
-            directories that contain the data",
+        help="Requires path to a directory containing 'test_images', 'test_labels', 'val_images' and 'val_labels' directories that contain the data",  # noqa
     )
     parser.add_argument(
-        "--organ", type=str, required=False, default=None
-    )  # to access organ class or all dataset.
+        "--tiling_window", action="store_true", help="To use tiling window for inputs larger than 512 x 512"
+    )
     parser.add_argument(
         "--box", action="store_true", help="If passed, starts with first prompt as box"
     )
@@ -141,6 +155,9 @@ def get_inference_args():
     parser.add_argument(
         "--use_masks", action="store_true", help="To use logits masks for iterative prompting."
     )
+    parser.add_argument(
+        "--tiling_window", action="store_true", 
+        help="To use tiling window for inputs larger than 512 x 512")
     parser.add_argument(
         "-n", "--name", type=str, default=None,
         help="Provide the name of the model to infer with {generalist_sam, vanilla_sam, ..}."

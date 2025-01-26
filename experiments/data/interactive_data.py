@@ -4,8 +4,7 @@ import argparse
 import imageio.v3 as imageio
 
 from dataloaders import get_dataloaders
-from util import DATASETS
-from preprocess_datasets import create_val_split
+from util import DATASETS, create_val_split, remove_empty_labels
 
 
 def load_testsets(path, dsets=DATASETS, patch_shape=(512, 512)) -> None:
@@ -14,26 +13,29 @@ def load_testsets(path, dsets=DATASETS, patch_shape=(512, 512)) -> None:
             if len(os.listdir(os.path.join(path, dataset, "loaded_testset", "images"))) > 1:
                 print(f"Dataset {dataset} is loaded already.")
                 continue
-        counter = 1
+
         print(f"Loading {dataset} dataset...")
         dpath = os.path.join(path, dataset)
         os.makedirs(dpath, exist_ok=True)
         loader = get_dataloaders(patch_shape=patch_shape, data_path=dpath, dataset=dataset)
+
         image_output_path = os.path.join(path, dataset, "loaded_testset", "images")
         label_output_path = os.path.join(path, dataset, "loaded_testset", "labels")
+
         os.makedirs(image_output_path, exist_ok=True)
         os.makedirs(label_output_path, exist_ok=True)
-        for image, label in loader:
-            image_array = image.numpy()
-            label_array = label.numpy()
-            squeezed_image = image_array.squeeze()
-            label_data = label_array.squeeze()
-            tp_img = squeezed_image.transpose(1, 2, 0)
-            if tp_img.shape[-1] == 4:  # deletes alpha channel if one exists
-                tp_img = tp_img[..., :-1]
-            imageio.imwrite(os.path.join(image_output_path, f"{counter:04}.tiff"), tp_img)
-            imageio.imwrite(os.path.join(label_output_path, f"{counter:04}.tiff"), label_data)
-            counter += 1
+
+        for idx, (image, label) in enumerate(loader, start=1):
+            image = image.squeeze().numpy()
+            label = label.squeeze().numpy()
+            image = image.transpose(1, 2, 0)
+            if image.shape[-1] == 4:  # deletes alpha channel if one exists
+                image = image[..., :-1]
+
+            imageio.imwrite(os.path.join(image_output_path, f"{idx:04}.tiff"), image)
+            imageio.imwrite(os.path.join(label_output_path, f"{idx:04}.tiff"), label)
+
+        remove_empty_labels(dpath)
         create_val_split(os.path.join(dpath, "loaded_testset"), custom_name="eval_split", dataset=dataset)
         print(f"{dataset} testset has successfully been loaded.")
 

@@ -1,4 +1,3 @@
-# create resized pyramid tiffs with vips
 import os
 import shutil
 from glob import glob
@@ -6,8 +5,6 @@ from tqdm import tqdm
 
 import numpy as np
 import imageio.v3 as imageio
-
-import pyvips
 
 
 DATASETS = [
@@ -30,6 +27,9 @@ DATASETS = [
 
 
 def preprocess_cvtplus(input_dir, output_dir):
+    # create resized pyramid tiffs with vips
+    import pyvips
+
     for dataset in DATASETS:
         data_dir = os.path.join(input_dir, dataset, "loaded_testset", "eval_split", "test_images")
         intermediate_folder = os.path.join(output_dir, "intermediate", dataset)

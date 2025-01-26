@@ -26,14 +26,10 @@ def run_inference(input_dir, output_dir):
                 continue
             os.makedirs(output_path, exist_ok=True)
             args = [
-                "--input",
-                f"{input_path}",
-                "--cp",
-                f"{model}",
-                "--output_root",
-                f"{output_path}",
-                "--tile_size",
-                "512",
+                "--input", f"{input_path}",
+                "--cp", f"{model}",
+                "--output_root", f"{output_path}",
+                "--tile_size", "512",
             ]
 
             command = ["python3", "/user/titus.griebel/u12649/hover_next_inference/main.py"] + args

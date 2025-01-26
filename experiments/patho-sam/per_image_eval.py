@@ -170,13 +170,10 @@ def per_sample_eval(inf_path, data_path):
                 )
                 if os.path.exists(save_path):
                     continue
+
                 os.makedirs(os.path.dirname(save_path), exist_ok=True)
                 print(f"evaluating {model}, checkpoint {checkpoint}")
-                run_evaluation(
-                    gt_paths=label_paths,
-                    prediction_paths=inference_paths,
-                    save_path=save_path
-                )
+                run_evaluation(gt_paths=label_paths, prediction_paths=inference_paths, save_path=save_path)
 
 
 per_sample_eval(
