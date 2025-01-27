@@ -49,7 +49,6 @@ def evaluate_pannuke_semantic_segmentation(args):
     assert len(image_paths) == len(gt_paths) and image_paths
 
     # Get the SAM model
-    # NOTE: The users can pass `vit_b_histopathology` as it is supported in `micro-sam` (on `dev`).
     predictor = get_sam_model(model_type=model_type, device=device)
 
     # Get the UNETR model for semantic segmentation pipeline
