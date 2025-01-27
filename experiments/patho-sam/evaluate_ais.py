@@ -35,7 +35,12 @@ def main():
         tiling_window_params = {"tile_shape": [384, 384], "halo": [64, 64]}
     else:
         tiling_window_params = None
+    if args.tiling_window:
+        tiling_window_params = {"tile_shape": [384, 384], "halo": [64, 64]}
+    else:
+        tiling_window_params = None
     prediction_folder = run_instance_segmentation_with_decoder_inference(
+        args.model, ckpt, args.experiment_folder, args.input_path, tiling_window_params
         args.model, ckpt, args.experiment_folder, args.input_path, tiling_window_params
     )
     eval_instance_segmentation_with_decoder(prediction_folder, args.experiment_folder, args.input_path)
