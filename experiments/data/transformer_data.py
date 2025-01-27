@@ -36,17 +36,19 @@ def load_datasets(path, datasets=DATASETS):
                 imageio.imwrite(image_path, img)
                 print("Alpha channel successfully removed.")
             if dataset in PADDING_DS:
-                padded_img = np.zeros((512, 512, 3))
-                padded_img[:512, :512, :] = img
+                padded_img = np.zeros((512, 512, 3), dtype=img.dtype)
+                padded_img[:256, :256, :] = img
                 assert padded_img.shape == (512, 512, 3), padded_img.shape
                 imageio.imwrite(image_path, padded_img)
+
             if dataset == 'lizard':
                 shape = img.shape
                 if shape[0] > 1024 or shape[1] > 1024:
-                    new_shape = max(shape[:2]) // 1024
+                    new_shape = max(shape[:2]) // 1024 
                     new_dim = (new_shape + 1) * 1024
                     padded_img = np.zeros((new_dim, new_dim, 3), dtype=img.dtype)
                     padded_img[:shape[0], :shape[1], :] = img
+
                     print(padded_img.shape)
                     imageio.imwrite(image_path, padded_img)
 
