@@ -15,6 +15,7 @@ VANILLA_MODELS = {
     "vit_l": "/scratch-grete/projects/nim00007/sam/models/vanilla/sam_vit_l_0b3195.pth",
     "vit_h": "/scratch-grete/projects/nim00007/sam/models/vanilla/sam_vit_h_4b8939.pth",
     "vit_b_lm": None,
+    "vit_b_histopathology": None,
 }
 
 
@@ -83,14 +84,11 @@ def get_default_arguments():
     parser.add_argument("-c", "--checkpoint", type=none_or_str, default=None)  # expects best.pt
     parser.add_argument("-e", "--experiment_folder", type=str, required=True)  # empty directory for saving the output
     parser.add_argument(
-        "-i",
-        "--input_path",
-        type=str,
-        required=True,
-        default=None,
-        help="requires path to a directory containing 'test_images', 'test_labels', 'val_images' and 'val_labels' \
+        "-i", "--input_path", type=str, required=True, default=None,
+        help="Requires path to a directory containing 'test_images', 'test_labels', 'val_images' and 'val_labels' \
             directories that contain the data",
     )
+<<<<<<< HEAD
     parser.add_argument("--organ", type=str, required=False, default=None)  # to access organ class or all dataset.
     parser.add_argument("--box", action="store_true", 
                         help="If passed, starts with first prompt as box")
@@ -98,6 +96,17 @@ def get_default_arguments():
                         help="To use logits masks for iterative prompting.")
     parser.add_argument("--tiling_window", action="store_true", 
                         help="To use tiling window for inputs larger than 512 x 512")
+=======
+    parser.add_argument(
+        "--organ", type=str, required=False, default=None
+    )  # to access organ class or all dataset.
+    parser.add_argument(
+        "--box", action="store_true", help="If passed, starts with first prompt as box"
+    )
+    parser.add_argument(
+        "--use_masks", action="store_true", help="To use logits masks for iterative prompting."
+    )
+>>>>>>> d1532abf516764987679d759227b5c9d46b21cbe
     args = parser.parse_args()
     return args
 
@@ -106,7 +115,7 @@ def dataloading_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("-p", "--path", type=str, default=None)
     parser.add_argument("-d", "--datasets", type=str, default=None)
-    parser.add_argument("-ps", "--patch_shape", type=tuple, default=(512, 512))
+    parser.add_argument("--patch_shape", type=tuple, default=(512, 512))
 
     args = parser.parse_args()
     return args
