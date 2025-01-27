@@ -2,7 +2,7 @@ import os
 import shutil
 import subprocess
 
-from util import get_inference_args, SAM_TYPES, DATASETS, MODEL_NAMES
+from util import get_inference_args, SAM_TYPES, DATASETS, MODEL_NAMES, TILING_WINDOW_DS
 
 
 def run_inference(model_dir, input_dir, model_types, datasets, model_names):
@@ -47,6 +47,8 @@ def run_inference(model_dir, input_dir, model_types, datasets, model_names):
                     "-i",
                     f"{input_path}",
                 ]
+                if dataset in TILING_WINDOW_DS:
+                    args.append("--tiling_window")
                 command = [
                     "python3",
                     "/user/titus.griebel/u12649/patho-sam/experiments/patho-sam/evaluate_amg.py",
@@ -66,7 +68,7 @@ def main():
     args = get_inference_args()
     run_inference(
         model_dir="/mnt/lustre-grete/usr/u12649/models",
-        input_dir="/mnt/lustre-grete/usr/u12649/data/final_test",
+        input_dir="/mnt/lustre-grete/usr/u12649/data/vit_data",
         model_types=[args.model],
         datasets=[args.dataset],
         model_names=[args.name],

@@ -86,7 +86,7 @@ def evaluate_all_datasets_hovernet(prediction_dir, label_dir, result_dir):
                     "SA75": [np.mean(sa75s)],
                 }
             )
-
+            print(results.head())
             results.to_csv(save_path, index=False)
 
 

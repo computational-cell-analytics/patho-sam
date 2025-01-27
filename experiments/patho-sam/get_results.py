@@ -76,7 +76,7 @@ CHECKPOINTS = {
 def get_results(path, overwrite=False):
     os.makedirs(os.path.join(path, "sum_results", "concatenated_results"), exist_ok=True)
     for mode in ['ais', 'amg', 'boxes', 'points']:
-        csv_concat = os.path.join(path, "sum_results", "concatenated_results", f"new_concatenated_{mode}_results.csv")
+        csv_concat = os.path.join(path, "sum_results", "concatenated_results", f"concatenated_{mode}_results.csv")
         concat_df = pd.DataFrame()
         for model in MODEL_NAMES:
             if model not in SAM_MODELS and mode != 'ais':

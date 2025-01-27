@@ -96,6 +96,8 @@ def get_default_arguments():
                         help="If passed, starts with first prompt as box")
     parser.add_argument("--use_masks", action="store_true", 
                         help="To use logits masks for iterative prompting.")
+    parser.add_argument("--tiling_window", action="store_true", 
+                        help="To use tiling window for inputs larger than 512 x 512")
     args = parser.parse_args()
     return args
 

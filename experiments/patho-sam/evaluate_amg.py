@@ -8,7 +8,7 @@ from util import (
 )
 
 
-def run_amg_inference(model_type, checkpoint, experiment_folder, input_path):
+def run_amg_inference(model_type, checkpoint, experiment_folder, input_path, tiling_window_params=None):
     val_image_paths, val_gt_paths = get_val_paths(input_path)
     test_image_paths, _ = get_test_paths(input_path)
     prediction_folder = run_amg(
@@ -18,6 +18,7 @@ def run_amg_inference(model_type, checkpoint, experiment_folder, input_path):
         val_image_paths,
         val_gt_paths,
         test_image_paths,
+        tiling_window_params,
     )
     return prediction_folder
 

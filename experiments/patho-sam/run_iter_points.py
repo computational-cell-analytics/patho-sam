@@ -82,7 +82,7 @@ def main():
     args = get_inference_args()
     run_inference(
         model_dir="/mnt/lustre-grete/usr/u12649/models",
-        input_dir="/mnt/lustre-grete/usr/u12649/data/final_test",
+        input_dir="/mnt/lustre-grete/usr/u12649/data/vit_data",
         model_types=[args.model],
         datasets=[args.dataset],
         model_names=[args.name],

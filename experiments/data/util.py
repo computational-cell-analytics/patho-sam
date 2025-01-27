@@ -15,6 +15,12 @@ VANILLA_MODELS = {
     "vit_h": "/scratch-grete/projects/nim00007/sam/models/vanilla/sam_vit_h_4b8939.pth",
 }
 
+PADDING_DS = [
+    "pannuke",
+    "srsanet",
+    "nuclick",
+]
+
 DATASETS = [
     "consep",
     "cpm15",
