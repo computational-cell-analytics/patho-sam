@@ -1,7 +1,6 @@
 import os
 from glob import glob
 from tqdm import tqdm
-from typing import List
 from natsort import natsorted
 
 import numpy as np
@@ -14,26 +13,7 @@ from tukra.io import read_image
 from micro_sam.util import get_sam_model
 from micro_sam.instance_segmentation import get_unetr
 
-from elf.evaluation import dice_score
-
-
-def semantic_segmentation_quality(ground_truth: np.ndarray, segmentation: np.ndarray, class_ids: List[int]):
-    # First, we iterate over all classes
-    sq_per_class = []
-    for i in class_ids:
-        # Get the per semantic class values.
-        this_gt = (ground_truth == i).astype("uint32")
-        this_seg = (segmentation == i).astype("uint32")
-
-        # Check if the ground truth is empty for this semantic class. We skip calculation for this.
-        if len(np.unique(this_gt)) == 1:
-            this_sq = np.nan
-        else:
-            this_sq = dice_score(this_seg, this_gt)
-
-        sq_per_class.append(this_sq)
-
-    return sq_per_class
+from patho_sam.evaluation import semantic_segmentation_quality
 
 
 def evaluate_pannuke_semantic_segmentation(args):

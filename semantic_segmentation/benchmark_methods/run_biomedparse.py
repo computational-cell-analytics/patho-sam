@@ -4,10 +4,13 @@ from tqdm import tqdm
 from natsort import natsorted
 
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 
 from tukra.io import read_image
 from tukra.inference import get_biomedparse
+
+from patho_sam.evaluation import semantic_segmentation_quality
 
 
 MAPPING = {
@@ -25,9 +28,10 @@ def evaluate_biomedparse_for_pannuke(input_path, view):
     model = get_biomedparse.get_biomedparse_model()  # get the biomedparse model.
 
     # Get the inputs and corresponding labels.
-    image_paths = natsorted(glob(os.path.join(args.input_path, "pannuke", "fold3_eval", "test_images", "*")))
-    gt_paths = natsorted(glob(os.path.join(args.input_path, "pannuke", "fold3_eval", "test_labels", "*")))
+    image_paths = natsorted(glob(os.path.join(input_path, "pannuke", "fold3_eval", "test_images", "*")))
+    gt_paths = natsorted(glob(os.path.join(input_path, "pannuke", "fold3_eval", "test_labels", "*")))
 
+    sq_per_image = []
     for image_path, gt_path in tqdm(zip(image_paths, gt_paths), total=len(image_paths)):
         # Get the input image and corresponding semantic labels.
         image = read_image(image_path)
@@ -56,6 +60,12 @@ def evaluate_biomedparse_for_pannuke(input_path, view):
         for prompt, per_seg in zip(prompts, segmentations):
             semantic_seg[per_seg > 0] = MAPPING[prompt]
 
+        # Evaluate scores.
+        sq_score = semantic_segmentation_quality(
+            ground_truth=gt, segmentation=semantic_seg, class_ids=[1, 2, 3, 4, 5]
+        )
+        sq_per_image.append(sq_score)
+
         if view:
             fig, axes = plt.subplots(1, 3, figsize=(20, 10))
             axes[0].imshow(image.astype(int))
@@ -74,6 +84,21 @@ def evaluate_biomedparse_for_pannuke(input_path, view):
             plt.close()
 
             breakpoint()
+
+    msq_neoplastic_cells = np.nanmean([sq[0] for sq in sq_per_image])
+    msq_inflammatory = np.nanmean([sq[1] for sq in sq_per_image])
+    msq_connective = np.nanmean([sq[2] for sq in sq_per_image])
+    msq_epithelial = np.nanmean([sq[3] for sq in sq_per_image])
+
+    results = {
+        "neoplastic_cells": msq_neoplastic_cells,
+        "inflammatory_cells": msq_inflammatory,
+        "connective_cells": msq_connective,
+        "epithelial_cells": msq_epithelial,
+        "mean": np.mean([msq_neoplastic_cells, msq_inflammatory, msq_connective, msq_epithelial]),
+    }
+    results = pd.DataFrame.from_dict([results])
+    print(results)
 
 
 def main(args):
