@@ -20,7 +20,7 @@ import imageio.v3 as imageio
 
 def remove_empty_labels(path):
     empty_count = 0
-    file_list = natsorted(glob(os.path.join(path, "*.tiff")))
+    file_list = natsorted(glob(os.path.join(path, "*")))
     for image_path in file_list:
         img = imageio.imread(image_path)
         unique_elements = np.unique(img)
@@ -40,14 +40,18 @@ def create_val_split(
     path,
     val_percentage=0.05,
     test_percentage=0.95,
-    custom_name="standard_split",
+    custom_name="eval_split",
     random_seed=42,
     dataset=None,
 ):
-    labels_src_path = os.path.join(path, "labels")
-    images_src_path = os.path.join(path, "images")
-    label_list = natsorted(glob(os.path.join(labels_src_path, "*.tiff")))
-    image_list = natsorted(glob(os.path.join(images_src_path, "*.tiff")))
+    labels_src_path = os.path.join(path, "loaded_labels")
+    images_src_path = os.path.join(path, "loaded_images")
+    label_list = natsorted(glob(os.path.join(labels_src_path, "*")))
+    if len(label_list) == 0:
+        print(f"no labels found for {dataset}")
+        return
+    image_list = natsorted(glob(os.path.join(images_src_path, "*")))
+    label_ext = os.path.splitext(os.path.basename(label_list[0]))[1]
     assert len(label_list) == len(image_list), "Mismatch in labels and images"
     splits = ["val", "test", "train"]
     dst_paths = {f"{split}_labels": Path(path) / custom_name / f"{split}_labels" for split in splits}
@@ -73,11 +77,12 @@ def create_val_split(
     val_indices = random.sample(range(0, (len(image_list))), val_count)
     val_images = [image_list[x] for x in val_indices]
     for val_image in val_images:
-        label_path = os.path.join(labels_src_path, os.path.basename(val_image))
+        label_name = os.path.basename(val_image).replace(os.path.splitext(os.path.basename(val_image))[1], label_ext)
+        label_path = os.path.join(labels_src_path, label_name)
         shutil.copy(val_image, dst_paths["val_images"])
         shutil.copy(label_path, dst_paths["val_labels"])
         image_list.remove(val_image)
-        label_list.remove((os.path.join(labels_src_path, (os.path.basename(val_image)))))
+        label_list.remove(os.path.join(labels_src_path, label_name))
     assert len(os.listdir(dst_paths["val_labels"])) == len(
         os.listdir(dst_paths["val_images"])
     ), "label / image count mismatch in val set"
@@ -87,9 +92,10 @@ def create_val_split(
         test_images = [image_list[x] for x in test_indices]
         test_images.sort(reverse=True)
         for test_image in test_images:
-            label_path = os.path.join(labels_src_path, os.path.basename(test_image))
+            label_name = os.path.basename(test_image).replace(os.path.splitext(os.path.basename(test_image))[1], label_ext)
+            label_path = os.path.join(labels_src_path, label_name)
             image_list.remove(test_image)
-            label_list.remove((os.path.join(labels_src_path, (os.path.basename(test_image)))))
+            label_list.remove(os.path.join(labels_src_path, label_name))
             shutil.copy(test_image, dst_paths["test_images"])
             shutil.copy(label_path, dst_paths["test_labels"])
 
@@ -98,7 +104,7 @@ def create_val_split(
     ), "label / image count mismatch in test set"
     # residual images are per default in the train set
     for train_image in image_list:
-        label_path = os.path.join(labels_src_path, os.path.basename(train_image))
+        label_path = os.path.join(labels_src_path, os.path.splitext(os.path.basename(val_image))[0])
         shutil.copy(train_image, dst_paths["train_images"])
         shutil.copy(label_path, dst_paths["train_labels"])
     assert len(os.listdir(dst_paths["train_labels"])) == len(
@@ -117,14 +123,16 @@ def main(data_path, model_names=None, prompt=False):
         "cpm15",
         "cpm17",
         "cryonuseg",
+        "glas",
         "lizard",
         "lynsec_he",
         "lynsec_ihc",
-        "monusac",
         "monuseg",
+        "nuclick",
         "nuinsseg",
         "pannuke",
         "puma",
+        "srsanet",
         "tnbc",
     ]
     for dataset in datasets:
@@ -139,4 +147,4 @@ def main(data_path, model_names=None, prompt=False):
 
 
 if __name__ == "__main__":
-    main()
+    main(data_path="/mnt/lustre-grete/usr/u12649/data/vit_data")

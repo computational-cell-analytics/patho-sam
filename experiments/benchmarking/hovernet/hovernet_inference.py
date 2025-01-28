@@ -23,7 +23,7 @@ def run_inference(model_dir, input_dir, output_dir, type_info_path):
     for dataset in DATASETS:
         for checkpoint in ["consep", "cpm17", "kumar", "pannuke", "monusac"]:
             output_path = os.path.join(output_dir, "inference", dataset, checkpoint)
-            input_path = os.path.join(input_dir, dataset, "loaded_images")
+            input_path = os.path.join(input_dir, dataset, "eval_split", "test_images")
             if os.path.exists(os.path.join(output_dir, "results", dataset, checkpoint, f'{dataset}_hovernet_{checkpoint}_ais_result.csv')):
                 print(f"Inference with HoVerNet model (type: {checkpoint}) on {dataset} dataset already done")
                 continue
@@ -74,7 +74,7 @@ def run_inference(model_dir, input_dir, output_dir, type_info_path):
             mat_to_tiff(os.path.join(output_path))
             evaluate_all_datasets_hovernet(
                 prediction_dir=output_path,
-                label_dir=os.path.join(input_dir, dataset, "loaded_labels"),
+                label_dir=os.path.join(input_dir, dataset, "eval_split", "test_labels"),
                 result_dir=os.path.join(model_dir, "results"),
                 checkpoint=checkpoint,
                 dataset=dataset,

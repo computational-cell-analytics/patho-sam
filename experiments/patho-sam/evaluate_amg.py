@@ -18,7 +18,7 @@ def run_amg_inference(model_type, checkpoint, experiment_folder, input_path, til
         val_image_paths,
         val_gt_paths,
         test_image_paths,
-        tiling_window_params,
+        tiling_window_params=tiling_window_params,
     )
     return prediction_folder
 
@@ -38,8 +38,11 @@ def main():
         ckpt = VANILLA_MODELS[args.model]
     else:
         ckpt = args.checkpoint
-
-    prediction_folder = run_amg_inference(args.model, ckpt, args.experiment_folder, args.input_path)
+    if args.tiling_window:
+        tiling_window_params = {"tile_shape": [384, 384], "halo": [64, 64]}
+    else:
+        tiling_window_params = None
+    prediction_folder = run_amg_inference(args.model, ckpt, args.experiment_folder, args.input_path, tiling_window_params)
     eval_amg(prediction_folder, args.experiment_folder, args.input_path)
 
 

@@ -2,7 +2,7 @@ import os
 import shutil
 import subprocess
 
-from util import get_inference_args, SAM_TYPES, DATASETS, MODEL_NAMES, TILING_WINDOW_DS
+from util import get_inference_args, SAM_TYPES, DATASETS, MODEL_NAMES, TILING_WINDOW_DS, PADDING_DS
 
 
 def run_inference(model_dir, input_dir, model_types, datasets, model_names):
@@ -36,7 +36,10 @@ def run_inference(model_dir, input_dir, model_types, datasets, model_names):
                 ):
                     print(f"Inference with {model} model (type: {model_type}) on {dataset} dataset already done")
                     continue
-                input_path = os.path.join(input_dir, dataset, "loaded_testset", "eval_split")
+                if dataset not in PADDING_DS:
+                    input_path = os.path.join(input_dir, "original_data", dataset, "eval_split")
+                else:
+                    input_path = os.path.join(input_dir, "vit_data", dataset, "eval_split")
                 args = [
                     "-m", f"{model_type}",
                     "-c", f"{checkpoint_path}",
@@ -51,7 +54,7 @@ def run_inference(model_dir, input_dir, model_types, datasets, model_names):
                 ] + args
                 print(f"Running inference with {model} model (type: {model_type}) on {dataset} dataset...")
                 subprocess.run(command)
-                shutil.rmtree(os.path.join(output_path, "embeddings"))
+                # shutil.rmtree(os.path.join(output_path, "embeddings"))
                 os.makedirs(os.path.join(model_dir, model, 'results', dataset, 'amg'), exist_ok=True)
                 shutil.copy(
                     os.path.join(model_dir, model, "inference", dataset, model_type, 'amg', 'results', 'amg.csv'),
@@ -64,7 +67,7 @@ def main():
     args = get_inference_args()
     run_inference(
         model_dir="/mnt/lustre-grete/usr/u12649/models",
-        input_dir="/mnt/lustre-grete/usr/u12649/data/vit_data",
+        input_dir="/mnt/lustre-grete/usr/u12649/data",
         model_types=[args.model],
         datasets=[args.dataset],
         model_names=[args.name],

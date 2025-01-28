@@ -75,8 +75,8 @@ def evaluate_cellvit(prediction_dir, checkpoint, dataset, label_dir, result_dir)
     if os.path.exists(save_path):
         print("Results for {dataset} evaluation already exist")
         return
-    prediction_paths = natsorted(glob(os.path.join(prediction_dir, "*.tiff")))
-    gt_paths = natsorted(glob(os.path.join(label_dir, "loaded_labels", "*")))
+    prediction_paths = natsorted(glob(os.path.join(prediction_dir, "*")))
+    gt_paths = natsorted(glob(os.path.join(label_dir, "test_labels", "*")))
     if len(prediction_paths) == 0:
         print(f"No predictions for {dataset} dataset on {checkpoint} checkpoint found")
         return

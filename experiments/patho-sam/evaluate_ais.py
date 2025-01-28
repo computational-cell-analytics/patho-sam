@@ -10,7 +10,7 @@ def run_instance_segmentation_with_decoder_inference(model_type, checkpoint, exp
     val_image_paths, val_gt_paths = get_val_paths(input_path)
     test_image_paths, _ = get_test_paths(input_path)
     prediction_folder = run_instance_segmentation_with_decoder(
-        checkpoint, model_type, experiment_folder, val_image_paths, val_gt_paths, test_image_paths, tiling_window_params
+        checkpoint, model_type, experiment_folder, val_image_paths, val_gt_paths, test_image_paths, tiling_window_params=tiling_window_params
     )
     return prediction_folder
 

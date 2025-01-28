@@ -10,15 +10,14 @@ import cv2
 import json
 import numpy as np
 from scipy.io import loadmat
-import imageio.v3 as imageio
+import tifffile as tiff
 
 
 def json_to_tiff(path):
     label_json_paths = [p for p in natsorted(glob(os.path.join(path, "json", "*.json")))]
-    img_shape = (512, 512)
-    os.makedirs(os.path.join(path, "semantic"), exist_ok=True)
+    img_shape = (256, 256)
     for mpath in tqdm(label_json_paths, desc="Postprocessing labels"):
-        label_path = os.path.join(path, "semantic", os.path.basename(mpath.replace(".json", ".tiff")))
+        label_path = os.path.join(path, os.path.basename(mpath.replace(".json", ".tiff")))
         with open(mpath, 'r') as file:
             data = json.load(file)
             pred_class_map = np.zeros(img_shape, dtype=np.int32)
@@ -33,7 +32,7 @@ def json_to_tiff(path):
                 contour = contour.astype(np.int32)
                 cv2.fillPoly(pred_class_map, [contour], cell_type)
 
-        imageio.imwrite(label_path, pred_class_map)
+        tiff.imwrite(label_path, pred_class_map)
 
 
 def mat_to_tiff(path):
@@ -42,14 +41,14 @@ def mat_to_tiff(path):
     for mpath in tqdm(label_mat_paths, desc="Postprocessing predictions"):
         label_path = os.path.join(path, "instance", os.path.basename(mpath.replace(".mat", ".tiff")))
         label = loadmat(mpath)["inst_type"]
-        imageio.imwrite(label_path, label)
+        tiff.imwrite(label_path, label)
 
 
 def run_inference(model_dir, input_dir, output_dir, type_info_path):
     for dataset in ["pannuke"]:
         for checkpoint in ["pannuke"]:
             output_path = os.path.join(output_dir, "inference", dataset, checkpoint)
-            input_path = os.path.join(input_dir, dataset, "loaded_testset", "eval_split", "test_images")
+            input_path = os.path.join(input_dir, dataset, "semantic_split", "test_images")
             if os.path.exists(os.path.join(output_dir, "results", dataset, checkpoint, 'ais_result.csv')):
                 print(f"Inference with HoVerNet model (type: {checkpoint}) on {dataset} dataset already done")
                 continue
@@ -94,8 +93,8 @@ def run_inference(model_dir, input_dir, output_dir, type_info_path):
             command = ["python3", "/user/titus.griebel/u12649/hover_net/run_infer.py"] + args
             print(f"Running inference with HoVerNet {checkpoint} model on {dataset} dataset...")
 
-            subprocess.run(command)
-            mat_to_tiff(output_path)
+            # subprocess.run(command)
+            # mat_to_tiff(output_path)
             json_to_tiff(output_path)
             shutil.rmtree(os.path.join(output_path, "json"))
             shutil.rmtree(os.path.join(output_path, "mat"))
@@ -105,7 +104,7 @@ def run_inference(model_dir, input_dir, output_dir, type_info_path):
 
 run_inference(
     model_dir="/mnt/lustre-grete/usr/u12649/models/hovernet",
-    input_dir="/mnt/lustre-grete/usr/u12649/data/semantic_data",
+    input_dir="/mnt/lustre-grete/usr/u12649/data/original_data",
     output_dir="/mnt/lustre-grete/usr/u12649/models/hovernet_types",
     type_info_path="/user/titus.griebel/u12649/hover_net/type_info.json",
 )

@@ -6,7 +6,7 @@ import os
 from natsort import natsorted
 
 from torch_em.data.datasets.histopathology import (
-    consep, cpm, cryonuseg, lizard, lynsec, monuseg, nuclick,
+    consep, cpm, cryonuseg, glas, lizard, lynsec, monuseg, nuclick,
     nuinsseg, pannuke, puma, srsanet, tnbc
 )
 

@@ -59,7 +59,7 @@ def _run_evaluation(gt_paths, prediction_paths, verbose=True):
 
 
 def evaluate_stardist(prediction_dir, label_dir, result_dir, dataset):
-    gt_paths = natsorted(glob(os.path.join(label_dir, "loaded_labels", "*")))
+    gt_paths = natsorted(glob(os.path.join(label_dir, "eval_split", "test_labels", "*")))
     for checkpoint in ["stardist"]:
         save_path = os.path.join(result_dir, dataset, checkpoint, f'{dataset}_stardist_stardist_ais_result.csv')
         if os.path.exists(save_path):
@@ -84,7 +84,7 @@ def evaluate_stardist(prediction_dir, label_dir, result_dir, dataset):
 
 
 def infer_stardist(data_dir, output_path):
-    image_paths = natsorted(glob(os.path.join(data_dir, "loaded_images", "*")))
+    image_paths = natsorted(glob(os.path.join(data_dir, "eval_split", "test_images", "*")))
     os.makedirs(output_path, exist_ok=True)
     for image_path in image_paths:
         image = read_image(image_path)

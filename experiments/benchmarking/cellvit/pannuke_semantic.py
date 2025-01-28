@@ -8,7 +8,7 @@ CVT_CP = ["256-x20", "256-x40", "SAM-H-x20", "SAM-H-x40"]
 
 def run_inference(model_dir, input_dir, output_dir, result_dir):
     for dataset in ['pannuke']:
-        data_dir = os.path.join(input_dir, dataset, "loaded_testset")
+        data_dir = os.path.join(input_dir, dataset, "eval_split")
         for checkpoint in CVT_CP:
             model_path = os.path.join(model_dir, f"CellViT-{checkpoint}.pth")
             if os.path.exists(os.path.join(result_dir, dataset, checkpoint, 'ais_result.csv')):
@@ -45,7 +45,7 @@ def run_inference(model_dir, input_dir, output_dir, result_dir):
 def main():
     run_inference(
         "/mnt/lustre-grete/usr/u12649/models/cellvit/checkpoints",
-        "/mnt/lustre-grete/usr/u12649/data/semantic_data",
+        "/mnt/lustre-grete/usr/u12649/data/vit_data",
         "/mnt/lustre-grete/usr/u12649/models/cellvit_types/inference/",
         "/mnt/lustre-grete/usr/u12649/models/cellvit_types/results",
     )
