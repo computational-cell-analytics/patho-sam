@@ -8,6 +8,9 @@ from natsort import natsorted
 from torch_em.data.datasets.histopathology import (
     consep, cpm, cryonuseg, glas, lizard, lynsec, monuseg, nuclick,
     nuinsseg, pannuke, puma, srsanet, tnbc)
+    consep, cpm, cryonuseg, glas, lizard, lynsec, monuseg, nuclick,
+    nuinsseg, pannuke, puma, srsanet, tnbc
+)
 
 
 def get_dataset_paths(data_path, dataset) -> list:
@@ -189,4 +192,3 @@ def get_dataset_paths(data_path, dataset) -> list:
         label_paths = glob(os.path.join(cached_labels, "*.tiff"))
 
     return natsorted(image_paths), natsorted(label_paths)
-
