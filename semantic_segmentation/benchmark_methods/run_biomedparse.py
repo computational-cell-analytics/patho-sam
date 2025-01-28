@@ -62,7 +62,7 @@ def evaluate_biomedparse_for_pannuke(input_path, view):
 
         # Evaluate scores.
         sq_score = semantic_segmentation_quality(
-            ground_truth=gt, segmentation=semantic_seg, class_ids=[1, 2, 3, 4, 5]
+            ground_truth=gt, segmentation=semantic_seg, class_ids=list(MAPPING.values()),
         )
         sq_per_image.append(sq_score)
 

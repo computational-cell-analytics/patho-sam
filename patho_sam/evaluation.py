@@ -20,10 +20,10 @@ def semantic_segmentation_quality(
     """
     # First, we iterate over all classes
     sq_per_class = []
-    for i in class_ids:
+    for id in class_ids:
         # Get the per semantic class values.
-        this_gt = (ground_truth == i).astype("uint32")
-        this_seg = (segmentation == i).astype("uint32")
+        this_gt = (ground_truth == id).astype("uint32")
+        this_seg = (segmentation == id).astype("uint32")
 
         # Check if the ground truth is empty for this semantic class. We skip calculation for this.
         if len(np.unique(this_gt)) == 1:
