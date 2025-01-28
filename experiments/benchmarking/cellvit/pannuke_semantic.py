@@ -45,7 +45,7 @@ def run_inference(model_dir, input_dir, output_dir, result_dir):
 def main():
     run_inference(
         "/mnt/lustre-grete/usr/u12649/models/cellvit/checkpoints",
-        "/mnt/lustre-grete/usr/u12649/data/vit_data",
+        "/mnt/lustre-grete/usr/u12649/data/original_data",
         "/mnt/lustre-grete/usr/u12649/models/cellvit_types/inference/",
         "/mnt/lustre-grete/usr/u12649/models/cellvit_types/results",
     )
