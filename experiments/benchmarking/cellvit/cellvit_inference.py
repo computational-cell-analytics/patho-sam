@@ -56,12 +56,6 @@ def run_inference(model_dir, input_dir, output_dir, result_dir, datasets=None, c
                 os.remove(os.path.join(output_path, "inference_monuseg.log"))
 
             evaluate_cellvit(output_path, checkpoint, dataset, data_dir, result_dir)
-
-            try:
-                os.remove(os.path.join(output_path, f"inference_{dataset}.log"))
-            except FileNotFoundError:
-                pass
-
             print(f"Successfully ran inference with CellViT {checkpoint} model on {dataset} dataset")
 
 
