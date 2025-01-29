@@ -15,14 +15,13 @@ def run_inference(model_dir, input_dir, output_dir, result_dir, datasets=None, c
 
     if checkpoints is None:
         checkpoints = CHECKPOINTS
-
-    for dataset in datasets:
-        if dataset not in ["pannuke", "nuclick", "srsanet", "lizard", "cpm15", "consep", "cpm17"]:
+    for dataset in ['monuseg']:
+        if dataset not in ["pannuke", "nuclick", "srsanet", "lizard", "cpm15", "consep", "cpm17", "monuseg"]:
             data_dir = os.path.join(input_dir, "original_data", dataset, "eval_split")
         else:
             data_dir = os.path.join(input_dir, "vit_data", dataset, "eval_split")
 
-        for checkpoint in checkpoints:
+        for checkpoint in checkpoints:  # ["256-x20", "256-x40", "SAM-H-x20", "SAM-H-x40"]:
             model_path = os.path.join(model_dir, f"CellViT-{checkpoint}.pth")
             if os.path.exists(
                 os.path.join(result_dir, dataset, checkpoint, f'{dataset}_cellvit_{checkpoint}_ais_result.csv')
@@ -60,13 +59,13 @@ def run_inference(model_dir, input_dir, output_dir, result_dir, datasets=None, c
             print(f"Successfully ran inference with CellViT {checkpoint} model on {dataset} dataset")
 
 
-# def main():
-#     run_inference(
-#         "/mnt/lustre-grete/usr/u12649/models/cellvit/checkpoints",
-#         "/mnt/lustre-grete/usr/u12649/data/",
-#         "/mnt/lustre-grete/usr/u12649/models/cellvit/inference/",
-#         "/mnt/lustre-grete/usr/u12649/models/cellvit/results",
-#     )
+def main():
+    run_inference(
+        "/mnt/lustre-grete/usr/u12649/models/cellvit/checkpoints",
+        "/mnt/lustre-grete/usr/u12649/data/",
+        "/mnt/lustre-grete/usr/u12649/models/cellvit/inference/",
+        "/mnt/lustre-grete/usr/u12649/models/cellvit/results",
+    )
 
 
 def get_cellvit_args():
@@ -80,16 +79,15 @@ def get_cellvit_args():
     return args
 
 
-def main():
-    args = get_cellvit_args()
-    run_inference(
-        model_dir=args.model_dir,
-        input_dir=args.input,
-        output_dir=args.output_path,
-        result_dir=args.output_path,
-        datasets=[args.dataset],
-        checkpoints=[args.checkpoint],
-    )
+# def main():
+#     args = get_cellvit_args()
+#     run_inference(
+#         model_dir=args.model_dir,
+#         input_dir=args.input,
+#         output_dir=args.output_path,
+#         datasets=[args.dataset],
+#         checkpoints=[args.checkpoint],
+#     )
 
 
 if __name__ == "__main__":

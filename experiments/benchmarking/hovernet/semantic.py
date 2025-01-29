@@ -93,8 +93,7 @@ def run_inference(model_dir, input_dir, output_dir, type_info_path):
             command = ["python3", "/user/titus.griebel/u12649/hover_net/run_infer.py"] + args
             print(f"Running inference with HoVerNet {checkpoint} model on {dataset} dataset...")
 
-            # subprocess.run(command)
-            # mat_to_tiff(output_path)
+            subprocess.run(command)
             json_to_tiff(output_path)
             shutil.rmtree(os.path.join(output_path, "json"))
             shutil.rmtree(os.path.join(output_path, "mat"))
