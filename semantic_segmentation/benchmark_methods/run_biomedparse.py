@@ -47,6 +47,7 @@ def evaluate_biomedparse_for_pannuke(input_path, view):
         image = image[x_min:x_max+1, y_min:y_max+1]
         gt = gt[x_min:x_max+1, y_min:y_max+1]
 
+        """
         # Run inference per image.
         prediction = get_biomedparse.run_biomedparse_automatic_inference(
             input_path=image, modality_type=modality, model=model, verbose=False,
@@ -58,6 +59,41 @@ def evaluate_biomedparse_for_pannuke(input_path, view):
         # Map all predicted labels.
         semantic_seg = np.zeros_like(gt, dtype="uint8")
         for prompt, per_seg in zip(prompts, segmentations):
+            semantic_seg[per_seg > 0] = MAPPING[prompt]
+        """
+
+        # HACK: Run custom model.
+        from PIL import Image
+
+        import torch
+
+        from biomedparse.inference_utils.inference import interactive_infer_image_all
+        from biomedparse.inference_utils.processing_utils import read_rgb
+
+        from torchvision import transforms
+        from torchvision.transforms.functional import InterpolationMode
+
+        # HACK:
+        # We dynamically cache the image and corresponding ground truth and load them back for evaluation.
+        import imageio.v3 as imageio
+        imageio.imwrite("./test.tif", image)
+        # Load the cached and cropped image.
+        image = read_rgb("./test.tif")
+
+        predictions = interactive_infer_image_all(
+            model=model, image=Image.fromarray(image), image_type=modality, p_value_threshold=None
+        )
+        targets = list(predictions.keys())
+        pred_mask = [predictions[t] for t in targets]
+
+        # Resize predictions back to original size.
+        transform = transforms.Resize(
+            size=(256, 256), interpolation=InterpolationMode.BICUBIC, antialias=False,
+        )
+        pred_mask = [transform(torch.from_numpy(p)[None]).squeeze().numpy() for p in pred_mask]
+
+        semantic_seg = np.zeros_like(pred_mask[0], dtype="uint8")
+        for prompt, per_seg in zip(targets, pred_mask):
             semantic_seg[per_seg > 0] = MAPPING[prompt]
 
         # Evaluate scores.
@@ -104,6 +140,11 @@ def evaluate_biomedparse_for_pannuke(input_path, view):
 def main(args):
     # Run automatic (semantic) segmentation inference using biomedparse
     evaluate_biomedparse_for_pannuke(args.input_path, args.view)
+
+    """
+    neoplastic_cells  inflammatory_cells  connective_cells  epithelial_cells      mean
+    0.59643           0.460105            0.514006          0.064508              0.408762
+    """
 
 
 if __name__ == "__main__":
