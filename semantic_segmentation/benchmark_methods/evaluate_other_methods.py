@@ -3,50 +3,17 @@ from glob import glob
 from tqdm import tqdm
 from natsort import natsorted
 
-import h5py
 import numpy as np
 import pandas as pd
-import imageio.v3 as imageio
 
-from patho_sam.evaluation import semantic_segmentation_quality
+from tukra.io import read_image
+
+from patho_sam.evaluation import semantic_segmentation_quality, extract_class_weights_for_pannuke
 
 
 ROOT = "/mnt/vast-nhr/projects/cidas/cca/experiments/patho_sam/semantic/external"
 
 CLASS_IDS = [1, 2, 3, 4, 5]
-
-
-def _get_class_weights_for_pannuke():
-    stack_path = os.path.join(*ROOT.rsplit("/")[:-2], "data", "pannuke", "pannuke_fold_3.h5")
-    stack_path = "/" + stack_path
-
-    # Load the entire instance and semantic stack.
-    with h5py.File(stack_path, "r") as f:
-        instances = f['labels/instances'][:]
-        semantic = f['labels/semantic'][:]
-
-    # We need the following:
-    # - Count the total number of instances.
-    total_instance_counts = [
-        len(np.unique(ilabel)[1:]) for ilabel in instances if len(np.unique(ilabel)) > 1
-    ]  # Counting all valid foreground instances only.
-    total_instance_counts = sum(total_instance_counts)
-
-    # - Count per-semantic-class instances.
-    total_per_class_instance_counts = [
-        [len(np.unique(np.where(slabel == cid, ilabel, 0))[1:]) for cid in CLASS_IDS]
-        for ilabel, slabel in zip(instances, semantic) if len(np.unique(ilabel)) > 1
-    ]
-    assert total_instance_counts == sum([sum(t) for t in total_per_class_instance_counts])
-
-    # Calculate per class mean values.
-    total_per_class_instance_counts = [sum(x) for x in zip(*total_per_class_instance_counts)]
-    assert total_instance_counts == sum(total_per_class_instance_counts)
-
-    # Finally, let's get the weight per class.
-    per_class_weights = [t / total_instance_counts for t in total_per_class_instance_counts]
-
-    return per_class_weights
 
 
 def evaluate_benchmark_methods(per_class_weights):
@@ -56,11 +23,13 @@ def evaluate_benchmark_methods(per_class_weights):
 
     assert image_paths and len(image_paths) == len(gt_paths)
 
-    cellvit_scores, hovernet_scores, hovernext_scores = [], [], []
+    cellvit_256_20_scores, cellvit_256_40_scores, cellvit_sam_20_scores, cellvit_sam_40_scores = [], [], [], []
+    hovernet_scores = []
+    hovernext_1_scores, hovernext_2_scores = [], []
     for image_path, gt_path in tqdm(zip(image_paths, gt_paths), total=len(image_paths)):
         # Load the input image and corresponding labels.
         # image = imageio.imread(image_path)
-        gt = imageio.imread(gt_path)
+        gt = read_image(gt_path)
 
         # If the inputs do not have any semantic labels, we do not evaluate them!
         if len(np.unique(gt)) == 1:
@@ -69,23 +38,45 @@ def evaluate_benchmark_methods(per_class_weights):
         # Get the filename
         fname = os.path.basename(image_path)
 
-        # Get predictions per experiment.
-        cellvit = imageio.imread(os.path.join(ROOT, "cellvit", "SAM-H-x40", fname))
-        hovernet = imageio.imread(os.path.join(ROOT, "hovernet", "pannuke", fname))
-        hovernext = imageio.imread(os.path.join(ROOT, "hovernext", "pannuke_convnextv2_tiny_1", fname))
+        # Get predictions and scores per experiment.
+        # 1. cellvit results (for all models).
+        cellvit_256_20 = read_image(os.path.join(ROOT, "cellvit", "256-x20", fname))
+        cellvit_256_40 = read_image(os.path.join(ROOT, "cellvit", "256-x40", fname))
+        cellvit_sam_20 = read_image(os.path.join(ROOT, "cellvit", "SAM-H-x20", fname))
+        cellvit_sam_40 = read_image(os.path.join(ROOT, "cellvit", "SAM-H-x40", fname))
 
-        # Get scores per experiment.
-        cellvit_scores.append(
-            semantic_segmentation_quality(ground_truth=gt, segmentation=cellvit, class_ids=CLASS_IDS)
+        cellvit_256_20_scores.append(
+            semantic_segmentation_quality(ground_truth=gt, segmentation=cellvit_256_20, class_ids=CLASS_IDS)
         )
+        cellvit_256_40_scores.append(
+            semantic_segmentation_quality(ground_truth=gt, segmentation=cellvit_256_40, class_ids=CLASS_IDS)
+        )
+        cellvit_sam_20_scores.append(
+            semantic_segmentation_quality(ground_truth=gt, segmentation=cellvit_sam_20, class_ids=CLASS_IDS)
+        )
+        cellvit_sam_40_scores.append(
+            semantic_segmentation_quality(ground_truth=gt, segmentation=cellvit_sam_40, class_ids=CLASS_IDS)
+        )
+
+        # 2. hovernet results.
+        hovernet = read_image(os.path.join(ROOT, "hovernet", "pannuke", fname))
+
         hovernet_scores.append(
             semantic_segmentation_quality(ground_truth=gt, segmentation=hovernet, class_ids=CLASS_IDS)
         )
-        hovernext_scores.append(
-            semantic_segmentation_quality(ground_truth=gt, segmentation=hovernext, class_ids=CLASS_IDS)
+
+        # 3. hovernext results.
+        hovernext_1 = read_image(os.path.join(ROOT, "hovernext", "pannuke_convnextv2_tiny_1", fname))
+        hovernext_2 = read_image(os.path.join(ROOT, "hovernext", "pannuke_convnextv2_tiny_2", fname))
+
+        hovernext_1_scores.append(
+            semantic_segmentation_quality(ground_truth=gt, segmentation=hovernext_1, class_ids=CLASS_IDS)
+        )
+        hovernext_2_scores.append(
+            semantic_segmentation_quality(ground_truth=gt, segmentation=hovernext_2, class_ids=CLASS_IDS)
         )
 
-    def _get_average_results(sq_per_image):
+    def _get_average_results(sq_per_image, fname):
         msq_neoplastic_cells = np.nanmean([sq[0] for sq in sq_per_image])
         msq_inflammatory = np.nanmean([sq[1] for sq in sq_per_image])
         msq_connective = np.nanmean([sq[2] for sq in sq_per_image])
@@ -101,20 +92,30 @@ def evaluate_benchmark_methods(per_class_weights):
             "connective_cells": msq_connective,
             "dead_cells": msq_dead,
             "epithelial_cells": msq_epithelial,
-            "weighted_mean": np.mean(weighted_mean_msq),
+            "weighted_mean": np.sum(weighted_mean_msq),
             "absolute_mean": np.mean(all_msq)
         }
         results = pd.DataFrame.from_dict([results])
+        results.to_csv(fname)
         print(results)
 
     # Get average results per method.
-    _get_average_results(cellvit_scores)
-    _get_average_results(hovernet_scores)
-    _get_average_results(hovernext_scores)
+    _get_average_results(cellvit_256_20_scores, "cellvit_256_20_semantic.csv")
+    _get_average_results(cellvit_256_40_scores, "cellvit_256_40_semantic.csv")
+    _get_average_results(cellvit_sam_20_scores, "cellvit_sam_20_semantic.csv")
+    _get_average_results(cellvit_sam_40_scores, "cellvit_sam_40_semantic.csv")
+    _get_average_results(hovernet_scores, "hovernet_semantic.csv")
+    _get_average_results(hovernext_1_scores, "hovernext_1_semantic.csv")
+    _get_average_results(hovernext_2_scores, "hovernext_2_semantic.csv")
 
 
 def main():
-    per_class_weights = _get_class_weights_for_pannuke()
+    # Get per class weights.
+    fpath = os.path.join(*ROOT.rsplit("/")[:-2], "data", "pannuke", "pannuke_fold_3.h5")
+    fpath = "/" + fpath
+    per_class_weights = extract_class_weights_for_pannuke(fpath=fpath)
+
+    # Run evaluation for external benchmark methods.
     evaluate_benchmark_methods(per_class_weights)
 
 

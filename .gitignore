@@ -173,3 +173,4 @@ configs/
 inference_utils/
 *.tif
 *.svg
+*.csv
