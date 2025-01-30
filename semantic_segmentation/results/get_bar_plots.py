@@ -82,68 +82,57 @@ CLASS_NAME_MAP = {
 
 
 def get_appendix_per_class_semantic_plot():
-    # Get all CSV results
     res_paths = glob(os.path.join("*.csv"))
-    all_results = OrderedDict()  # Ensure order is preserved
+    all_results = OrderedDict()
 
     for res_path in res_paths:
-        # Read CSV and safely drop unnamed columns if they exist
         res = pd.read_csv(res_path)
-        unnamed_cols = [col for col in res.columns if "Unnamed" in col]  # Find unnamed columns
+        unnamed_cols = [col for col in res.columns if "Unnamed" in col]
         if unnamed_cols:
-            res = res.drop(columns=unnamed_cols)  # Drop them safely
+            res = res.drop(columns=unnamed_cols)
 
         method_name = Path(res_path).stem
-        if method_name in SUPP_MAPS_PER_CLASS:  # Only keep methods in `SUPP_MAPS` order
-            all_results[method_name] = res.iloc[0]  # Store full row (not just weighted_mean)
+        if method_name in SUPP_MAPS_PER_CLASS:
+            all_results[method_name] = res.iloc[0]
 
-    # Preserve order by reordering based on `SUPP_MAPS`
     ordered_results = OrderedDict((key, all_results[key]) for key in SUPP_MAPS.keys() if key in all_results)
 
-    # Get column names except `weighted_mean`, `absolute_mean`, and `"0"`
-    all_columns = list(next(iter(ordered_results.values())).index)  # Get columns from any row
+    all_columns = list(next(iter(ordered_results.values())).index)
     columns_to_plot = [col for col in all_columns if col not in ["weighted_mean", "absolute_mean", "0"]]
 
-    # Define positions
     num_groups = len(ordered_results)
     num_bars_per_group = len(columns_to_plot)
-    group_width = 0.9  # Reduced total width of each group to allow spacing
-    bar_width = group_width / num_bars_per_group  # Adjust bar width
+    group_width = 0.9
+    bar_width = group_width / num_bars_per_group
 
-    group_labels = [SUPP_MAPS_PER_CLASS[k] for k in ordered_results.keys()]  # Preserve order of `SUPP_MAPS`
-    x = np.linspace(0, num_groups * 1.5, num_groups)  # Increased spacing between groups
+    group_labels = [SUPP_MAPS_PER_CLASS[k] for k in ordered_results.keys()]
+    x = np.linspace(0, num_groups * 1.5, num_groups)
 
     plt.figure(figsize=(30, 15))
 
-    # Plot bars for each group
     for j, col in enumerate(columns_to_plot):
         offsets = np.linspace(-group_width / 2, group_width / 2, num_bars_per_group)
         for i, (method, row) in enumerate(ordered_results.items()):
-            color = CLASS_COLORS.get(col, "#333333")  # Assign color based on class name
+            color = CLASS_COLORS.get(col, "#333333")
 
             plt.bar(
                 x[i] + offsets[j], row[col], color=color, width=bar_width,
-                label=CLASS_NAME_MAP.get(col, col) if i == 0 else None,  # Map class names
-                edgecolor="white",
+                label=CLASS_NAME_MAP.get(col, col) if i == 0 else None, edgecolor="white"
             )
 
-    # Set X-axis ticks using method names
     plt.xticks(x, group_labels, fontsize=14, rotation=15, ha="center")
     plt.yticks(fontsize=14)
     plt.ylabel("Dice Score Coefficient", fontsize=16, fontweight="bold")
     plt.title("Semantic Segmentation (Scores Per Class)", fontsize=16, fontweight="bold")
 
-    # Avoid duplicate labels in legend
     handles, labels = plt.gca().get_legend_handles_labels()
     unique_labels = {CLASS_NAME_MAP.get(label, label): handle for label, handle in zip(labels, handles)}
 
-    # Set legend as a horizontal bar at the top-left
     plt.legend(
-        unique_labels.values(), unique_labels.keys(),
-        fontsize=14, loc="upper left", bbox_to_anchor=(0.25, 1), ncol=len(columns_to_plot),
+        unique_labels.values(), unique_labels.keys(), fontsize=14,
+        loc="upper left", bbox_to_anchor=(0.25, 1), ncol=len(columns_to_plot),
     )
 
-    # Save the figure
     plt.savefig("./semantic_quanti_all_per_class.svg")
     plt.savefig("./semantic_quanti_all_per_class.png")
     plt.close()

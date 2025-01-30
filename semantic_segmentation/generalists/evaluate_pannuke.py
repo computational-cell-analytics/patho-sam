@@ -32,9 +32,6 @@ def evaluate_pannuke_semantic_segmentation(args):
     per_class_weights = extract_class_weights_for_pannuke(fpath=fpath)
 
     # Get the inputs and corresponding labels.
-    # image_paths = natsorted(glob(os.path.join(args.input_path, "pannuke", "fold3_eval", "test_images", "*")))
-    # gt_paths = natsorted(glob(os.path.join(args.input_path, "pannuke", "fold3_eval", "test_labels", "*")))
-
     image_paths = natsorted(glob(os.path.join(ROOT, "semantic_split", "test_images", "*.tiff")))
     gt_paths = natsorted(glob(os.path.join(ROOT, "semantic_split", "test_labels", "*.tiff")))
 
