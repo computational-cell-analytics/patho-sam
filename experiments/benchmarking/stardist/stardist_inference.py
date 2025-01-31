@@ -1,4 +1,5 @@
 import os
+import argparse
 from tqdm import tqdm
 from glob import glob
 from natsort import natsorted
@@ -12,24 +13,6 @@ from tukra.io import read_image
 from tukra.inference import segment_using_stardist
 
 from elf.evaluation import mean_segmentation_accuracy
-
-
-DATASETS = [
-    "consep",
-    "cpm15",
-    "cpm17",
-    "cryonuseg",
-    "lizard",
-    "lynsec_he",
-    "lynsec_ihc",
-    "monuseg",
-    "nuclick",
-    "nuinsseg",
-    "pannuke",
-    "puma",
-    "srsanet",
-    "tnbc",
-]
 
 
 def _run_evaluation(gt_paths, prediction_paths, verbose=True):
@@ -92,26 +75,42 @@ def infer_stardist(data_dir, output_path):
         imageio.imwrite(os.path.join(output_path, os.path.basename(image_path)), segmentation)
 
 
-def run_inference(input_dir, model_dir):
-    for dataset in DATASETS:
-        output_path = os.path.join(model_dir, 'inference', dataset, "stardist")
-        input_path = os.path.join(input_dir, dataset)
-        if os.path.exists(os.path.join(model_dir, "results", dataset, "stardist", f'{dataset}_stardist_stardist_ais_result.csv')):
-            continue
+def run_inference(input_dir, output_dir, dataset):
+    output_path = os.path.join(output_dir, 'inference', dataset, "stardist")
+    input_path = os.path.join(input_dir, dataset)
+    if os.path.exists(os.path.join(output_dir, "results", dataset, "stardist",
+                                   f'{dataset}_stardist_stardist_ais_result.csv')):
+        return
 
-        os.makedirs(output_path, exist_ok=True)
-        print(f"Running inference with StarDist model on {dataset} dataset... \n")
-        infer_stardist(input_path, output_path)
-        print(f"Inference on {dataset} dataset with the StarDist model successfully completed \n")
-        evaluate_stardist(
-            prediction_dir=output_path,
-            label_dir=input_path,
-            result_dir=os.path.join(model_dir, 'results'),
-            dataset=dataset
-            )
+    os.makedirs(output_path, exist_ok=True)
+    print(f"Running inference with StarDist model on {dataset} dataset... \n")
+    infer_stardist(input_path, output_path)
+    print(f"Inference on {dataset} dataset with the StarDist model successfully completed \n")
+    evaluate_stardist(
+        prediction_dir=output_path,
+        label_dir=input_path,
+        result_dir=os.path.join(output_dir, 'results'),
+        dataset=dataset
+        )
 
 
-run_inference(
-    input_dir="/mnt/lustre-grete/usr/u12649/data/original_data",
-    model_dir="/mnt/lustre-grete/usr/u12649/models/stardist",
-)
+def get_stardist_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-i", "--input", type=str, default=None, help="The path to the input data")
+    parser.add_argument("-d", "--dataset", type=str, default=None, help="The datasets to infer on")
+    parser.add_argument("-o", "--output_dir", type=str, default=None, help="The path where the results are saved")
+    args = parser.parse_args()
+    return args
+
+
+def main():
+    args = get_stardist_args()
+    run_inference(
+        input_dir=args.input,
+        output_dir=args.output_dir,
+        dataset=args.dataset,
+    )
+
+
+if __name__ == "__main__":
+    main()

@@ -19,7 +19,6 @@ DATASETS = [
     "lizard",
     "lynsec_he",
     "lynsec_ihc",
-    # "monusac",
     "monuseg",
     "nuclick",
     "nuinsseg",
