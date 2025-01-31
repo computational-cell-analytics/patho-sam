@@ -58,6 +58,10 @@ def evaluate_pannuke_semantic_segmentation(args):
             image = read_image(image_path)
             gt = read_image(gt_path)
 
+            # If the inputs do not have any semantic labels, we do not evaluate them!
+            if len(np.unique(gt)) == 1:
+                continue
+
             # Pad the input image to fit the trained image shape.
             # NOTE: We pad it to top-left.
             image = np.pad(array=image, pad_width=((0, 256), (0, 256), (0, 0)), mode='constant')
