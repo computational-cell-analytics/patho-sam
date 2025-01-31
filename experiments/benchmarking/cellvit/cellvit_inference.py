@@ -12,10 +12,9 @@ CHECKPOINTS = ["256-x20", "256-x40", "SAM-H-x20", "SAM-H-x40"]
 def run_inference(model_dir, input_dir, output_dir, result_dir, datasets=None, checkpoints=None):
     if datasets is None:
         datasets = DATASETS
-
     if checkpoints is None:
         checkpoints = CHECKPOINTS
-    for dataset in ['monuseg']:
+    for dataset in DATASETS:
         if dataset not in ["pannuke", "nuclick", "srsanet", "lizard", "cpm15", "consep", "cpm17", "monuseg"]:
             data_dir = os.path.join(input_dir, "original_data", dataset, "eval_split")
         else:
@@ -68,15 +67,15 @@ def main():
     )
 
 
-def get_cellvit_args():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-m", "--model_dir", type=str, default=None, help="The path to the checkpoints")
-    parser.add_argument("-i", "--input", type=str, default=None, help="The path to the input data")
-    parser.add_argument("-d", "--dataset", type=str, default=None, help="The datasets to infer on")
-    parser.add_argument("-o", "--output_path", type=str, default=None, help="The path where the results are saved")
-    parser.add_argument("-c", "--checkpoint", type=str, default=None, help="The checkpoints to use for inference")
-    args = parser.parse_args()
-    return args
+# def get_cellvit_args():
+#     parser = argparse.ArgumentParser()
+#     parser.add_argument("-m", "--model_dir", type=str, default=None, help="The path to the checkpoints")
+#     parser.add_argument("-i", "--input", type=str, default=None, help="The path to the input data")
+#     parser.add_argument("-d", "--dataset", type=str, default=None, help="The datasets to infer on")
+#     parser.add_argument("-o", "--output_path", type=str, default=None, help="The path where the results are saved")
+#     parser.add_argument("-c", "--checkpoint", type=str, default=None, help="The checkpoints to use for inference")
+#     args = parser.parse_args()
+#     return args
 
 
 # def main():

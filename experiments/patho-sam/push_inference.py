@@ -80,7 +80,7 @@ def submit_slurm(args):
                         continue
                     if model_name == 'nuclick_sam' and dataset != 'nuclick':
                         continue
-                    if script_name != 'amg' and model_name == 'vanilla_sam':
+                    if script_name != 'run_amg' and model_name == 'vanilla_sam':
                         continue
                     result = os.path.join(model_path, model_name, "results", dataset, f"{script_name[4:]}", f"{dataset}_{model_name}_{model}_{script_name[4:]}.csv")
                     print(result)
