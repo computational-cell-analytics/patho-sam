@@ -35,15 +35,6 @@ def json_to_tiff(path):
         tiff.imwrite(label_path, pred_class_map)
 
 
-def mat_to_tiff(path):
-    os.makedirs(os.path.join(path, "instance"), exist_ok=True)
-    label_mat_paths = [p for p in natsorted(glob(os.path.join(path, "mat", "*.mat")))]
-    for mpath in tqdm(label_mat_paths, desc="Postprocessing predictions"):
-        label_path = os.path.join(path, "instance", os.path.basename(mpath.replace(".mat", ".tiff")))
-        label = loadmat(mpath)["inst_type"]
-        tiff.imwrite(label_path, label)
-
-
 def run_inference(model_dir, input_dir, output_dir, type_info_path):
     for dataset in ["pannuke"]:
         for checkpoint in ["pannuke"]:
