@@ -55,7 +55,7 @@ def _run_evaluation(gt_paths, prediction_paths, verbose=True):
     return msas, sa50s, sa75s
 
 
-def evaluate_all_datasets_hovernet(prediction_dir, label_dir, result_dir, dataset, checkpoint):
+def evaluate_hovernet(prediction_dir, label_dir, result_dir, dataset, checkpoint):
     gt_paths = natsorted(glob(os.path.join(label_dir, "*")))
     save_path = os.path.join(result_dir, dataset, checkpoint, f'{dataset}_hovernet_{checkpoint}_ais_result.csv')
     prediction_paths = natsorted(glob(os.path.join(prediction_dir, "*.tiff")))
