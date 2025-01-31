@@ -20,7 +20,7 @@ def run_inference(model_dir, input_dir, output_dir, result_dir, datasets=None, c
         else:
             data_dir = os.path.join(input_dir, "vit_data", dataset, "eval_split")
 
-        for checkpoint in checkpoints:  # ["256-x20", "256-x40", "SAM-H-x20", "SAM-H-x40"]:
+        for checkpoint in checkpoints: 
             model_path = os.path.join(model_dir, f"CellViT-{checkpoint}.pth")
             if os.path.exists(
                 os.path.join(result_dir, dataset, checkpoint, f'{dataset}_cellvit_{checkpoint}_ais_result.csv')
@@ -36,8 +36,6 @@ def run_inference(model_dir, input_dir, output_dir, result_dir, datasets=None, c
                 "--magnification", "40",
                 "--data", f"{data_dir}",
             ]
-            if dataset == "lizard":
-                args.append("--stitched")
 
             command = [
                 "python",
@@ -58,35 +56,26 @@ def run_inference(model_dir, input_dir, output_dir, result_dir, datasets=None, c
             print(f"Successfully ran inference with CellViT {checkpoint} model on {dataset} dataset")
 
 
+def get_cellvit_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-m", "--model_dir", type=str, default=None, help="The path to the checkpoints")
+    parser.add_argument("-i", "--input", type=str, default=None, help="The path to the input data")
+    parser.add_argument("-d", "--dataset", type=str, default=None, help="The datasets to infer on")
+    parser.add_argument("-o", "--output_path", type=str, default=None, help="The path where the results are saved")
+    parser.add_argument("-c", "--checkpoint", type=str, default=None, help="The checkpoints to use for inference")
+    args = parser.parse_args()
+    return args
+
+
 def main():
+    args = get_cellvit_args()
     run_inference(
-        "/mnt/lustre-grete/usr/u12649/models/cellvit/checkpoints",
-        "/mnt/lustre-grete/usr/u12649/data/",
-        "/mnt/lustre-grete/usr/u12649/models/cellvit/inference/",
-        "/mnt/lustre-grete/usr/u12649/models/cellvit/results",
+        model_dir=args.model_dir,
+        input_dir=args.input,
+        output_dir=args.output_path,
+        datasets=[args.dataset],
+        checkpoints=[args.checkpoint],
     )
-
-
-# def get_cellvit_args():
-#     parser = argparse.ArgumentParser()
-#     parser.add_argument("-m", "--model_dir", type=str, default=None, help="The path to the checkpoints")
-#     parser.add_argument("-i", "--input", type=str, default=None, help="The path to the input data")
-#     parser.add_argument("-d", "--dataset", type=str, default=None, help="The datasets to infer on")
-#     parser.add_argument("-o", "--output_path", type=str, default=None, help="The path where the results are saved")
-#     parser.add_argument("-c", "--checkpoint", type=str, default=None, help="The checkpoints to use for inference")
-#     args = parser.parse_args()
-#     return args
-
-
-# def main():
-#     args = get_cellvit_args()
-#     run_inference(
-#         model_dir=args.model_dir,
-#         input_dir=args.input,
-#         output_dir=args.output_path,
-#         datasets=[args.dataset],
-#         checkpoints=[args.checkpoint],
-#     )
 
 
 if __name__ == "__main__":

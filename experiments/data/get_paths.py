@@ -119,9 +119,6 @@ def get_dataset_paths(data_path, dataset) -> list:
                 # PanNuke is provided in an array of shape (C, B, H, W)
                 images = images.transpose(1, 2, 3, 0)  # --> (B, H, W, C)
 
-                # PanNuke is provided in an array of shape (C, B, H, W)
-                images = images.transpose(1, 2, 3, 0)  # --> (B, H, W, C)
-
                 counter = 1
                 for image, label in zip(images, labels):
                     image_path = os.path.join(cached_images, f"{counter:04}.tiff")

@@ -9,7 +9,6 @@ from tqdm import tqdm
 import cv2
 import json
 import numpy as np
-from scipy.io import loadmat
 import tifffile as tiff
 
 
