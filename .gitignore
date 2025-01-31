@@ -169,3 +169,9 @@ logs/
 *.out
 *.zarr
 *.sh
+configs/
+inference_utils/
+*.tif
+*.svg
+*.csv
+*.tiff
