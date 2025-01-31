@@ -28,7 +28,6 @@ def evaluate_benchmark_methods(per_class_weights):
     hovernext_1_scores, hovernext_2_scores = [], []
     for image_path, gt_path in tqdm(zip(image_paths, gt_paths), total=len(image_paths)):
         # Load the input image and corresponding labels.
-        # image = imageio.imread(image_path)
         gt = read_image(gt_path)
 
         # If the inputs do not have any semantic labels, we do not evaluate them!

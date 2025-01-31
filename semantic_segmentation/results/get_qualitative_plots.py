@@ -12,7 +12,11 @@ ROOT = "/mnt/vast-nhr/projects/cidas/cca/experiments/patho_sam/semantic/external
 
 def get_qualitative_plots():
     # Get the inputs and corresponding labels
-    fnames = ['1445.tiff', '1145.tiff', '1391.tiff', '2087.tiff', '2382.tiff', '0335.tiff', '0594.tiff', '2386.tiff', '2316.tiff', '2381.tiff', "1446.tiff", "1407.tiff"]  # noqa
+    fnames = [
+        '1445.tiff', '1145.tiff', '1391.tiff', '2087.tiff',
+        '2382.tiff', '0335.tiff', '0594.tiff', '2386.tiff',
+        '2316.tiff', '2381.tiff', "1446.tiff", "1407.tiff"
+    ]
     image_paths = [os.path.join(ROOT, "semantic_split", "test_images", fname) for fname in fnames]
     gt_paths = [os.path.join(ROOT, "semantic_split", "test_labels", fname) for fname in fnames]
 
