@@ -5,7 +5,9 @@ from collections import OrderedDict
 
 import numpy as np
 import pandas as pd
+
 import matplotlib.pyplot as plt
+from matplotlib.ticker import FuncFormatter
 
 
 MP_MAPS = {
@@ -21,7 +23,7 @@ COLOR_MAPS = {
     "cellvit": "#12711c",
     "hovernet": "#001c7f",
     "hovernext": "#8c0800",
-    "pathosam": "#ed409a",
+    "pathosam": "#b8850a",
     "biomedparse": "#006374",
 }
 
@@ -64,11 +66,11 @@ SUPP_MAPS = {
 }
 
 CLASS_COLORS = {
-    "neoplastic_cells": "#E69F00",  # Pastel Orange
-    "inflammatory_cells": "#56B4E9",  # Pastel Blue
-    "connective_cells": "#009E73",  # Pastel Green
-    "dead_cells": "#F0E442",  # Pastel Yellow
-    "epithelial_cells": "#CC79A7",  # Pastel Pink
+    "neoplastic_cells": "#E69F00",
+    "inflammatory_cells": "#56B4E9",
+    "connective_cells": "#009E73",
+    "dead_cells": "#F0E442",
+    "epithelial_cells": "#CC79A7",
 }
 
 
@@ -122,8 +124,8 @@ def get_appendix_per_class_semantic_plot():
 
     plt.xticks(x, group_labels, fontsize=14, rotation=15, ha="center")
     plt.yticks(fontsize=14)
-    plt.ylabel("Dice Score Coefficient", fontsize=16, fontweight="bold")
-    plt.title("Semantic Segmentation (Scores Per Class)", fontsize=16, fontweight="bold")
+    plt.ylabel("Dice Score Coefficient", fontsize=18, fontweight="bold")
+    plt.title("Semantic Segmentation (PanNuke: Per-Class Absolute Score)", fontsize=18, fontweight="bold")
 
     handles, labels = plt.gca().get_legend_handles_labels()
     unique_labels = {CLASS_NAME_MAP.get(label, label): handle for label, handle in zip(labels, handles)}
@@ -133,6 +135,7 @@ def get_appendix_per_class_semantic_plot():
         loc="upper left", bbox_to_anchor=(0.25, 1), ncol=len(columns_to_plot),
     )
 
+    plt.tight_layout()
     plt.savefig("./semantic_quanti_all_per_class.svg")
     plt.savefig("./semantic_quanti_all_per_class.png")
     plt.close()
@@ -181,12 +184,11 @@ def get_appendix_semantic_plots(mean_type="weighted_mean"):
                 )
 
     plt.xticks(x, yticks_labels, fontsize=16, ha="center")
-    plt.ylabel(
-        ("Weighted" if mean_type == "weighted_mean" else "Absolute") + "-Mean Dice Similarity Coefficient",
-        fontsize=16, fontweight="bold"
-    )
-    plt.title("Semantic Segmentation", fontsize=16, fontweight="bold")
+    plt.ylabel("Mean Dice Similarity Coefficient", fontsize=16, fontweight="bold")
+    mname = "Weighted Mean Scores" if mean_type == "weighted_mean" else "Absolute Mean Scores"
+    plt.title(f"Semantic Segmentation (PanNuke: {mname})", fontsize=16, fontweight="bold")
 
+    plt.tight_layout()
     plt.savefig(f"./semantic_quanti_all_appedix-{mean_type}.svg")
     plt.savefig(f"./semantic_quanti_all_appendix-{mean_type}.png")
     plt.close()
@@ -214,12 +216,39 @@ def get_main_paper_plots():
             color = next((c for p, c in COLOR_MAPS.items() if key.startswith(p)), "#333333")
             colors.append(color)
 
-    plt.figure(figsize=(15, 10))
-    plt.bar(method_labels, method_values, color=colors, width=0.5)
-    plt.xticks(fontsize=16)
-    plt.ylabel("Weighted-Mean Dice Similarity Coefficient", fontsize=16, fontweight="bold")
-    plt.title("Semantic Segmentation", fontsize=16, fontweight="bold")
+    plt.figure(figsize=(10, 6))
+    plt.bar(method_labels, method_values, color=colors, width=0.4)
 
+    plt.xticks(fontsize=10, color="#262626")
+    plt.yticks(fontsize=10, color="#262626")
+    plt.ylabel("Weighted-Mean Dice Similarity Coefficient", fontsize=16, fontweight="bold", color="#262626")
+    plt.title("Semantic Segmentation (PanNuke)", fontsize=16, fontweight="bold", color="#262626")
+
+    ax = plt.gca()
+    ax.spines["top"].set_color("#262626")
+    ax.spines["right"].set_color("#262626")
+    ax.spines["bottom"].set_color("#262626")
+    ax.spines["left"].set_color("#262626")
+
+    plt.grid(False)
+
+    plt.tick_params(axis="x", length=0)
+    plt.tick_params(axis="y", length=0)
+
+    def custom_format(x, _):
+        return "0" if x == 0 else f"{x:.1f}"
+
+    plt.gca().yaxis.set_major_formatter(FuncFormatter(custom_format))
+
+    pathosam_label = MP_MAPS.get("pathosam_finetune_all-from_scratch", None)
+    if pathosam_label and pathosam_label in method_labels:
+        pathosam_index = method_labels.index(pathosam_label)
+        pathosam_value = method_values[pathosam_index]
+        pathosam_color = colors[pathosam_index]
+
+        plt.axhline(y=pathosam_value - 0.0025, color=pathosam_color, linestyle="dashed", linewidth=3, zorder=0)
+
+    plt.tight_layout()
     plt.savefig("./semantic_quanti_fig_3.svg")
     plt.savefig("./semantic_quanti_fig_3.png")
     plt.close()
