@@ -56,7 +56,6 @@ def run_inference(model_dir, input_dir, model_types, datasets, model_names):
                 ] + args
                 print(f"Running inference with {model} model (type: {model_type}) on {dataset} dataset...")
                 subprocess.run(command, check=False)
-                # shutil.rmtree(os.path.join(output_path, "embeddings"))
                 os.makedirs(os.path.join(model_dir, model, 'results', dataset, 'ais'), exist_ok=True)
                 shutil.copy(
                     os.path.join(

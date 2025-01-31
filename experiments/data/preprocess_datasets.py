@@ -92,7 +92,8 @@ def create_val_split(
         test_images = [image_list[x] for x in test_indices]
         test_images.sort(reverse=True)
         for test_image in test_images:
-            label_name = os.path.basename(test_image).replace(os.path.splitext(os.path.basename(test_image))[1], label_ext)
+            label_name = os.path.basename(test_image).replace(os.path.splitext(
+                os.path.basename(test_image))[1], label_ext)
             label_path = os.path.join(labels_src_path, label_name)
             image_list.remove(test_image)
             label_list.remove(os.path.join(labels_src_path, label_name))

@@ -1,5 +1,4 @@
 import os
-import shutil
 import subprocess
 from datetime import datetime
 
@@ -36,8 +35,7 @@ conda activate sam2 \n"""
     python_script = f"python {_name}.py "
     python_script += f"-d {dataset} "  # dataset to infer on
     python_script += f"-m {model_type} "  # name of the model configuration
-    python_script += f"-n {model_name} "  # name of the model 
-
+    python_script += f"-n {model_name} "  # name of the model
 
     # let's add the python script to the bash script
     batch_script += python_script
@@ -67,8 +65,6 @@ def get_batch_script_names(tmp_folder):
 def submit_slurm(args):
     "Submit python script that needs gpus with given inputs on a slurm node."
     tmp_folder = "./gpu_jobs"
-    # if os.path.exists(tmp_folder):
-    #     shutil.rmtree(tmp_folder)
     model_path = "/mnt/lustre-grete/usr/u12649/models"
     script_names = ["run_ais", "run_amg"]
     for script_name in script_names:
@@ -82,7 +78,8 @@ def submit_slurm(args):
                         continue
                     if script_name != 'run_amg' and model_name == 'vanilla_sam':
                         continue
-                    result = os.path.join(model_path, model_name, "results", dataset, f"{script_name[4:]}", f"{dataset}_{model_name}_{model}_{script_name[4:]}.csv")
+                    result = os.path.join(model_path, model_name, "results", dataset,
+                                          f"{script_name[4:]}", f"{dataset}_{model_name}_{model}_{script_name[4:]}.csv")
                     print(result)
                     if os.path.exists(result):
                         continue

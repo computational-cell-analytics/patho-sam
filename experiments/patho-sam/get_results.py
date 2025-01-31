@@ -108,7 +108,8 @@ def get_results(path, overwrite=False):
                                 path, model, "results", dataset, mode, f"{dataset}_{model}_{checkpoint}_{mode}.csv"
                             )
                     else:
-                        csv_path = os.path.join(path, model, "results", dataset, checkpoint, f"{dataset}_{model}_{checkpoint}_{mode}_result.csv")
+                        csv_path = os.path.join(path, model, "results", dataset, checkpoint,
+                                                f"{dataset}_{model}_{checkpoint}_{mode}_result.csv")
                     if not os.path.exists(csv_path):
                         continue
                     df = pd.read_csv(csv_path)

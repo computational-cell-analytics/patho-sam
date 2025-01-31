@@ -2,6 +2,7 @@ import os
 import shutil
 import argparse
 from tqdm import tqdm
+import imageio.v3 as imageio
 
 from get_paths import get_dataset_paths
 from util import DATASETS
@@ -30,7 +31,7 @@ def load_datasets(path, datasets=DATASETS):
         assert len(image_paths) == len(label_paths)
 
         count = 1
-        for image_path, label_path in tqdm(zip(image_paths, label_paths), desc="Moving files to new directory..."):
+
         for image_path, label_path in tqdm(zip(image_paths, label_paths), desc="Moving files to new directory..."):
             img_ext = os.path.splitext(image_path)[1]
             label_ext = os.path.splitext(label_path)[1]
@@ -69,8 +70,6 @@ def main():
 
     if args.datasets is not None:
         load_datasets(data_path, [args.datasets])
-
-
     else:
         load_datasets(data_path)
 
