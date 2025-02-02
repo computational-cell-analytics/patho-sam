@@ -38,16 +38,12 @@ CVTPP_CP = [
 
 def _run_evaluation(gt_paths, prediction_paths, verbose=True):
     print(len(gt_paths), len(prediction_paths))
-    assert len(gt_paths) == len(
-        prediction_paths
-    ), f"label / prediction mismatch: {len(gt_paths)} / {len(prediction_paths)}"
-    msas, sa50s, sa75s = [], [], []
+    assert len(gt_paths) == len(prediction_paths), \
+        f"label / prediction mismatch: {len(gt_paths)} / {len(prediction_paths)}"
 
+    msas, sa50s, sa75s = [], [], []
     for gt_path, pred_path in tqdm(
-        zip(gt_paths, prediction_paths),
-        desc="Evaluate predictions",
-        total=len(gt_paths),
-        disable=not verbose,
+        zip(gt_paths, prediction_paths), desc="Evaluate predictions", total=len(gt_paths), disable=not verbose,
     ):
         assert os.path.exists(gt_path), gt_path
         assert os.path.exists(pred_path), pred_path
@@ -68,18 +64,16 @@ def evaluate_cellvit(prediction_dir, checkpoint, dataset, result_dir, label_dir)
     if os.path.exists(save_path):
         print(f"Results for {dataset} evaluation already exist")
         return
+
     prediction_paths = natsorted(glob(os.path.join(prediction_dir, dataset, checkpoint, "*.tiff")))
     gt_paths = natsorted(glob(os.path.join(label_dir, "*.tiff")))
     if len(prediction_paths) == 0:
         print(f"No predictions for {dataset} dataset on {checkpoint} checkpoint found")
         return
+
     msas, sa50s, sa75s = _run_evaluation(gt_paths=gt_paths, prediction_paths=prediction_paths)
     results = pd.DataFrame.from_dict(
-        {
-            "mSA": [np.mean(msas)],
-            "SA50": [np.mean(sa50s)],
-            "SA75": [np.mean(sa75s)],
-        }
+        {"mSA": [np.mean(msas)], "SA50": [np.mean(sa50s)], "SA75": [np.mean(sa75s)]}
     )
     print(results.head())
     os.makedirs(os.path.join(result_dir, dataset, checkpoint), exist_ok=True)

@@ -1,22 +1,7 @@
 import micro_sam.training as sam_training
 
 from torch_em.data import MinInstanceSampler
-from torch_em.data.datasets import (
-    get_consep_loader,
-    get_cpm_loader,
-    get_cryonuseg_loader,
-    get_glas_loader,
-    get_lizard_loader,
-    get_lynsec_loader,
-    get_monusac_loader,
-    get_monuseg_loader,
-    get_nuclick_loader,
-    get_nuinsseg_loader,
-    get_pannuke_loader,
-    get_puma_loader,
-    get_srsanet_loader,
-    get_tnbc_loader,
-)
+from torch_em.data import datasets
 
 
 def get_dataloaders(patch_shape, data_path, dataset):
@@ -24,7 +9,7 @@ def get_dataloaders(patch_shape, data_path, dataset):
     sampler = MinInstanceSampler(min_num_instances=3)
 
     if dataset == "consep":
-        loader = get_consep_loader(
+        loader = datasets.get_consep_loader(
             path=data_path,
             patch_shape=patch_shape,
             batch_size=1,
@@ -35,7 +20,7 @@ def get_dataloaders(patch_shape, data_path, dataset):
         )
 
     elif dataset == "cpm15":
-        loader = get_cpm_loader(
+        loader = datasets.get_cpm_loader(
             path=data_path,
             patch_shape=patch_shape,
             batch_size=1,
@@ -47,7 +32,7 @@ def get_dataloaders(patch_shape, data_path, dataset):
         )
 
     elif dataset == "cpm17":
-        loader = get_cpm_loader(
+        loader = datasets.get_cpm_loader(
             path=data_path,
             patch_shape=patch_shape,
             batch_size=1,
@@ -59,7 +44,7 @@ def get_dataloaders(patch_shape, data_path, dataset):
         )
 
     elif dataset == "cryonuseg":
-        loader = get_cryonuseg_loader(
+        loader = datasets.get_cryonuseg_loader(
             path=data_path,
             patch_shape=(1,) + patch_shape,
             batch_size=1,
@@ -71,7 +56,7 @@ def get_dataloaders(patch_shape, data_path, dataset):
         )
 
     elif dataset == "glas":
-        loader = get_glas_loader(
+        loader = datasets.get_glas_loader(
             path=data_path,
             patch_shape=patch_shape,
             batch_size=1,
@@ -82,7 +67,7 @@ def get_dataloaders(patch_shape, data_path, dataset):
         )
 
     elif dataset == "lizard":
-        loader = get_lizard_loader(
+        loader = datasets.get_lizard_loader(
             path=data_path,
             patch_shape=patch_shape,
             batch_size=1,
@@ -93,7 +78,7 @@ def get_dataloaders(patch_shape, data_path, dataset):
         )
 
     elif dataset == "lynsec_he":
-        loader = get_lynsec_loader(
+        loader = datasets.get_lynsec_loader(
             path=data_path,
             patch_shape=patch_shape,
             batch_size=1,
@@ -104,7 +89,7 @@ def get_dataloaders(patch_shape, data_path, dataset):
         )
 
     elif dataset == "lynsec_ihc":
-        loader = get_lynsec_loader(
+        loader = datasets.get_lynsec_loader(
             path=data_path,
             patch_shape=patch_shape,
             batch_size=1,
@@ -115,7 +100,7 @@ def get_dataloaders(patch_shape, data_path, dataset):
         )
 
     elif dataset == "monusac":
-        loader = get_monusac_loader(
+        loader = datasets.get_monusac_loader(
             path=data_path,
             patch_shape=patch_shape,
             batch_size=1,
@@ -126,7 +111,7 @@ def get_dataloaders(patch_shape, data_path, dataset):
         )
 
     elif dataset == "monuseg":
-        loader = get_monuseg_loader(
+        loader = datasets.get_monuseg_loader(
             path=data_path,
             patch_shape=patch_shape,
             batch_size=1,
@@ -137,7 +122,7 @@ def get_dataloaders(patch_shape, data_path, dataset):
         )
 
     elif dataset == "nuinsseg":
-        loader = get_nuinsseg_loader(
+        loader = datasets.get_nuinsseg_loader(
             path=data_path,
             patch_shape=patch_shape,
             batch_size=1,
@@ -146,7 +131,7 @@ def get_dataloaders(patch_shape, data_path, dataset):
             sampler=sampler,
         )
     elif dataset == "nuclick":
-        loader = get_nuclick_loader(
+        loader = datasets.get_nuclick_loader(
             path=data_path,
             patch_shape=patch_shape,
             batch_size=1,
@@ -157,7 +142,7 @@ def get_dataloaders(patch_shape, data_path, dataset):
         )
 
     elif dataset == "pannuke":
-        loader = get_pannuke_loader(
+        loader = datasets.get_pannuke_loader(
             path=data_path,
             patch_shape=(1,) + patch_shape,
             batch_size=1,
@@ -169,7 +154,7 @@ def get_dataloaders(patch_shape, data_path, dataset):
         )
 
     elif dataset == "puma":
-        loader = get_puma_loader(
+        loader = datasets.get_puma_loader(
             path=data_path,
             patch_shape=patch_shape,
             batch_size=1,
@@ -181,7 +166,7 @@ def get_dataloaders(patch_shape, data_path, dataset):
         )
 
     elif dataset == "srsanet":
-        loader = get_srsanet_loader(
+        loader = datasets.get_srsanet_loader(
             path=data_path,
             patch_shape=patch_shape,
             batch_size=1,
@@ -192,7 +177,7 @@ def get_dataloaders(patch_shape, data_path, dataset):
         )
 
     elif dataset == "tnbc":
-        loader = get_tnbc_loader(
+        loader = datasets.get_tnbc_loader(
             path=data_path,
             patch_shape=patch_shape,
             batch_size=1,

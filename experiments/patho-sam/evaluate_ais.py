@@ -6,8 +6,9 @@ from micro_sam.evaluation.inference import run_instance_segmentation_with_decode
 from util import VANILLA_MODELS, get_default_arguments, get_pred_paths, get_test_paths, get_val_paths
 
 
-def run_instance_segmentation_with_decoder_inference(model_type, checkpoint, experiment_folder, input_path,
-                                                     tiling_window_params):
+def run_instance_segmentation_with_decoder_inference(
+    model_type, checkpoint, experiment_folder, input_path, tiling_window_params
+):
     val_image_paths, val_gt_paths = get_val_paths(input_path)
     test_image_paths, _ = get_test_paths(input_path)
     prediction_folder = run_instance_segmentation_with_decoder(
@@ -33,14 +34,12 @@ def main():
         ckpt = VANILLA_MODELS[args.model]
     else:
         ckpt = args.checkpoint
+
     if args.tiling_window:
         tiling_window_params = {"tile_shape": [384, 384], "halo": [64, 64]}
     else:
         tiling_window_params = None
-    if args.tiling_window:
-        tiling_window_params = {"tile_shape": [384, 384], "halo": [64, 64]}
-    else:
-        tiling_window_params = None
+
     prediction_folder = run_instance_segmentation_with_decoder_inference(
         args.model, ckpt, args.experiment_folder, args.input_path, tiling_window_params
     )

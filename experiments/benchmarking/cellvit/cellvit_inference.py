@@ -25,8 +25,7 @@ def run_inference(input_dir, output_dir, dataset, checkpoint_path):
     ]
 
     command = [
-        "python",
-        os.path.expanduser("~/CellViT/cell_segmentation/inference/inference_cellvit_experiment_monuseg.py"),
+        "python", os.path.expanduser("~/CellViT/cell_segmentation/inference/inference_cellvit_experiment_monuseg.py"),
     ] + args
 
     print(f"Running inference with CellViT {checkpoint} model on {dataset} dataset...")

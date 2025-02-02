@@ -16,11 +16,10 @@ from elf.evaluation import mean_segmentation_accuracy
 
 
 def _run_evaluation(gt_paths, prediction_paths, verbose=True):
-    assert len(gt_paths) == len(
-        prediction_paths
-    ), f"label / prediction mismatch: {len(gt_paths)} / {len(prediction_paths)}"
-    msas, sa50s, sa75s = [], [], []
+    assert len(gt_paths) == len(prediction_paths), \
+        f"label / prediction mismatch: {len(gt_paths)} / {len(prediction_paths)}"
 
+    msas, sa50s, sa75s = [], [], []
     for gt_path, pred_path in tqdm(
         zip(gt_paths, prediction_paths, strict=False),
         desc="Evaluate predictions",
@@ -55,11 +54,7 @@ def evaluate_instanseg(prediction_dir, label_dir, result_dir, dataset):
         print(f"Evaluating {dataset} dataset on InstanSeg ...")
         msas, sa50s, sa75s = _run_evaluation(gt_paths=gt_paths, prediction_paths=prediction_paths)
         results = pd.DataFrame.from_dict(
-            {
-                "mSA": [np.mean(msas)],
-                "SA50": [np.mean(sa50s)],
-                "SA75": [np.mean(sa75s)],
-            }
+            {"mSA": [np.mean(msas)], "SA50": [np.mean(sa50s)], "SA75": [np.mean(sa75s)]}
         )
 
         results.to_csv(save_path, index=False)
@@ -80,13 +75,16 @@ def infer_instanseg(data_dir, output_path, dataset):
 def run_inference(input_dir, output_dir, dataset):
     output_path = os.path.join(output_dir, "inference", dataset, "instanseg")
     input_path = os.path.join(input_dir, dataset)
-    if os.path.exists(os.path.join(output_dir, "results", dataset, "instanseg",
-                                   f'{dataset}_instanseg_instanseg_ais_result.csv')):
+    if os.path.exists(
+        os.path.join(output_dir, "results", dataset, "instanseg", f'{dataset}_instanseg_instanseg_ais_result.csv')
+    ):
         return
+
     os.makedirs(output_path, exist_ok=True)
     print(f"Running inference with InstanSeg model on {dataset} dataset... \n")
     infer_instanseg(input_path, output_path, dataset)
     print(f"Inference on {dataset} dataset with the InstanSeg model successfully completed \n")
+
     evaluate_instanseg(
         prediction_dir=output_path,
         label_dir=input_path,
@@ -106,11 +104,7 @@ def get_instanseg_args():
 
 def main():
     args = get_instanseg_args()
-    run_inference(
-        input_dir=args.input,
-        output_dir=args.output_dir,
-        dataset=args.dataset,
-    )
+    run_inference(input_dir=args.input, output_dir=args.output_dir, dataset=args.dataset)
 
 
 if __name__ == "__main__":

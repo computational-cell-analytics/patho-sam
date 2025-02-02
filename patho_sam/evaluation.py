@@ -11,6 +11,11 @@ CLASS_IDS = [1, 2, 3, 4, 5]
 
 def extract_class_weights_for_pannuke(fpath: Union[os.PathLike, str], class_ids: List = CLASS_IDS):
     """Extract class weights per semantic class.
+
+    Args:
+        fpath: The filepath where the input stack for fold 3 stored for PanNuke dataset.
+            Use `torch_em.data.datasets.histopathology.get_pannuke_paths` to get filepath for the stack.
+        class_ids: The choice of all available class ids.
     """
     # Load the entire instance and semantic stack.
     with h5py.File(fpath, "r") as f:

@@ -27,11 +27,10 @@ def zip_predictions(path, target_dir):
 
 def _run_evaluation(gt_paths, prediction_paths, verbose=True):
     print(len(gt_paths), len(prediction_paths))
-    assert len(gt_paths) == len(
-        prediction_paths
-    ), f"label / prediction mismatch: {len(gt_paths)} / {len(prediction_paths)}"
-    msas, sa50s, sa75s = [], [], []
+    assert len(gt_paths) == len(prediction_paths), \
+        f"label / prediction mismatch: {len(gt_paths)} / {len(prediction_paths)}"
 
+    msas, sa50s, sa75s = [], [], []
     for gt_path, pred_path in tqdm(
         zip(gt_paths, prediction_paths),
         desc="Evaluate predictions",
@@ -62,12 +61,11 @@ def evaluate_cellvit(prediction_dir, checkpoint, dataset, label_dir, result_dir)
     if len(prediction_paths) == 0:
         print(f"No predictions for {dataset} dataset on {checkpoint} checkpoint found")
         return
+
     msas, sa50s, sa75s = _run_evaluation(gt_paths=gt_paths, prediction_paths=prediction_paths)
     results = pd.DataFrame.from_dict(
         {
-            "mSA": [np.mean(msas)],
-            "SA50": [np.mean(sa50s)],
-            "SA75": [np.mean(sa75s)],
+            "mSA": [np.mean(msas)], "SA50": [np.mean(sa50s)], "SA75": [np.mean(sa75s)],
         }
     )
     print(results.head(2))

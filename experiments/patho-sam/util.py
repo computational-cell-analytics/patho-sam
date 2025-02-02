@@ -99,16 +99,17 @@ def get_default_arguments():
     parser.add_argument("-e", "--experiment_folder", type=str, required=True)  # empty directory for saving the output
     parser.add_argument(
         "-i", "--input_path", type=str, required=True, default=None,
-        help="Requires path to a directory containing 'test_images', 'test_labels', 'val_images' and 'val_labels' \
-            directories that contain the data",
+        help="Requires path to a directory containing 'test_images', 'test_labels', 'val_images' and 'val_labels' directories that contain the data",  # noqa
     )
-    parser.add_argument("--tiling_window", action="store_true",
-                        help="To use tiling window for inputs larger than 512 x 512")
-    parser.add_argument("--box", action="store_true",
-                        help="If passed, starts with first prompt as box")
-    parser.add_argument("--use_masks", action="store_true",
-                        help="To use logits masks for iterative prompting.")
-
+    parser.add_argument(
+        "--tiling_window", action="store_true", help="To use tiling window for inputs larger than 512 x 512"
+    )
+    parser.add_argument(
+        "--box", action="store_true", help="If passed, starts with first prompt as box"
+    )
+    parser.add_argument(
+        "--use_masks", action="store_true", help="To use logits masks for iterative prompting."
+    )
     args = parser.parse_args()
     return args
 

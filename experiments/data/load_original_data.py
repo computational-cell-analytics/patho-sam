@@ -28,10 +28,7 @@ def load_datasets(path, datasets=DATASETS):
         image_paths, label_paths = get_dataset_paths(dataset_path, dataset)
         assert len(image_paths) == len(label_paths)
 
-        assert len(image_paths) == len(label_paths)
-
         count = 1
-
         for image_path, label_path in tqdm(zip(image_paths, label_paths), desc="Moving files to new directory..."):
             img_ext = os.path.splitext(image_path)[1]
             label_ext = os.path.splitext(label_path)[1]
@@ -46,8 +43,6 @@ def load_datasets(path, datasets=DATASETS):
 
             shutil.move(image_path, image_dest)
             shutil.move(label_path, label_dest)
-
-            count += 1
 
             count += 1
 
