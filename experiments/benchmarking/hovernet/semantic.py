@@ -2,14 +2,13 @@ import os
 import shutil
 import subprocess
 from glob import glob
-from natsort import natsorted
-
 from tqdm import tqdm
+from natsort import natsorted
 
 import cv2
 import json
 import numpy as np
-import tifffile as tiff
+import imageio.v3 as imageio
 
 
 def json_to_tiff(path):
@@ -31,7 +30,7 @@ def json_to_tiff(path):
                 contour = contour.astype(np.int32)
                 cv2.fillPoly(pred_class_map, [contour], cell_type)
 
-        tiff.imwrite(label_path, pred_class_map)
+        imageio.imwrite(label_path, pred_class_map)
 
 
 def run_inference(model_dir, input_dir, output_dir, type_info_path):
@@ -60,24 +59,15 @@ def run_inference(model_dir, input_dir, output_dir, type_info_path):
                     nr_types = 5
 
             args = [
-                "--nr_types",
-                f"{nr_types}",
-                "--type_info_path",
-                "/user/titus.griebel/u12649/hover_net/type_info.json",
-                "--model_mode",
-                f"{model_mode}",
-                "--model_path",
-                f"{model_path}",
-                "--nr_inference_workers",
-                "2",
-                "--nr_post_proc_worker",
-                "0",
+                "--nr_types", f"{nr_types}",
+                "--type_info_path", "/user/titus.griebel/u12649/hover_net/type_info.json",
+                "--model_mode", f"{model_mode}",
+                "--model_path", f"{model_path}",
+                "--nr_inference_workers", "2",
+                "--nr_post_proc_worker", "0",
                 "tile",
-                "--input_dir",
-                f"{input_path}",
-                "--output_dir",
-                f"{output_path}",
-                # "--save_raw_map",
+                "--input_dir", f"{input_path}",
+                "--output_dir", f"{output_path}",
             ]
 
             command = ["python3", "/user/titus.griebel/u12649/hover_net/run_infer.py"] + args

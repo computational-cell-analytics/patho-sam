@@ -74,15 +74,21 @@ def submit_slurm(args):
                 for model in CHECKPOINTS[model_name]:
                     if model_name == 'glas_sam' and dataset != 'glas':
                         continue
+
                     if model_name == 'nuclick_sam' and dataset != 'nuclick':
                         continue
+
                     if script_name != 'run_amg' and model_name == 'vanilla_sam':
                         continue
-                    result = os.path.join(model_path, model_name, "results", dataset,
-                                          f"{script_name[4:]}", f"{dataset}_{model_name}_{model}_{script_name[4:]}.csv")
+
+                    result = os.path.join(
+                        model_path, model_name, "results", dataset,
+                        f"{script_name[4:]}", f"{dataset}_{model_name}_{model}_{script_name[4:]}.csv"
+                    )
                     print(result)
                     if os.path.exists(result):
                         continue
+
                     write_batch_script(
                         out_path=get_batch_script_names(tmp_folder),
                         _name=script_name,

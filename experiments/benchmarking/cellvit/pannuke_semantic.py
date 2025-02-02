@@ -1,7 +1,7 @@
 import os
 import shutil
-import subprocess
 import argparse
+import subprocess
 
 
 CVT_CP = ["256-x20", "256-x40", "SAM-H-x20", "SAM-H-x40"]
@@ -13,14 +13,10 @@ def run_inference(checkpoint_path, input_dir, output_dir, dataset):
     output_path = os.path.join(output_dir, dataset, checkpoint)
     os.makedirs(output_path, exist_ok=True)
     args = [
-        "--model",
-        f"{checkpoint_path}",
-        "--outdir",
-        f"{output_path}",
-        "--magnification",
-        "40",
-        "--data",
-        f"{data_dir}",
+        "--model", f"{checkpoint_path}",
+        "--outdir", f"{output_path}",
+        "--magnification", "40",
+        "--data", f"{data_dir}",
     ]
 
     command = [
@@ -59,4 +55,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

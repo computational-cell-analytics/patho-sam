@@ -13,6 +13,7 @@ def load_testsets(path, dsets=DATASETS, patch_shape=(512, 512)) -> None:
             if len(os.listdir(os.path.join(path, dataset, "loaded_testset", "images"))) > 1:
                 print(f"Dataset {dataset} is loaded already.")
                 continue
+
         print(f"Loading {dataset} dataset...")
         dpath = os.path.join(path, dataset)
         os.makedirs(dpath, exist_ok=True)
@@ -33,7 +34,7 @@ def load_testsets(path, dsets=DATASETS, patch_shape=(512, 512)) -> None:
 
             imageio.imwrite(os.path.join(image_output_path, f"{idx:04}.tiff"), image)
             imageio.imwrite(os.path.join(label_output_path, f"{idx:04}.tiff"), label)
-        
+
         remove_empty_labels(dpath)
         create_val_split(os.path.join(dpath, "loaded_testset"), custom_name="eval_split", dataset=dataset)
         print(f"{dataset} testset has successfully been loaded.")

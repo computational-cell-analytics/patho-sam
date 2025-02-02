@@ -5,7 +5,7 @@ from natsort import natsorted
 
 import numpy as np
 import pandas as pd
-import imageio
+import imageio.v3 as imageio
 from skimage.measure import label
 
 from elf.evaluation import mean_segmentation_accuracy

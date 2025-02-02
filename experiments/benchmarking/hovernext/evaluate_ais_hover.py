@@ -40,11 +40,10 @@ DATASETS = [
 
 
 def _run_evaluation(gt_paths, prediction_paths, verbose=True):
-    assert len(gt_paths) == len(
-        prediction_paths
-    ), f"label / prediction mismatch: {len(gt_paths)} / {len(prediction_paths)}"
-    msas, sa50s, sa75s = [], [], []
+    assert len(gt_paths) == len(prediction_paths), \
+        f"label / prediction mismatch: {len(gt_paths)} / {len(prediction_paths)}"
 
+    msas, sa50s, sa75s = [], [], []
     for gt_path, pred_path in tqdm(
         zip(gt_paths, prediction_paths, strict=False),
         desc="Evaluate predictions",
@@ -69,22 +68,23 @@ def evaluate_all_datasets_hovernet(prediction_dir, label_dir, result_dir):
     for dataset in DATASETS:
         gt_paths = natsorted(glob(os.path.join(label_dir, dataset, "eval_split", "test_labels", "*")))
         for checkpoint in CHECKPOINTS:
-            save_path = os.path.join(result_dir, dataset, checkpoint, f'{dataset}_hovernext_{checkpoint}_ais_result.csv')
+            save_path = os.path.join(
+                result_dir, dataset, checkpoint, f'{dataset}_hovernext_{checkpoint}_ais_result.csv'
+            )
             if os.path.exists(save_path):
                 continue
+
             prediction_paths = natsorted(glob(os.path.join(prediction_dir, dataset, checkpoint, "*")))
             if len(prediction_paths) == 0:
                 print(f"No predictions for {dataset} dataset on {checkpoint} checkpoint found")
                 continue
+
             os.makedirs(os.path.join(result_dir, dataset, checkpoint), exist_ok=True)
             print(f"evaluation {dataset} dataset on checkpoint {checkpoint} ...")
+
             msas, sa50s, sa75s = _run_evaluation(gt_paths=gt_paths, prediction_paths=prediction_paths)
             results = pd.DataFrame.from_dict(
-                {
-                    "mSA": [np.mean(msas)],
-                    "SA50": [np.mean(sa50s)],
-                    "SA75": [np.mean(sa75s)],
-                }
+                {"mSA": [np.mean(msas)], "SA50": [np.mean(sa50s)], "SA75": [np.mean(sa75s)]}
             )
             print(results.head())
             results.to_csv(save_path, index=False)

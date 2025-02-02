@@ -16,11 +16,10 @@ from elf.evaluation import mean_segmentation_accuracy
 
 
 def _run_evaluation(gt_paths, prediction_paths, verbose=True):
-    assert len(gt_paths) == len(
-        prediction_paths
-    ), f"label / prediction mismatch: {len(gt_paths)} / {len(prediction_paths)}"
-    msas, sa50s, sa75s = [], [], []
+    assert len(gt_paths) == len(prediction_paths), \
+        f"label / prediction mismatch: {len(gt_paths)} / {len(prediction_paths)}"
 
+    msas, sa50s, sa75s = [], [], []
     for gt_path, pred_path in tqdm(
         zip(gt_paths, prediction_paths, strict=False),
         desc="Evaluate predictions",
@@ -47,19 +46,17 @@ def evaluate_stardist(prediction_dir, label_dir, result_dir, dataset):
         save_path = os.path.join(result_dir, dataset, checkpoint, f'{dataset}_stardist_stardist_ais_result.csv')
         if os.path.exists(save_path):
             continue
+
         prediction_paths = natsorted(glob(os.path.join(prediction_dir, "*")))
         if len(prediction_paths) == 0:
             print(f"No predictions for {dataset} dataset on {checkpoint} checkpoint found")
             continue
+
         os.makedirs(os.path.join(result_dir, dataset, checkpoint), exist_ok=True)
         print(f"Evaluating {dataset} dataset on Stardist ...")
         msas, sa50s, sa75s = _run_evaluation(gt_paths=gt_paths, prediction_paths=prediction_paths)
         results = pd.DataFrame.from_dict(
-            {
-                "mSA": [np.mean(msas)],
-                "SA50": [np.mean(sa50s)],
-                "SA75": [np.mean(sa75s)],
-            }
+            {"mSA": [np.mean(msas)], "SA50": [np.mean(sa50s)], "SA75": [np.mean(sa75s)]}
         )
 
         results.to_csv(save_path, index=False)
@@ -78,14 +75,16 @@ def infer_stardist(data_dir, output_path):
 def run_inference(input_dir, output_dir, dataset):
     output_path = os.path.join(output_dir, 'inference', dataset, "stardist")
     input_path = os.path.join(input_dir, dataset)
-    if os.path.exists(os.path.join(output_dir, "results", dataset, "stardist",
-                                   f'{dataset}_stardist_stardist_ais_result.csv')):
+    if os.path.exists(
+        os.path.join(output_dir, "results", dataset, "stardist", f'{dataset}_stardist_stardist_ais_result.csv')
+    ):
         return
 
     os.makedirs(output_path, exist_ok=True)
     print(f"Running inference with StarDist model on {dataset} dataset... \n")
     infer_stardist(input_path, output_path)
     print(f"Inference on {dataset} dataset with the StarDist model successfully completed \n")
+
     evaluate_stardist(
         prediction_dir=output_path,
         label_dir=input_path,
@@ -105,11 +104,7 @@ def get_stardist_args():
 
 def main():
     args = get_stardist_args()
-    run_inference(
-        input_dir=args.input,
-        output_dir=args.output_dir,
-        dataset=args.dataset,
-    )
+    run_inference(input_dir=args.input, output_dir=args.output_dir, dataset=args.dataset)
 
 
 if __name__ == "__main__":

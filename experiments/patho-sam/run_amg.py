@@ -14,25 +14,29 @@ def run_inference(input_dir, output_dir, model_type, dataset, model_name, checkp
     ):
         print(f"Inference with {model_name} model (type: {model_type}) on {dataset} dataset already done")
         return
+
     if dataset not in PADDING_DS:
         input_path = os.path.join(input_dir, "original_data", dataset, "eval_split")
     else:
         input_path = os.path.join(input_dir, "vit_data", dataset, "eval_split")
+
     args = [
         "-m", f"{model_type}",
         "-c", f"{checkpoint_path}",
         "--experiment_folder", f"{output_path}",
         "-i", f"{input_path}",
     ]
+
     if dataset in TILING_WINDOW_DS:
         args.append("--tiling_window")
+
     command = [
-        "python3",
-        os.path.expanduser("~/patho-sam/experiments/patho-sam/evaluate_amg.py"),
+        "python3", os.path.expanduser("~/patho-sam/experiments/patho-sam/evaluate_amg.py"),
     ] + args
     print(f"Running inference with {model_name} model (type: {model_type}) on {dataset} dataset...")
     subprocess.run(command)
     os.makedirs(os.path.join(output_dir, model_name, 'results', dataset, 'amg'), exist_ok=True)
+
     shutil.copy(
         os.path.join(output_dir, model_name, "inference", dataset, model_type, 'amg', 'results', 'amg.csv'),
         os.path.join(output_dir, model_name, 'results', dataset, 'amg', f'{dataset}_{model_name}_{model_type}_amg.csv')
@@ -43,20 +47,16 @@ def run_inference(input_dir, output_dir, model_type, dataset, model_name, checkp
 def get_amg_args():
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "-d", "--dataset", type=str, default=None,
-        help="The dataset to infer on."
+        "-d", "--dataset", type=str, default=None, help="The dataset to infer on."
     )
     parser.add_argument(
-        "-m", "--model", type=str, default=None,
-        help="Provide the model type to infer with {vit_b, vit_l, vit_h}."
+        "-m", "--model", type=str, default=None, help="Provide the model type to infer with {vit_b, vit_l, vit_h}."
     )
     parser.add_argument(
-        "-o", "--output_dir", type=str, default=None,
-        help="Provide path where the results will be stored."
+        "-o", "--output_dir", type=str, default=None, help="Provide path where the results will be stored."
     )
     parser.add_argument(
-        "-i", "--input_dir", type=str, default=None,
-        help="Provide path where the dataset is located."
+        "-i", "--input_dir", type=str, default=None, help="Provide path where the dataset is located."
     )
     parser.add_argument(
         "-n", "--name", type=str, default=None,

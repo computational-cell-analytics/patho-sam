@@ -1,14 +1,16 @@
-import argparse
 import os
 import shutil
-import numpy as np
-from glob import glob
 import random
+import argparse
+from glob import glob
 import pathlib as Path
+from natsort import natsorted
+
+import numpy as np
 import imageio.v3 as imageio
 
 from micro_sam.util import get_sam_model
-from natsort import natsorted
+
 
 ROOT = "/scratch/projects/nim00007/sam/data/"
 EXPERIMENT_ROOT = "/scratch/projects/nim00007/sam/experiments/new_models"
@@ -76,6 +78,7 @@ def create_val_split(
     if len(label_list) == 0:
         print(f"no labels found for {dataset}")
         return
+
     image_list = natsorted(glob(os.path.join(images_src_path, "*")))
     label_ext = os.path.splitext(os.path.basename(label_list[0]))[1]
     assert len(label_list) == len(image_list), "Mismatch in labels and images"
@@ -84,6 +87,7 @@ def create_val_split(
     dst_paths.update({f"{split}_images": Path(path) / custom_name / f"{split}_images" for split in splits})
     for dst in dst_paths.values():
         dst.mkdir(parents=True, exist_ok=True)
+
     for split in splits:
         if len(os.listdir(os.path.join(path, custom_name, f"{split}_images"))) > 0:
             print(f"Split for {dataset} already exists")
@@ -107,9 +111,8 @@ def create_val_split(
         shutil.copy(label_path, dst_paths["val_labels"])
         image_list.remove(val_image)
         label_list.remove(os.path.join(labels_src_path, label_name))
-    assert len(os.listdir(dst_paths["val_labels"])) == len(
-        os.listdir(dst_paths["val_images"])
-    ), "label / image count mismatch in val set"
+    assert len(os.listdir(dst_paths["val_labels"])) == len(os.listdir(dst_paths["val_images"])), \
+        "label / image count mismatch in val set"
 
     test_indices = random.sample(range(0, (len(image_list))), test_count)
     if test_count > 0:
@@ -124,17 +127,17 @@ def create_val_split(
             shutil.copy(test_image, dst_paths["test_images"])
             shutil.copy(label_path, dst_paths["test_labels"])
 
-    assert len(os.listdir(dst_paths["test_labels"])) == len(
-        os.listdir(dst_paths["test_images"])
-    ), "label / image count mismatch in test set"
+    assert len(os.listdir(dst_paths["test_labels"])) == len(os.listdir(dst_paths["test_images"])), \
+        "label / image count mismatch in test set"
+
     # residual images are per default in the train set
     for train_image in image_list:
         label_path = os.path.join(labels_src_path, os.path.splitext(os.path.basename(val_image))[0])
         shutil.copy(train_image, dst_paths["train_images"])
         shutil.copy(label_path, dst_paths["train_labels"])
-    assert len(os.listdir(dst_paths["train_labels"])) == len(
-        os.listdir(dst_paths["train_images"])
-    ), "label / image count mismatch in val set"
+
+    assert len(os.listdir(dst_paths["train_labels"])) == len(os.listdir(dst_paths["train_images"])), \
+        "label / image count mismatch in val set"
     print(
         f"Train set: {len(os.listdir(dst_paths['train_images']))} images; "
         f" val set: {len(os.listdir(dst_paths['val_images']))} images; "
@@ -145,6 +148,7 @@ def create_val_split(
 def get_model(model_type, ckpt):
     if ckpt is None:
         ckpt = VANILLA_MODELS[model_type]
+
     predictor = get_sam_model(model_type=model_type, checkpoint_path=ckpt)
     return predictor
 
@@ -177,7 +181,7 @@ def dataloading_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("-p", "--path", type=str, default=None)
     parser.add_argument("-d", "--datasets", type=str, default=None)
-    parser.add_argument("-ps", "--patch_shape", type=tuple, default=(512, 512))
+    parser.add_argument("--patch_shape", type=tuple, default=(512, 512))
 
     args = parser.parse_args()
     return args
@@ -186,6 +190,7 @@ def dataloading_args():
 def none_or_str(value):
     if value == "None":
         return None
+
     return value
 
 

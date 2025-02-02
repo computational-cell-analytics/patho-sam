@@ -104,7 +104,6 @@ def main():
 
     if args.datasets is not None:
         load_datasets(data_path, [args.datasets])
-
     else:
         load_datasets(data_path)
 

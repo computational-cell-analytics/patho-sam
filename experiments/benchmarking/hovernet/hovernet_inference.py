@@ -1,7 +1,7 @@
 import os
 import shutil
-import subprocess
 import argparse
+import subprocess
 from glob import glob
 from tqdm import tqdm
 from natsort import natsorted
@@ -39,23 +39,15 @@ def run_inference(input_dir, output_dir, dataset, checkpoint_path):
             nr_types = 5
 
     args = [
-        "--nr_types",
-        f"{nr_types}",
-        "--type_info_path",
-        f"{type_info}",
-        "--model_mode",
-        f"{model_mode}",
-        "--model_path",
-        f"{checkpoint_path}",
-        "--nr_inference_workers",
-        "2",
-        "--nr_post_proc_worker",
-        "0",
+        "--nr_types", f"{nr_types}",
+        "--type_info_path", f"{type_info}",
+        "--model_mode", f"{model_mode}",
+        "--model_path", f"{checkpoint_path}",
+        "--nr_inference_workers", "2",
+        "--nr_post_proc_worker", "0",
         "tile",
-        "--input_dir",
-        f"{input_path}",
-        "--output_dir",
-        f"{output_path}",
+        "--input_dir", f"{input_path}",
+        "--output_dir", f"{output_path}",
         "--save_raw_map",
     ]
 
@@ -82,8 +74,10 @@ def get_hovernet_args():
     parser.add_argument("-i", "--input", type=str, default=None, help="The path to the input data")
     parser.add_argument("-d", "--dataset", type=str, default=None, help="The datasets to infer on")
     parser.add_argument("-o", "--output_dir", type=str, default=None, help="The path where the results are saved")
-    parser.add_argument("-c", "--checkpoint_path", type=str, default=None,
-                        help="The path to the HoVerNet checkpoint to use for inference.")
+    parser.add_argument(
+        "-c", "--checkpoint_path", type=str, default=None,
+        help="The path to the HoVerNet checkpoint to use for inference."
+    )
     args = parser.parse_args()
     return args
 
