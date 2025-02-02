@@ -12,25 +12,6 @@ from skimage.measure import label
 from elf.evaluation import mean_segmentation_accuracy
 
 
-DATASETS = [
-    "consep",
-    "cpm15",
-    "cpm17",
-    "cryonuseg",
-    "lizard",
-    "lynsec_he",
-    "lynsec_ihc",
-    "monusac",
-    "monuseg",
-    "nuclick",
-    "nuinsseg",
-    "pannuke",
-    "puma",
-    "srsanet",
-    "tnbc",
-]
-
-
 def zip_predictions(path, target_dir):
     print(f"Zipping {path}...")
     zip_name = os.path.basename(path) + ".zip"
@@ -72,12 +53,12 @@ def _run_evaluation(gt_paths, prediction_paths, verbose=True):
 
 
 def evaluate_cellvit(prediction_dir, checkpoint, dataset, label_dir, result_dir):
-    save_path = os.path.join(result_dir, dataset, checkpoint, "ais_result.csv")
+    save_path = os.path.join(dataset, checkpoint, f'{dataset}_cellvit_{checkpoint}_ais_result.csv')
     if os.path.exists(save_path):
-        print("Results for {dataset} evaluation already exist")
+        print(f"Results for {dataset} evaluation already exist")
         return
-    prediction_paths = natsorted(glob(os.path.join(prediction_dir, "*.tiff")))
-    gt_paths = natsorted(glob(os.path.join(label_dir, "test_labels", "*.tiff")))
+    prediction_paths = natsorted(glob(os.path.join(prediction_dir, "*")))
+    gt_paths = natsorted(glob(os.path.join(label_dir, "test_labels", "*")))
     if len(prediction_paths) == 0:
         print(f"No predictions for {dataset} dataset on {checkpoint} checkpoint found")
         return
