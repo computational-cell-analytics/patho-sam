@@ -1,6 +1,6 @@
 # Segment Anything for Histopathology
 
-<a href="https://github.com/computational-cell-analytics/patho-sam"><img src="docs/logos/logo.png" width="500" align="right">
+<a href="https://github.com/computational-cell-analytics/patho-sam"><img src="docs/logos/logo.png" width="550" align="right">
 
 PathoSAM implements interactive annotation and (automatic) semantic segmentation for histopathology images. It is built on top of [Segment Anything](https://segment-anything.com/) by Meta AI and specializes it for histopathology data. Its core components are:
 - The `patho_sam` publicly available model for interactive data annotation in 2d and 3d data that are fine-tuned on publicly available histopathology images.
