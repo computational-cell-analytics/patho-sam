@@ -26,16 +26,18 @@ def histopathology_identity(x, ensure_rgb=True):
 
 
 def _get_train_val_split(ds, val_fraction=0.2):
+    """Dataset split. This splits the provided dataset used for training into a train and val set.
+    """
     generator = torch.Generator().manual_seed(42)
     train_ds, val_ds = data_util.random_split(ds, [1 - val_fraction, val_fraction], generator=generator)
     return train_ds, val_ds
 
 
-def get_dataloaders(patch_shape, batch_size, data_path, dataset, images_dir, masks_dir):
+def get_dataloaders(patch_shape, batch_size, data_path, dataset=None, images_dir=None, masks_dir=None):
     label_dtype = torch.float32
     sampler = MinInstanceSampler(min_num_instances=4, min_size=10)
 
-    # Expected raw and label transforms.
+    # Expected raw and label transforms for training
     raw_transform = histopathology_identity
     label_transform = PerObjectDistanceTransform(
         distances=True,
@@ -45,6 +47,8 @@ def get_dataloaders(patch_shape, batch_size, data_path, dataset, images_dir, mas
         instances=True,
         min_size=10,
     )
+
+    ds = None
 
     if dataset == "consep":
         ds = datasets.get_consep_dataset(
@@ -152,8 +156,8 @@ def get_dataloaders(patch_shape, batch_size, data_path, dataset, images_dir, mas
             label_transform=label_transform,
             raw_transform=raw_transform,
         )
-    # this will not have an exclusive test split
 
+    # lynsec_he will not have an exclusive test split but the whole dataset will be used for training
     elif dataset == "lynsec_he":
         ds = datasets.get_lynsec_dataset(
             path=data_path,
@@ -165,7 +169,8 @@ def get_dataloaders(patch_shape, batch_size, data_path, dataset, images_dir, mas
             label_transform=label_transform,
             raw_transform=raw_transform,
         )
-    # this will not have an exclusive test split
+
+    # lynsec_ihc will not have an exclusive test split but the whole dataset will be used for training
     elif dataset == "lynsec_ihc":
         ds = datasets.get_lynsec_dataset(
             path=data_path,
@@ -201,7 +206,8 @@ def get_dataloaders(patch_shape, batch_size, data_path, dataset, images_dir, mas
             label_transform=label_transform,
             raw_transform=raw_transform,
         )
-    # this will not have an exclusive test split
+
+    # nuinsseg will not have an exclusive test split but the whole dataset will be used for training
     elif dataset == "nuinsseg":
         ds = datasets.get_nuinsseg_dataset(
             path=data_path,
@@ -308,9 +314,10 @@ def get_dataloaders(patch_shape, batch_size, data_path, dataset, images_dir, mas
             label_transform=label_transform,
             raw_transform=raw_transform,
         )
+
     elif dataset is None:
         raw_paths = natsorted(glob(os.path.join(images_dir, "*")))
-        label_paths = glob(os.path.join(masks_dir, "*"))
+        label_paths = natsorted(glob(os.path.join(masks_dir, "*")))
 
         assert len(raw_paths) == len(label_paths)
 
@@ -327,6 +334,9 @@ def get_dataloaders(patch_shape, batch_size, data_path, dataset, images_dir, mas
             label_transform=label_transform,
             raw_transform=raw_transform,
             )
+
+    else:
+        raise NotImplementedError
 
     if ds is not None:
         train_ds, val_ds = _get_train_val_split(ds=ds)

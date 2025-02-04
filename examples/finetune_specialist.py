@@ -8,7 +8,7 @@ import micro_sam.training as sam_training
 from micro_sam.util import export_custom_sam_model
 
 
-def get_dataloader(patch_shape, batch_size, dataset, data_dir, images_dir, labels_dir):
+def dataloaders(patch_shape, batch_size, dataset, data_dir, images_dir, labels_dir):
     """Return train or val data loader for finetuning SAM.
 
     The data loader must be a torch data loader that retuns `x, y` tensors,
@@ -31,24 +31,20 @@ def get_dataloader(patch_shape, batch_size, dataset, data_dir, images_dir, label
     # This will download the image and segmentation data for training if a dataset has been chosen. Otherwise,
     # the provided images and masks directories will be used to build the torch dataloader.
 
-    # torch_em.default_segmentation_loader is a convenience function to build a torch dataloader
-    # from image data and labels for training segmentation models.
-    # It supports image data in various formats. Here, we either load the dataset data via torch-em or load custom
-    # training data from specified images and labels directories.
-
 
 def run_training(checkpoint_name, model_type, dataset, data_dir, images_dir, labels_dir, save_root):
-    """Run the actual model training."""
+    """Run the actual model training.
+    """
 
     # All hyperparameters for training.
     batch_size = 1  # the training batch size
     patch_shape = (512, 512)  # the size of patches for training
-    n_iterations = 10e4  # the number of iterations to train for
+    n_iterations = 1e5  # the number of iterations to train for
     n_objects_per_batch = 25  # the number of objects per batch that will be sampled
-    device = "cuda" if torch.cuda.is_available() else "cpu"  # the device/GPU used for training
+    device = "cuda" if torch.cuda.is_available() else "cpu"  # the device/GPU used for training. 
 
     # Get the dataloaders.
-    train_loader, val_loader = get_dataloader(patch_shape, batch_size, dataset, data_dir, images_dir, labels_dir)
+    train_loader, val_loader = dataloaders(patch_shape, batch_size, dataset, data_dir, images_dir, labels_dir)
 
     # Run training.
     sam_training.train_sam(
@@ -66,7 +62,6 @@ def run_training(checkpoint_name, model_type, dataset, data_dir, images_dir, lab
 
 def export_model(checkpoint_name, model_type):
     """Export the trained model."""
-    # export the model after training so that it can be used by the rest of the micro_sam library
     export_path = "./finetuned_specialist_model.pth"
     checkpoint_path = os.path.join("checkpoints", checkpoint_name, "best.pt")
     export_custom_sam_model(
@@ -78,9 +73,7 @@ def export_model(checkpoint_name, model_type):
 
 def finetune_specialist(args):
     """Example code for finetuning SAM on histopathology datasets."""
-    # override this (below) if you have some more complex set-up and need to specify the exact GPU.
 
-    # training settings:
     model_type = args.model_type
     checkpoint_name = "sam_specialist"
     run_training(checkpoint_name=checkpoint_name, model_type=model_type, dataset=args.dataset, data_dir=args.data_dir,
@@ -96,12 +89,13 @@ def main():
     blank but provide a data path where the dataset will be downloaded to.
 
     Option 2: Provide images_dir and labels_dir to train from custom data. Images must be in shape (H, W, 3), labels in
-    (H, W).
+    shape (H, W).
+
     """
 
     parser = argparse.ArgumentParser(description="Finetune Segment Anything for the Histopathology datasets.")
     parser.add_argument(
-        "--data_path", default=None,
+        "--data_dir", default=None,
         help="(Optional) path where dataset will be loaded if dataset argument is provided.",
     )
     parser.add_argument(
@@ -118,7 +112,7 @@ def main():
     )
     parser.add_argument(
         "--model_type", "-m", default="vit_b",
-        help="The model type to use for fine-tuning. Either vit_t, vit_b, vit_l or vit_h.",
+        help="(Optional) The model type to use for fine-tuning. Either vit_t, vit_b, vit_l or vit_h.",
     )
     parser.add_argument(
         "--save_root", "-s", default=None,

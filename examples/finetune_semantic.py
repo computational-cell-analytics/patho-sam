@@ -1,8 +1,6 @@
 import os
-from collections import OrderedDict
 
 import torch
-import torch.utils.data as data_util
 
 import torch_em
 from torch_em.data import MinTwoInstanceSampler
@@ -20,7 +18,7 @@ def get_dataloaders(patch_shape, data_path):
     It will automatically download the PanNuke data.
 
     NOTE: To replace this with another data loader, you need to return a torch data loader
-    that returns `x, y` tensors, where `x` is the image adta and `y` are corresponding labels.
+    that returns `x, y` tensors, where `x` is the image data and `y` are corresponding labels.
     The labels have to be in a label mask semantic segmentation format.
     i.e. a tensor of the same spatial shape as `x`, with semantic labels for objects.
     Important: the ID 0 is reserved for background and ensure you have all semantic classes.
@@ -64,32 +62,17 @@ def train_pannuke_semantic_segmentation(args):
     train_loader, val_loader = get_dataloaders(
         patch_shape=(1, 512, 512), data_path=os.path.join(args.input_path, "pannuke")
     )
-
-    # Whether we opt for finetuning decoder only or finetune the entire backbone.
-    if args.decoder_only:
-        freeze = ["image_encoder", "prompt_encoder", "mask_decoder"]
-        checkpoint_name += "/finetune_decoder_only"
-    else:
-        freeze = None
-        checkpoint_name += "/finetune_all"
+    #  This freezes the image encoder, prompt encoder and mask decoder so only the semantic decoder is finetuned
+    freeze = ["image_encoder", "prompt_encoder", "mask_decoder"]
+    checkpoint_name += "/finetune_decoder_only_from_scratch"
 
     # Get the trainable Segment Anything Model.
     model, state = sam_training.get_trainable_sam_model(
         model_type=model_type, device=device, checkpoint_path=checkpoint_path, freeze=freeze, return_state=True,
     )
 
-    # Whether to use the pretrained decoder (used for AIS) or train from scratch.
-    if args.decoder_from_pretrained:
-        decoder_state = []
-        # Remove the output layer weights as we have new target class for the new task.
-        decoder_state = OrderedDict(
-            [(k, v) for k, v in state["decoder_state"].items() if not k.startswith("out_conv.")]
-        )
-        checkpoint_name += "-from_pretrained"
-
-    else:
-        decoder_state = None
-        checkpoint_name += "-from_scratch"
+    #  This forces decoder finetuning from scratch, i. e. without pre-trained weights
+    decoder_state = None
 
     # Get the UNETR model for semantic segmentation pipeline
     unetr = get_unetr(
@@ -128,6 +111,9 @@ def train_pannuke_semantic_segmentation(args):
 
 
 def main(args):
+    """Finetune a Segment Anything model for semantic segmentation on the PanNuke dataset.
+
+    """
     train_pannuke_semantic_segmentation(args)
 
 
@@ -140,11 +126,11 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "-m", "--model_type", default="vit_b_histopathology", type=str,
-        help="The choice of model to perform semantic segmentation on."
+        help="(Optional) The choice of model to perform semantic segmentation finetuning on."
     )
     parser.add_argument(
         "-c", "--checkpoint_path", default=None, type=str,
-        help="Filepath to the model with which you would like to perform downstream semantic segmentation."
+        help="(Optional) Filepath to the model with which you would like to perform downstream semantic segmentation."
     )
     parser.add_argument(
         "-s", "--save_root", default=None, type=str,
@@ -153,14 +139,6 @@ if __name__ == "__main__":
     parser.add_argument(
         "--iterations", default=1e5, type=str,
         help="The total number of iterations to train the model for."
-    )
-    parser.add_argument(
-        "--decoder_only", action="store_true",
-        help="Whether to train the decoder only (by freezing the image encoder), or train all parts."
-    )
-    parser.add_argument(
-        "--decoder_from_pretrained", action="store_true",
-        help="Whether to train the decoder from scratch, or train the pretrained decoder (i.e. used for AIS)."
     )
     args = parser.parse_args()
     main(args)
