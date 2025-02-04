@@ -8,30 +8,6 @@ import micro_sam.training as sam_training
 from micro_sam.util import export_custom_sam_model
 
 
-def dataloaders(patch_shape, batch_size, dataset, data_dir, images_dir, labels_dir):
-    """Return train or val data loader for finetuning SAM.
-
-    The data loader must be a torch data loader that retuns `x, y` tensors,
-    where `x` is the image data and `y` are the labels.
-    The labels have to be in a label mask instance segmentation format.
-    I.e. a tensor of the same spatial shape as `x`, with each object mask having its own ID.
-    Important: the ID 0 is reserved for background, and the IDs must be consecutive
-
-    Here, we use `torch_em.default_segmentation_loader` for creating a suitable data loader from
-    the example dataset data or from provided custom images and labels. You can either adapt this 
-    for your own data (see comments below) or write a suitable torch dataloader yourself.
-    """
-    if dataset is not None:
-        os.makedirs(data_dir, exist_ok=True)
-        return get_dataloaders(patch_shape, batch_size, data_path=data_dir, dataset=dataset)
-
-    else:
-        return get_dataloaders(patch_shape, batch_size, images_dir=images_dir, labels_dir=labels_dir)
-
-    # This will download the image and segmentation data for training if a dataset has been chosen. Otherwise,
-    # the provided images and masks directories will be used to build the torch dataloader.
-
-
 def run_training(checkpoint_name, model_type, dataset, data_dir, images_dir, labels_dir, save_root):
     """Run the actual model training.
     """
@@ -41,10 +17,16 @@ def run_training(checkpoint_name, model_type, dataset, data_dir, images_dir, lab
     patch_shape = (512, 512)  # the size of patches for training
     n_iterations = 1e5  # the number of iterations to train for
     n_objects_per_batch = 25  # the number of objects per batch that will be sampled
-    device = "cuda" if torch.cuda.is_available() else "cpu"  # the device/GPU used for training. 
+    device = "cuda" if torch.cuda.is_available() else "cpu"  # the device/GPU used for training.
 
-    # Get the dataloaders.
-    train_loader, val_loader = dataloaders(patch_shape, batch_size, dataset, data_dir, images_dir, labels_dir)
+    # Get the dataloaders. Loaders are either generated using datasets implemented in torch-em or using the directories 
+    # specified for custom training data
+    if dataset is not None:
+        os.makedirs(data_dir, exist_ok=True)
+        train_loader, val_loader = get_dataloaders(patch_shape, batch_size, data_path=data_dir, dataset=dataset)
+    else:
+        train_loader, val_loader = get_dataloaders(patch_shape, batch_size, images_dir=images_dir,
+                                                   labels_dir=labels_dir)
 
     # Run training.
     sam_training.train_sam(
@@ -81,12 +63,12 @@ def finetune_specialist(args):
 
 
 def main():
-    """Finetune a Segment Anything model.
+    """Finetune a Segment Anything model with a publicly available dataset or custom data.
 
-    This example can easily be adapted for other data (including data you have annoated with micro_sam beforehand).
+    This example can easily be adapted for other data (including data you have annotated with micro_sam beforehand).
 
     Option 1: Provide the name of a dataset implemented in torch-em for finetuning. Leave images_dir and labels_dir
-    blank but provide a data path where the dataset will be downloaded to.
+    blank but provide a data path where the dataset will be loaded.
 
     Option 2: Provide images_dir and labels_dir to train from custom data. Images must be in shape (H, W, 3), labels in
     shape (H, W).
@@ -104,11 +86,11 @@ def main():
     )
     parser.add_argument(
         "--images_dir", default=None,
-        help="(Optional) Path to training images.",
+        help="(Optional) Path to training images directory.",
     )
     parser.add_argument(
         "--labels_dir", default=None,
-        help="(Optional) Path to labels corresponding to training images in images_dir.",
+        help="(Optional) Path to directory of labels corresponding to training images in images_dir.",
     )
     parser.add_argument(
         "--model_type", "-m", default="vit_b",

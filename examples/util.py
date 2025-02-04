@@ -33,7 +33,12 @@ def _get_train_val_split(ds, val_fraction=0.2):
     return train_ds, val_ds
 
 
-def get_dataloaders(patch_shape, batch_size, data_path, dataset=None, images_dir=None, masks_dir=None):
+def get_dataloaders(patch_shape, batch_size, data_path=None, dataset=None, images_dir=None, masks_dir=None):
+
+    if dataset is not None:
+        assert masks_dir is None and images_dir is None, "Provide either a dataset name or directories for custom data"
+    else:
+        assert dataset is None, "Provide either a dataset name or directories for custom data"
     label_dtype = torch.float32
     sampler = MinInstanceSampler(min_num_instances=4, min_size=10)
 

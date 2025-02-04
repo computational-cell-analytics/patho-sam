@@ -57,12 +57,14 @@ def train_pannuke_semantic_segmentation(args):
     num_classes = 6  # available classes are [0, 1, 2, 3, 4, 5]
     checkpoint_path = args.checkpoint_path
     device = "cuda" if torch.cuda.is_available() else "cpu"
+    n_iterations = 1e5
     checkpoint_name = f"{model_type}/pannuke_semantic"
 
     train_loader, val_loader = get_dataloaders(
         patch_shape=(1, 512, 512), data_path=os.path.join(args.input_path, "pannuke")
     )
-    #  This freezes the image encoder, prompt encoder and mask decoder so only the semantic decoder is finetuned
+    #  This freezes the pretrained image encoder, prompt encoder and mask decoder so only the semantic decoder is
+    #  finetuned
     freeze = ["image_encoder", "prompt_encoder", "mask_decoder"]
     checkpoint_name += "/finetune_decoder_only_from_scratch"
 
@@ -71,7 +73,7 @@ def train_pannuke_semantic_segmentation(args):
         model_type=model_type, device=device, checkpoint_path=checkpoint_path, freeze=freeze, return_state=True,
     )
 
-    #  This forces decoder finetuning from scratch, i. e. without pre-trained weights
+    #  This forces decoder finetuning from scratch, i.e. with randomly initialized weights
     decoder_state = None
 
     # Get the UNETR model for semantic segmentation pipeline
@@ -107,7 +109,7 @@ def train_pannuke_semantic_segmentation(args):
         num_classes=num_classes,
         dice_weight=0,
     )
-    trainer.fit(iterations=int(args.iterations), overwrite_training=False)
+    trainer.fit(iterations=int(n_iterations), overwrite_training=False)
 
 
 def main(args):
@@ -135,10 +137,6 @@ if __name__ == "__main__":
     parser.add_argument(
         "-s", "--save_root", default=None, type=str,
         help="Filepath where to store the trained model checkpoints and logs."
-    )
-    parser.add_argument(
-        "--iterations", default=1e5, type=str,
-        help="The total number of iterations to train the model for."
     )
     args = parser.parse_args()
     main(args)
