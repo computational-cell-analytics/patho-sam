@@ -322,7 +322,7 @@ def get_dataloaders(patch_shape, batch_size, data_path, dataset, images_dir, mas
             patch_shape=patch_shape,
             ndim=2,
             with_channels=True,
-            sampler=sampler,
+            sampler=MinInstanceSampler(min_num_instances=2),
             label_dtype=label_dtype,
             label_transform=label_transform,
             raw_transform=raw_transform,
