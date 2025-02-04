@@ -19,7 +19,7 @@ def run_training(checkpoint_name, model_type, dataset, data_dir, images_dir, lab
     n_objects_per_batch = 25  # the number of objects per batch that will be sampled
     device = "cuda" if torch.cuda.is_available() else "cpu"  # the device/GPU used for training.
 
-    # Get the dataloaders. Loaders are either generated using datasets implemented in torch-em or using the directories 
+    # Get the dataloaders. Loaders are either generated using datasets implemented in torch-em or using the directories
     # specified for custom training data
     if dataset is not None:
         os.makedirs(data_dir, exist_ok=True)
@@ -63,7 +63,7 @@ def finetune_specialist(args):
 
 
 def main():
-    """Finetune a Segment Anything model with a publicly available dataset or custom data.
+    """Finetune a Segment Anything model with a publicly available dataset (in this case nuclick) or custom data.
 
     This example can easily be adapted for other data (including data you have annotated with micro_sam beforehand).
 
@@ -81,8 +81,8 @@ def main():
         help="(Optional) path where dataset will be loaded if dataset argument is provided.",
     )
     parser.add_argument(
-        "--dataset", "-d", default=None,
-        help="(Optional) Which dataset to finetune the specialist model on. Choose from datasets implemented in torch-em.",
+        "--dataset", "-d", default='nuclick',
+        help="(Optional) Which dataset to finetune the specialist model on. Other models can be easily adapted from torch-em",
     )
     parser.add_argument(
         "--images_dir", default=None,

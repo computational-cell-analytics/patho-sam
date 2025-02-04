@@ -63,14 +63,12 @@ def train_pannuke_semantic_segmentation(args):
     train_loader, val_loader = get_dataloaders(
         patch_shape=(1, 512, 512), data_path=os.path.join(args.input_path, "pannuke")
     )
-    #  This freezes the pretrained image encoder, prompt encoder and mask decoder so only the semantic decoder is
-    #  finetuned
-    freeze = ["image_encoder", "prompt_encoder", "mask_decoder"]
+
     checkpoint_name += "/finetune_decoder_only_from_scratch"
 
     # Get the trainable Segment Anything Model.
     model, state = sam_training.get_trainable_sam_model(
-        model_type=model_type, device=device, checkpoint_path=checkpoint_path, freeze=freeze, return_state=True,
+        model_type=model_type, device=device, checkpoint_path=checkpoint_path, freeze=None, return_state=True,
     )
 
     #  This forces decoder finetuning from scratch, i.e. with randomly initialized weights
@@ -127,7 +125,7 @@ if __name__ == "__main__":
         help="Path where you would like to store the PanNuke data."
     )
     parser.add_argument(
-        "-m", "--model_type", default="vit_b_histopathology", type=str,
+        "-m", "--model_type", default="vit_b", type=str,
         help="(Optional) The choice of model to perform semantic segmentation finetuning on."
     )
     parser.add_argument(
