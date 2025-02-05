@@ -41,6 +41,7 @@ def whole_slide_image_annotator(use_finetuned_model):
             ndim=2,
             tile_shape=(384, 384),
             halo=(64, 64),
+            output_mode=None,  # skip additional post-processing for WSIs.
         )
 
     else:
