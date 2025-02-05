@@ -23,5 +23,6 @@ dependencies:
     - torch_em >=0.7.0
     - tqdm
     - timm
+    - micro_sam
     - pip:
         - git+https://github.com/anwai98/tukra.git

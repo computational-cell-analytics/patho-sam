@@ -11,7 +11,7 @@ setup(
     name='patho_sam',
     description='Segment Anything for Histopathology.',
     version=__version__,
-    author='Titus Griebel, Anwai Archit',
+    author='Titus Griebel, Anwai Archit, Constantin Pape',
     author_email='anwai.archit@uni-goettingen.de',
     url='https://github.com/computational-cell-analytics/patho-sam',
     packages=['patho_sam'],

@@ -1,3 +1,8 @@
+from typing import Tuple
+
+import torch
+import torch.utils.data as data_util
+
 from torch_em.data.datasets.light_microscopy.neurips_cell_seg import to_rgb
 
 
@@ -13,3 +18,20 @@ def histopathology_identity(x, ensure_rgb=True):
         x = to_rgb(x)
 
     return x
+
+
+def get_train_val_split(
+    ds: torch.utils.data.Dataset, val_fraction: float = 0.2, seed: int = 42,
+) -> Tuple[torch.utils.data.Dataset, torch.utils.data.Dataset]:
+    """Creates split for a dataset for a decided fraction.
+
+    Args:
+        dataset: The segmentation dataset.
+        val_fraction: The fraction of split to decide for validation, and remanining for test.
+
+    Returns:
+        Tuple of train and val datasets.
+    """
+    generator = torch.Generator().manual_seed(seed)
+    train_ds, val_ds = data_util.random_split(ds, [1 - val_fraction, val_fraction], generator=generator)
+    return train_ds, val_ds
