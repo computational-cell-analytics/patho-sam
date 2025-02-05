@@ -4,131 +4,119 @@ import torch
 
 import torch_em
 from torch_em.data import MinTwoInstanceSampler
-from torch_em.data.datasets import get_nuclick_dataset
-from torch_em.transform.label import PerObjectDistanceTransform
+from torch_em.data.datasets import get_pannuke_dataset
 
 import micro_sam.training as sam_training
-from micro_sam.util import export_custom_sam_model
+from micro_sam.instance_segmentation import get_unetr
 
-from patho_sam.training import get_train_val_split, histopathology_identity
+from patho_sam.training import SemanticInstanceTrainer, get_train_val_split
 
 
 DATA_FOLDER = "data"
 
 
-def get_dataloaders(data_path, batch_size, patch_shape, train_instance_segmentation):
-    """This returns the NuClick dataloaders implemented in `torch-em`.
-    https://github.com/constantinpape/torch-em/blob/main/torch_em/data/datasets/histopathology/nuclick.py
-    It will automatically download the NuClick data.
+def get_dataloaders(data_path):
+    """This returns the PanNuke dataloaders implemented in `torch-em`.
+    https://github.com/constantinpape/torch-em/blob/main/torch_em/data/datasets/histopathology/pannuke.py
+    It will automatically download the PanNuke data.
 
     NOTE: To replace this with another data loader, you need to return a torch data loader
     that returns `x, y` tensors, where `x` is the image data and `y` are corresponding labels.
     The labels have to be in a label mask semantic segmentation format.
     i.e. a tensor of the same spatial shape as `x`, with semantic labels for objects.
-    Important: the ID 0 is reserved for background, and the IDS must be consecutive.
-
-    See https://github.com/computational-cell-analytics/micro-sam/blob/master/examples/finetuning/finetune_hela.py
-    for more details on how to create your custom dataloaders.
+    Important: the ID 0 is reserved for background and ensure you have all semantic classes.
     """
-    os.makedirs(DATA_FOLDER, exist_ok=True)
-
     # All relevant stuff for the dataset.
-    raw_transform = histopathology_identity  # Avoids normalizing the inputs, i.e. keeps the intensities b/w [0, 255].
+    raw_transform = sam_training.identity  # Avoids normalizing the inputs, i.e. keeps the intensities b/w [0, 255].
     sampler = MinTwoInstanceSampler()  # Ensures that atleast one foreground class is obtained.
     label_dtype = torch.float32  # Converts labels to expected dtype.
 
-    if train_instance_segmentation:
-        # Computes the distance transform for objects to perform end-to-end automatic instance segmentation.
-        label_transform = PerObjectDistanceTransform(
-            distances=True, boundary_distances=True, directed_distances=False, foreground=True, instances=True,
-        )
-    else:
-        label_transform = torch_em.transform.label.connected_components
-
-    dataset = get_nuclick_dataset(
+    # Get the dataset
+    dataset = get_pannuke_dataset(
         path=data_path,
-        patch_shape=patch_shape,
-        split="Train",
+        patch_shape=(1, 512, 512),
+        ndim=2,
+        folds=["fold_1", "fold_2"],
+        custom_label_choice="semantic",
         sampler=sampler,
         label_dtype=label_dtype,
-        label_transform=label_transform,
         raw_transform=raw_transform,
-        download=True,  # This will download the image and segmentation data for training.
+        download=True,
     )
 
-    # Get the datasets.
-    train_ds, val_ds = get_train_val_split(dataset)
+    # Create custom splits.
+    train_dataset, val_dataset = get_train_val_split(dataset)
 
     # Get the dataloaders.
-    train_loader = torch_em.get_data_loader(train_ds, batch_size=batch_size, shuffle=True)
-    val_loader = torch_em.get_data_loader(val_ds, batch_size=batch_size, shuffle=True)
+    train_loader = torch_em.get_data_loader(dataset=train_dataset, batch_size=1, shuffle=True)
+    val_loader = torch_em.get_data_loader(dataset=val_dataset, batch_size=1, shuffle=True)
 
     return train_loader, val_loader
 
 
-def run_training(checkpoint_name, model_type, dataset, data_dir, images_dir, labels_dir, save_root):
-    """Run the actual model training.
+def train_pannuke_semantic_segmentation(model_type, checkpoint_name):
+    """Script for semantic segmentation for PanNuke data.
     """
-    # All hyperparameters for training.
-    batch_size = 1  # the training batch size
-    patch_shape = (512, 512)  # the size of patches for training
-    n_objects_per_batch = 25  # the number of objects per batch that will be sampled
-    device = "cuda" if torch.cuda.is_available() else "cpu"  # the device/GPU used for training.
-    train_instance_segmentation = True
+    device = "cuda" if torch.cuda.is_available() else "cpu"
 
-    # Get the dataloaders.
-    train_loader, val_loader = get_dataloaders(patch_shape, batch_size, patch_shape, train_instance_segmentation)
+    # Hyperparameters for training
+    num_classes = 6  # available classes are [0, 1, 2, 3, 4, 5]
 
-    # Run training.
-    sam_training.train_sam(
-        name=checkpoint_name,
+    train_loader, val_loader = get_dataloaders(data_path=os.path.join(DATA_FOLDER, "pannuke"))
+
+    # Get the trainable Segment Anything Model.
+    model = sam_training.get_trainable_sam_model(
         model_type=model_type,
+        device=device,
+        checkpoint_path=None,  # override to provide filepath for your trained SAM model.
+    )
+
+    # Get the UNETR model for semantic segmentation pipeline
+    unetr = get_unetr(
+        image_encoder=model.sam.image_encoder, device=device, out_channels=num_classes, flexible_load_checkpoint=True,
+    )
+
+    # All other stuff we need for training
+    optimizer = torch.optim.AdamW(unetr.parameters(), lr=1e-4)
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.9, patience=5)
+
+    # Converts the per-batch inputs and corresponding labels to desired format required for training.
+    convert_inputs = sam_training.util.ConvertToSemanticSamInputs()
+
+    # Trainer for semantic segmentation (implemented using 'torch_em')
+    trainer = SemanticInstanceTrainer(
+        name=checkpoint_name,
         train_loader=train_loader,
         val_loader=val_loader,
-        n_epochs=100,
-        n_objects_per_batch=n_objects_per_batch,
+        model=unetr,
+        optimizer=optimizer,
         device=device,
-        save_root=save_root
+        lr_scheduler=scheduler,
+        log_image_interval=100,
+        mixed_precision=True,
+        compile_model=False,
+        convert_inputs=convert_inputs,
+        num_classes=num_classes,
+        dice_weight=0,  # override to use weighted dice-cross entropy loss. the trainer uses cross-entropy loss only.
     )
-
-
-def export_model(checkpoint_name, model_type):
-    """Export the trained model."""
-    export_path = "./finetuned_specialist_model.pth"
-    checkpoint_path = os.path.join("checkpoints", checkpoint_name, "best.pt")
-    export_custom_sam_model(
-        checkpoint_path=checkpoint_path,
-        model_type=model_type,
-        save_path=export_path,
-    )
-
-
-def finetune_specialist(args):
-    """Example code for finetuning SAM on histopathology datasets."""
-
-    model_type = args.model_type
-    checkpoint_name = "sam_specialist"
-    run_training(checkpoint_name=checkpoint_name, model_type=model_type, dataset=args.dataset, data_dir=args.data_dir,
-                 images_dir=args.images_dir, labels_dir=args.labels_dir, save_root=args.save_root)
+    trainer.fit(epochs=100)
 
 
 def main():
-    """Finetune a Segment Anything model.
+    """Finetune a Segment Anything model for semantic segmentation on the PanNuke dataset.
 
-    This example uses image data and segmentations from the NuClick dataset for lymphocyte segmentation,
-    but can be easily adapted for other data (including data you have annotated with 'micro_sam' beforehand).
+    This example uses image data and semantic segmentation labels for the PanNule dataset,
+    but can easily be adapted for other data (including data you have annotated with patho_sam beforehand).
+    NOTE: You must provide semantic class labels to train within this setup.
     """
-    # The 'model_type' determines which base model is used to initialize the weights that are finetuned.
-    # We use 'vit_b' here becaise it can be trained faster. Note that 'vit_h' usually yields higher quality results.
+    # The model_type determines which base model is used to initialize the weights that are finetuned.
+    # We use 'vit_b' here because it can be trained faster. Note that 'vit_h' yields higher quality results.
     model_type = "vit_b"
 
-    # The name of the checkpoint. The checkpoints will be stored in './checkpoints/<checkpoint_name>'
-    checkpoint_name = "sam_nuclick"
+    # The name of checkpoint. The checkpoints will be stored in './checkpoints/<checkpoint_name>'.
+    checkpoint_name = "pannuke_semantic"
 
-    # Train an additional convolutional decoer for end-to-end automatic instance segmentation.
-    train_instance_segmentation = True
-
-    finetune_specialist(model_type, checkpoint_name, train_instance_segmentation)
+    train_pannuke_semantic_segmentation(model_type, checkpoint_name)
 
 
 if __name__ == "__main__":
