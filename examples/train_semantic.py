@@ -15,7 +15,7 @@ from patho_sam.training import SemanticInstanceTrainer, get_train_val_split
 DATA_FOLDER = "data"
 
 
-def get_dataloaders():
+def get_dataloaders(data_path):
     """This returns the PanNuke dataloaders implemented in `torch-em`.
     https://github.com/constantinpape/torch-em/blob/main/torch_em/data/datasets/histopathology/pannuke.py
     It will automatically download the PanNuke data.
@@ -33,7 +33,7 @@ def get_dataloaders():
 
     # Get the dataset
     dataset = get_pannuke_dataset(
-        path=DATA_FOLDER,
+        path=data_path,
         patch_shape=(1, 512, 512),
         ndim=2,
         folds=["fold_1", "fold_2"],
