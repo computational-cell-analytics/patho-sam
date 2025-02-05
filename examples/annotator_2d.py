@@ -20,8 +20,6 @@ def whole_slide_image_annotator(use_finetuned_model):
     # image = read_wsi(example_data, image_size=(10000, 10000, 10000, 10000), scale=None)  # decent shaped ROI
     image = read_wsi(example_data, image_size=None, scale=None)  # full slide shape: (32914, 46000, 3)
 
-    breakpoint()
-
     if use_finetuned_model:
         model_type = "vit_b_histopathology"
     else:
