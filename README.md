@@ -6,7 +6,7 @@ PathoSAM implements interactive annotation and (automatic) instance and semantic
 - The publicly available `patho_sam` models for interactive data annotation that were fine-tuned on openly available histopathology images.
 - The `patho_sam` library, which provides training functionality based on [Segment Anything for Microscopy](https://computational-cell-analytics.github.io/micro-sam/micro_sam.html), and supports:
     - Application of Segment Anything to histopathology images, including whole-slide images, and fine-tuning on your data.
-    - Semantic instance segmentation.
+    - Semantic segmentation.
 
 Based on these components, `patho_sam` enables fast interactive and automatic annotation for histopathology images, see [Usage](#usage) for details.
 
@@ -36,5 +36,5 @@ Coming soon.
 
 If you are using this repository in your research please cite:
 - [Our preprint](https://doi.org/10.48550/arXiv.2502.00408).
-- The [Segment Anything for Microscopy](https://doi.org/10.1101/2023.08.21.554208) publication
+- the [Segment Anything for Microscopy](https://doi.org/10.1101/2023.08.21.554208) publication.
 - And the original [Segment Anything](https://arxiv.org/abs/2304.02643) publication.
