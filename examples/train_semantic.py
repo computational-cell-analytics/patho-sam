@@ -55,13 +55,11 @@ def get_dataloaders(data_path):
 
 
 def train_pannuke_semantic_segmentation(model_type, checkpoint_name):
-    """Script for semantic segmentation for PanNuke data.
-    """
-    device = "cuda" if torch.cuda.is_available() else "cpu"
+    """Script for semantic segmentation for PanNuke data."""
 
-    # Hyperparameters for training
+    # Parameters for training
     num_classes = 6  # available classes are [0, 1, 2, 3, 4, 5]
-
+    device = "cuda" if torch.cuda.is_available() else "cpu"
     train_loader, val_loader = get_dataloaders(data_path=os.path.join(DATA_FOLDER, "pannuke"))
 
     # Get the trainable Segment Anything Model.

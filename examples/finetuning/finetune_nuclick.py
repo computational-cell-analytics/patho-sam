@@ -67,8 +67,8 @@ def get_dataloaders(batch_size, patch_shape, train_instance_segmentation):
 
 
 def run_training(checkpoint_name, model_type):
-    """Run the actual model training.
-    """
+    """Run the actual model training."""
+
     # All hyperparameters for training.
     batch_size = 1  # the training batch size
     patch_shape = (512, 512)  # the size of patches for training
