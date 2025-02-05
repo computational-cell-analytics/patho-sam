@@ -29,14 +29,7 @@ def whole_slide_image_annotator(use_finetuned_model):
     # Store embeddings in a desired shape.
     save_path = f"./embedding_{model_type}.zarr"
 
-    annotator_2d(
-        image=image,
-        embedding_path=save_path,
-        model_type=model_type,
-        tile_shape=(384, 384),
-        halo=(64, 64),
-        precompute_amg_state=True,
-    )
+    annotator_2d(image=image, embedding_path=save_path, model_type=model_type)
 
 
 def main():
