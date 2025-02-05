@@ -10,7 +10,7 @@ def run_annotator_with_finetuned_model():
     for an image from the validation set.
     """
     # take the last frame, which is part of the val set, so the model was not directly trained on it
-    im = imageio.imread("./data/...")
+    im = imageio.imread("./data/IHC_nuclick/IHC/images/Validation/ROI_338_2.png")
 
     # set the checkpoint and the path for caching the embeddings
     checkpoint = "./finetuned_nuclick_model.pth"

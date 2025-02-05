@@ -66,7 +66,7 @@ def get_dataloaders(batch_size, patch_shape, train_instance_segmentation):
     return train_loader, val_loader
 
 
-def run_training(checkpoint_name, model_type):
+def run_training(checkpoint_name, model_type, train_instance_segmentation):
     """Run the actual model training."""
 
     # All hyperparameters for training.
@@ -74,7 +74,6 @@ def run_training(checkpoint_name, model_type):
     patch_shape = (512, 512)  # the size of patches for training
     n_objects_per_batch = 25  # the number of objects per batch that will be sampled
     device = "cuda" if torch.cuda.is_available() else "cpu"  # the device/GPU used for training.
-    train_instance_segmentation = True
 
     # Get the dataloaders.
     train_loader, val_loader = get_dataloaders(batch_size, patch_shape, train_instance_segmentation)
@@ -87,13 +86,14 @@ def run_training(checkpoint_name, model_type):
         val_loader=val_loader,
         n_epochs=100,
         n_objects_per_batch=n_objects_per_batch,
+        with_segmentation_decoder=train_instance_segmentation,
         device=device,
     )
 
 
 def export_model(checkpoint_name, model_type):
     """Export the trained model."""
-    export_path = "./finetuned_specialist_model.pth"
+    export_path = "./finetuned_nuclick_model.pth"
     checkpoint_path = os.path.join("checkpoints", checkpoint_name, "best.pt")
     export_custom_sam_model(checkpoint_path=checkpoint_path, model_type=model_type, save_path=export_path)
 
@@ -114,7 +114,7 @@ def main():
     # Train an additional convolutional decoer for end-to-end automatic instance segmentation.
     train_instance_segmentation = True
 
-    run_training(model_type, checkpoint_name, train_instance_segmentation)
+    run_training(checkpoint_name, model_type, train_instance_segmentation)
     export_model(checkpoint_name, model_type)
 
 
