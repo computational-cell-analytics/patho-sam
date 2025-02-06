@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 from typing import Optional, Union, Literal, Tuple
 
 import numpy as np
@@ -13,9 +14,16 @@ from .io import read_wsi
 from .semantic_segmentation import get_semantic_predictor_and_segmenter
 
 
+def _add_suffix_to_output_path(output_path: Union[str, os.PathLike], suffix: str) -> str:
+    fpath = Path(output_path).resolve()
+    fext = fpath.suffix if fpath.suffix else ".tif"
+    return str(fpath.with_name(f"{fpath.stem}{suffix}{fext}"))
+
+
 def automatic_segmentation_wsi(
     input_image: Union[np.ndarray, str, os.PathLike],
     model_type: str,
+    roi: Optional[Tuple[int, int, int, int]] = None,
     output_path: Optional[Union[str, os.PathLike]] = None,
     tile_shape: Tuple[int, int] = (384, 384),
     halo: Tuple[int, int] = (64, 64),
@@ -44,14 +52,33 @@ def automatic_segmentation_wsi(
     Returns:
         The segmentation result.
     """
+    if output_choice not in ["instances", "semantic", "all"]:
+        raise ValueError(
+            f"'{output_choice}' is not a supported output choice. Choose either 'instances' / 'semantic' / 'all'."
+        )
+
     # Set initial values.
     instance_masks = None
     semantic_masks = None
     image_embeddings = None
 
+    # Ensure provided arguments are in expected format.
+    if tile_shape and not isinstance(tile_shape, tuple):
+        tile_shape = tuple(tile_shape)
+    if halo and not isinstance(halo, tuple):
+        halo = tuple(halo)
+    if roi and not isinstance(roi, tuple):
+        roi = tuple(roi)
+
+    # Get additional suffix for ROIs to store results with ROI values.
+    if roi:
+        roi_suffix = f"_ROI_X{roi[0]}-{roi[0] + roi[2]}_Y{roi[1]}-{roi[1] + roi[3]}"
+    else:
+        roi_suffix = ""
+
     # Read the WSI image
     if isinstance(input_image, Union[str, os.PathLike]):  # from a filepath.
-        image = read_wsi(input_image, image_size=(10000, 15000, 600, 600))  # HACK: hard-coded for testing.
+        image = read_wsi(input_image, image_size=roi)
     else:  # or use the input array as it is.
         image = input_image
 
@@ -61,7 +88,7 @@ def automatic_segmentation_wsi(
 
     # 1. Run automatic instance segmentation.
     if output_choice != "semantic":  # do instance segmentation always besides "semantic"-only as 'output_choice'.
-        instances_save_path = output_path.replace(".", "_instances.")
+        instances_save_path = _add_suffix_to_output_path(output_path, roi_suffix + "_instances")
         # Run instance segmentation only if it is not saved already.
         if os.path.exists(instances_save_path):
             instance_masks = imageio.imread(instances_save_path)
@@ -92,7 +119,7 @@ def automatic_segmentation_wsi(
 
     # 2. Run semantic segmentation.
     if output_choice != "instances":  # do semantic segmentation always besides "instances"-only as 'output_choice'.
-        semantic_save_path = output_path.replace(".", "_semantic.")
+        semantic_save_path = _add_suffix_to_output_path(output_path, roi_suffix + "_semantic")
         # Run semantic segmentation only if it is not saved already.
         if os.path.exists(semantic_save_path):
             semantic_masks = imageio.imread(semantic_save_path)
@@ -131,7 +158,7 @@ def automatic_segmentation_wsi(
         segmentations.append(semantic_masks)
 
     segmentations = np.stack(segmentations, axis=0).squeeze()
-    imageio.imwrite(output_path, segmentations, compression="zlib")
+    imageio.imwrite(_add_suffix_to_output_path(output_path, roi_suffix), segmentations, compression="zlib")
 
     if view:
         import napari
@@ -156,8 +183,13 @@ def main():
     parser = argparse.ArgumentParser(description="Run automatic segmentation for an image.")
     parser.add_argument(
         "-i", "--input_path", required=True,
-        help="The filepath to the image data. Supports all data types that can be read by imageio (e.g. tif, png, ...) "
-        "or elf.io.open_file (e.g. hdf5, zarr, mrc). For the latter you also need to pass the 'key' parameter."
+        help="The filepath to the image data. Supports all data types that can be read by imageio (eg. tif, png, ...) "
+        "or slideio (eg. svs, ...)."
+    )
+    parser.add_argument(
+        "--roi", nargs="+", type=int, default=None,
+        help="The roi shape of the whole slide image for automatic segmentation. By default, predicts on entire WSI. "
+        "You can provide the ROI shape as: '--roi X Y W H'.",
     )
     parser.add_argument(
         "-o", "--output_path", required=True,
@@ -176,10 +208,12 @@ def main():
         "-c", "--checkpoint", default=None, help="Checkpoint from which the SAM model will be loaded."
     )
     parser.add_argument(
-        "--tile_shape", nargs="+", type=int, help="The tile shape for using tiled prediction.", default=(384, 384),
+        "--tile_shape", nargs="+", type=int, default=(384, 384),
+        help="The tile shape for using tiled prediction. You can provide the tile shape as: '--tile_shape 384 384'.",
     )
     parser.add_argument(
-        "--halo", nargs="+", type=int, help="The halo for using tiled prediction.", default=(64, 64),
+        "--halo", nargs="+", type=int, default=(64, 64),
+        help="The halo for using tiled prediction. You can provide the halo shape as: '--halo 64 64'.",
     )
     parser.add_argument(
         "--output_choice", type=str, default="instances",
@@ -202,6 +236,7 @@ def main():
     automatic_segmentation_wsi(
         input_image=args.input_path,
         model_type=args.model_type,
+        roi=args.roi,
         output_path=args.output_path,
         tile_shape=args.tile_shape,
         halo=args.halo,

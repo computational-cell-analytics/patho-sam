@@ -37,6 +37,12 @@ def get_semantic_predictor_and_segmenter(
         The automatic semantic segmentation class.
     """
 
+    # NOTE: Support is limited to 'vit_b_histopathology' model, as we provide the pretrained decoder only for this.
+    if model_type != "vit_b_histopathology":
+        raise RuntimeError(
+            "It is only possible to run semantic segmentation with pretrained decoder for 'vit_b_histopathology' model."
+        )
+
     # Get the device
     device = util.get_device(device=device)
 
@@ -205,7 +211,7 @@ class TiledSemanticSegmentationWithDecoder(SemanticSegmentationWithDecoder):
         _, pbar_init, pbar_update, pbar_close = util.handle_pbar(verbose, pbar_init, pbar_update)
         pbar_init(tiling.numberOfBlocks, "Initialize tiled semantic segmentation with decoder")
 
-        semantic_segmentation = np.zeros(original_size, dtype="float32")
+        semantic_segmentation = np.zeros(original_size, dtype="uint8")
 
         for tile_id in range(tiling.numberOfBlocks):
 
