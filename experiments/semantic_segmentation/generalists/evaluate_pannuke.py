@@ -13,7 +13,7 @@ from tukra.io import read_image
 from micro_sam.util import get_sam_model
 from micro_sam.instance_segmentation import get_unetr
 
-from patho_sam.evaluation import semantic_segmentation_quality, extract_class_weights_for_pannuke
+from patho_sam.evaluation.evaluation import semantic_segmentation_quality, extract_class_weights_for_pannuke
 
 
 ROOT = "/mnt/vast-nhr/projects/cidas/cca/experiments/patho_sam/semantic/external"

@@ -9,7 +9,7 @@ import pandas as pd
 from tukra.io import read_image
 from tukra.inference import get_biomedparse
 
-from patho_sam.evaluation import semantic_segmentation_quality, extract_class_weights_for_pannuke
+from patho_sam.evaluation.evaluation import semantic_segmentation_quality, extract_class_weights_for_pannuke
 
 
 ROOT = "/mnt/vast-nhr/projects/cidas/cca/experiments/patho_sam/semantic/external"

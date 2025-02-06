@@ -15,4 +15,10 @@ setup(
     author_email='anwai.archit@uni-goettingen.de',
     url='https://github.com/computational-cell-analytics/patho-sam',
     packages=['patho_sam'],
+    license="MIT",
+    entry_points={
+        "console_scripts": [
+            "patho_sam.automatic_segmentation = patho_sam.automatic_segmentation:main",
+        ]
+    }
 )
