@@ -143,6 +143,8 @@ def automatic_segmentation_wsi(
             v.add_labels(semantic_masks.astype(int), name="Semantic Segmentation")
         napari.run()
 
+    return segmentations
+
 
 def main():
     """@private"""
