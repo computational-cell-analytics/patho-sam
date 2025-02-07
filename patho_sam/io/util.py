@@ -12,7 +12,7 @@ except ImportError:
 def read_wsi(
     input_path: Union[os.PathLike, str],
     scale: Optional[Tuple[int, int]] = None,
-    image_size: Optional[Tuple[int, int]] = None,
+    image_size: Optional[Tuple[int, int, int, int]] = None,
 ) -> np.ndarray:
     """Function to read whole-slide images (WSIs) in histopathology.
 
@@ -21,7 +21,8 @@ def read_wsi(
 
     Args:
         input_path: The path to the WSI.
-        scale: Relevant for WSIs, to get the image for a desired scale.
+        scale: Relevant for WSIs, to get the image for a desired scale. Provide the desired (H, W) combination to scale.
+            You can choose (H, 0) or (0, W) to scale along one dimension and keep the resolution intact.
         image_size: Relevant for WSIs, to get a ROI crop for a desired shape.
 
     Returns:

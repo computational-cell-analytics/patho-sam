@@ -4,6 +4,7 @@ from typing import Optional, Union, Literal, Tuple
 
 import numpy as np
 import imageio.v3 as imageio
+from skimage.transform import resize
 
 import torch
 
@@ -164,13 +165,35 @@ def automatic_segmentation_wsi(
     imageio.imwrite(_add_suffix_to_output_path(output_path, roi_suffix), segmentations, compression="zlib")
 
     if view:
+        # Get multi-scales for the input image.
+        multiscale_images = [
+            image,
+            read_wsi(input_image, image_size=roi, scale=(int(image.shape[0] / 2), 0)),
+            read_wsi(input_image, image_size=roi, scale=(int(image.shape[0] / 4), 0)),
+            read_wsi(input_image, image_size=roi, scale=(int(image.shape[0] / 8), 0)),
+        ]
+
+        # Enable multi-scale for labels for smoother transition.
+        def _get_multiscale_labels(original_masks):
+            multiscale_labels = [original_masks]
+            for im in multiscale_images[1:]:
+                ds_labels = resize(
+                    multiscale_labels[-1], im.shape[:2], order=0, preserve_range=True, anti_aliasing=False,
+                ).astype(original_masks.dtype)
+                multiscale_labels.append(ds_labels)
+            return multiscale_labels
+
         import napari
         v = napari.Viewer()
-        v.add_image(image, name="Input Image")
+
+        v.add_image(multiscale_images, name="Input Image")
         if instance_masks is not None:
-            v.add_labels(instance_masks.astype(int), name="Instance Segmentation")
+            multiscale_instance_masks = _get_multiscale_labels(instance_masks)
+            v.add_labels(multiscale_instance_masks, name="Instance Segmentation")
         if semantic_masks is not None:
-            v.add_labels(semantic_masks.astype(int), name="Semantic Segmentation")
+            multiscale_semantic_masks = _get_multiscale_labels(semantic_masks)
+            v.add_labels(multiscale_semantic_masks, name="Semantic Segmentation")
+
         napari.run()
 
     return segmentations
@@ -183,7 +206,7 @@ def main():
     available_models = ["vit_b_histopathology", "vit_l_histopathology", "vit_h_histopathology"]
     available_models = ", ".join(available_models)
 
-    parser = argparse.ArgumentParser(description="Run automatic segmentation for an image.")
+    parser = argparse.ArgumentParser(description="Run automatic segmentation for a whole-slide image (WSI).")
     parser.add_argument(
         "-i", "--input_path", required=True,
         help="The filepath to the image data. Supports all data types that can be read by imageio (eg. tif, png, ...) "
