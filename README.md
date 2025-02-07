@@ -1,6 +1,6 @@
 # Segment Anything for Histopathology
 
-<a href="https://github.com/computational-cell-analytics/patho-sam"><img src="docs/logos/logo.png" width="400" align="right">
+<a href="https://github.com/computational-cell-analytics/patho-sam"><img src="docs/logos/logo.png" width="400" align="right"></a>
 
 PathoSAM implements interactive annotation and (automatic) instance and semantic segmentation for histopathology images. It is built on top of [Segment Anything](https://segment-anything.com/) by Meta AI and our prior work [Segment Anything for Microscopy](https://computational-cell-analytics.github.io/micro-sam/micro_sam.html). It specializes Segment Anything for nucleus segmentation in histopathology data. Its core components are:
 - The publicly available `patho_sam` models for interactive data annotation that were fine-tuned on openly available histopathology images.
@@ -30,7 +30,22 @@ To create one of these environments and install `patho_sam` into it follow these
 
 ## Usage
 
-Coming soon.
+### Using example scripts:
+
+See the [examples](./examples/) folder for more details.
+
+### Using CLI:
+
+- Download the example whole-slide image by running the following via terminal: `patho_sam.example_data` (see `patho_sam.example_data -h` for more details about the CLI).
+- Run automatic segmentation on your own WSI or the example data by running the following via terminal:
+    ```bash
+    patho_sam.automatic_segmentation -i /home/anwai/.cache/micro_sam/sample_data/whole-slide-histopathology-example-image.svs -o segmentation.tif
+    ```
+
+    > NOTE 1: See `patho_sam.automatic_segmentation -h` for more details about the CLI.
+
+    > NOTE 2: You can find your cache directory using: `python -c "from micro_sam.util import get_cache_directory; print(get_cache_directory())"`.
+
 
 ## Citation
 
