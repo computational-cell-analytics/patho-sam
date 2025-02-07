@@ -16,7 +16,8 @@ def read_wsi(
 ) -> np.ndarray:
     """Function to read whole-slide images (WSIs) in histopathology.
 
-    The file formats tested are '.svs'.
+    The file formats tested are '.svs', '.scn', '.czi', '.zvi', '.ndpi',
+    '.vsi', '.qptiff' and other gdal formats.
 
     Args:
         input_path: The path to the WSI.

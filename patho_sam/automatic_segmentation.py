@@ -72,19 +72,22 @@ def automatic_segmentation_wsi(
 
     # Get additional suffix for ROIs to store results with ROI values.
     if roi:
+        if len(roi) != 4:
+            raise RuntimeError("The provided ROI is not valid. Please provide the ROI shape as: '--roi X Y W H'.")
+
         roi_suffix = f"_ROI_X{roi[0]}-{roi[0] + roi[2]}_Y{roi[1]}-{roi[1] + roi[3]}"
     else:
         roi_suffix = ""
+
+    # Ensure that the user makes use of AIS, i.e. the most favorable automatic segmentation method.
+    if checkpoint_path is None and not model_type.endswith("_histopathology"):
+        raise RuntimeError("Please choose the PathoSAM generalist models.")
 
     # Read the WSI image
     if isinstance(input_image, Union[str, os.PathLike]):  # from a filepath.
         image = read_wsi(input_image, image_size=roi)
     else:  # or use the input array as it is.
         image = input_image
-
-    # Ensure that the user makes use of AIS, i.e. the most favorable automatic segmentation method.
-    if checkpoint_path is None and not model_type.endswith("_histopathology"):
-        raise RuntimeError("Please choose the PathoSAM generalist models.")
 
     # 1. Run automatic instance segmentation.
     if output_choice != "semantic":  # do instance segmentation always besides "semantic"-only as 'output_choice'.
@@ -184,7 +187,7 @@ def main():
     parser.add_argument(
         "-i", "--input_path", required=True,
         help="The filepath to the image data. Supports all data types that can be read by imageio (eg. tif, png, ...) "
-        "or slideio (eg. svs, ...)."
+        "or slideio (eg. svs, scn, czi, zvi, ndpi, vsi, qptiff and other gdal formats)."
     )
     parser.add_argument(
         "--roi", nargs="+", type=int, default=None,
