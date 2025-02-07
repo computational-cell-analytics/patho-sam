@@ -120,6 +120,7 @@ def automatic_segmentation_wsi(
                 output_mode=None,  # Skips some post-processing under `generate` method after automatic seg.
                 return_embeddings=True,  # Returns image embeddings, can be used in the task below, i.e. semantic seg.
             )
+            print("The instance segmentation results have been computed.")
 
     # 2. Run semantic segmentation.
     if output_choice != "instances":  # do semantic segmentation always besides "instances"-only as 'output_choice'.
@@ -153,6 +154,7 @@ def automatic_segmentation_wsi(
 
             # Store the results.
             imageio.imwrite(semantic_save_path, semantic_masks, compression="zlib")
+            print("The semantic segmentation results have been computed.")
 
     # Store all possible segmentations in the desired output filepath.
     segmentations = []

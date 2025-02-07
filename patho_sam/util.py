@@ -67,7 +67,7 @@ def get_semantic_segmentation_decoder_weights(save_path: Optional[Union[str, os.
     return state
 
 
-def get_example_wsi_data(save_dir: Optional[Union[os.PathLike, str]] = None) -> str:
+def get_example_wsi_data():
     """@private"""
     import argparse
     parser = argparse.ArgumentParser(description="Download and visualize the example whole-slide image (WSI).")
@@ -109,4 +109,4 @@ def get_example_wsi_data(save_dir: Optional[Union[os.PathLike, str]] = None) -> 
         v.add_image(multiscale_images, name="Input Image")
         napari.run()
 
-    return example_data
+    print(f"The example WSI is stored at '{example_data}'.")
