@@ -18,6 +18,7 @@ setup(
     license="MIT",
     entry_points={
         "console_scripts": [
+            "patho_sam.example_data = patho_sam.util:get_example_wsi_data",
             "patho_sam.automatic_segmentation = patho_sam.automatic_segmentation:main",
         ]
     }

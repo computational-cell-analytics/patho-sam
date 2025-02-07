@@ -6,7 +6,10 @@ import pooch
 
 import torch
 
-from micro_sam.util import microsam_cachedir
+from micro_sam.util import microsam_cachedir, get_cache_directory
+from micro_sam.sample_data import fetch_wholeslide_histopathology_example_data
+
+from .io import read_wsi
 
 
 DECODER_URL = "https://owncloud.gwdg.de/index.php/s/TFbI25UZoixd1hi/download"
@@ -62,3 +65,48 @@ def get_semantic_segmentation_decoder_weights(save_path: Optional[Union[str, os.
     state = torch.load(checkpoint_path, map_location="cpu")
 
     return state
+
+
+def get_example_wsi_data(save_dir: Optional[Union[os.PathLike, str]] = None) -> str:
+    """@private"""
+    import argparse
+    parser = argparse.ArgumentParser(description="Download and visualize the example whole-slide image (WSI).")
+    parser.add_argument(
+        "-s", "--save_path", type=str, default=None,
+        help=f"The folder to store the whole-slide image. By default, it is stored at '{get_cache_directory()}'."
+    )
+    parser.add_argument(
+        "--roi", nargs="+", type=int, default=None,
+        help="The roi shape of the whole slide image for automatic segmentation. By default, predicts on entire WSI. "
+        "You can provide the ROI shape as: '--roi X Y W H'.",
+    )
+    parser.add_argument(
+        "--view", action="store_true", help="Whether to view the WSI in napari."
+    )
+
+    args = parser.parse_args()
+
+    # Get the folder to store the WSI. By default, stores it at 'micro-sam' cache directory.
+    save_dir = os.path.join(get_cache_directory(), "sample_data") if args.save_path is None else args.save_dir
+
+    # Download the example WSI.
+    example_data = fetch_wholeslide_histopathology_example_data(save_dir)
+
+    if args.view:
+        # Load the WSI image.
+        image = read_wsi(example_data, image_size=args.roi)
+
+        # Get multi-scales for the input image.
+        multiscale_images = [
+            image,
+            read_wsi(example_data, image_size=args.roi, scale=(int(image.shape[0] / 2), 0)),
+            read_wsi(example_data, image_size=args.roi, scale=(int(image.shape[0] / 4), 0)),
+            read_wsi(example_data, image_size=args.roi, scale=(int(image.shape[0] / 8), 0)),
+        ]
+
+        import napari
+        v = napari.Viewer()
+        v.add_image(multiscale_images, name="Input Image")
+        napari.run()
+
+    return example_data
