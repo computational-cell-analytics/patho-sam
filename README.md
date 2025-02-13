@@ -51,5 +51,5 @@ See the [examples](./examples/) folder for more details.
 
 If you are using this repository in your research please cite:
 - [Our preprint](https://doi.org/10.48550/arXiv.2502.00408).
-- the [Segment Anything for Microscopy](https://doi.org/10.1101/2023.08.21.554208) publication.
+- the [Segment Anything for Microscopy](https://www.nature.com/articles/s41592-024-02580-4) publication.
 - And the original [Segment Anything](https://arxiv.org/abs/2304.02643) publication.
