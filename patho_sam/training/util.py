@@ -8,24 +8,16 @@ from torch_em.data.datasets.light_microscopy.neurips_cell_seg import to_rgb
 
 CLASS_MAP = {
     'puma': {
-        1: 3,
         2: 1,
-        3: 2,
-        4: 2,
-        5: 2,
-        6: 2,
-        7: 2,
-        8: 3,
-        9: 5,
+        3: 2, 4: 2, 5: 2, 6: 2, 7: 2,
+        1: 3, 8: 3,
         10: 4,
+        9: 5,
     },
     'conic': {
-        1: 2,
-        2: 5,  # this is somewhat controversial; in colon cancer, many (often most) epithelial cells are neoplastic 
-        3: 2,
-        4: 2,
-        5: 2,
+        1: 2, 3: 2, 4: 2, 5: 2,
         6: 3,
+        2: 5,  # this is somewhat controversial; in colon cancer, many (often most) epithelial cells are neoplastic
     }
 }
 
@@ -91,19 +83,26 @@ def get_train_val_split(
     return train_ds, val_ds
 
 
-def remap_puma(y):
-    max_key = max(CLASS_MAP['puma'].keys())
-    lookup_array = np.zeros(max_key + 1, dtype=np.int32)
-    for old_id, new_id in CLASS_MAP['puma'].items():
-        lookup_array[old_id] = new_id
-    remapped_label = np.take(lookup_array, y)
-    return remapped_label
+def remap_labels(y: np.ndarray, name: str) -> np.ndarray:
+    """Maps the labels to overall meta classes, to match the
+    semantic class structure of PanNuke dataset.
 
+    Args:
+        y: The original semantic label.
+        name: The name of target dataset to remap original class ids to PanNuke class ids.
 
-def remap_conic(y):
-    max_key = max(CLASS_MAP['conic'].keys())
-    lookup_array = np.zeros(max_key + 1, dtype=np.int32)
-    for old_id, new_id in CLASS_MAP['conic'].items():
-        lookup_array[old_id] = new_id
-    remapped_label = np.take(lookup_array, y)
-    return remapped_label
+    Returns:
+        The remapped labels.
+    """
+    if name not in CLASS_MAP:
+        raise ValueError(f"The chosen dataset '{name}' is not supported.")
+
+    # Get the class id map.
+    mapping = CLASS_MAP[name]
+
+    # Remap the labels.
+    y_remapped = y.copy()
+    for k, v in mapping.items():
+        y_remapped[y_remapped == k] = v
+
+    return y

@@ -1,8 +1,8 @@
 import os
+from functools import partial
 from collections import OrderedDict
 
 import torch
-import torch.utils.data as data_util
 
 import torch_em
 from torch_em.data import MinTwoInstanceSampler, ConcatDataset
@@ -11,13 +11,14 @@ from torch_em.data.datasets import get_pannuke_dataset, get_puma_dataset, get_co
 import micro_sam.training as sam_training
 from micro_sam.instance_segmentation import get_unetr
 
-from patho_sam.training import SemanticInstanceTrainer, remap_puma, remap_conic
+from patho_sam.training.util import remap_labels
+from patho_sam.training import SemanticInstanceTrainer, get_train_val_split
 
 
 def get_dataloaders(patch_shape, data_path):
-    """This returns the PanNuke data loaders implemented in `torch-em`.
-    https://github.com/constantinpape/torch-em/blob/main/torch_em/data/datasets/histopathology/pannuke.py
-    It will automatically download the PanNuke data.
+    """This returns the data loaders implemented in `torch-em`.
+    https://github.com/constantinpape/torch-em/blob/main/torch_em/data/datasets/histopathology/
+    It will automatically download all the histopathology datasets used here.
 
     NOTE: To replace this with another data loader, you need to return a torch data loader
     that returns `x, y` tensors, where `x` is the image adta and `y` are corresponding labels.
@@ -29,6 +30,7 @@ def get_dataloaders(patch_shape, data_path):
     sampler = MinTwoInstanceSampler()
     label_dtype = torch.float32
 
+    # PanNuke dataset
     pannuke_ds = get_pannuke_dataset(
         path=os.path.join(data_path, "pannuke"),
         patch_shape=patch_shape,
@@ -41,30 +43,22 @@ def get_dataloaders(patch_shape, data_path):
         download=True,
     )
 
-    puma_train_ds = get_puma_dataset(
-        path=os.path.join(data_path, "puma"),
-        patch_shape=patch_shape,
-        split="train",
-        label_choice="semantic",
-        sampler=sampler,
-        label_dtype=label_dtype,
-        label_transform=remap_puma,
-        raw_transform=raw_transform,
-        download=True,
-    )
+    # PUMA dataset.
+    def _get_puma_ds(split):
+        return get_puma_dataset(
+            path=os.path.join(data_path, "puma"),
+            patch_shape=patch_shape,
+            split="train",
+            label_choice="semantic",
+            sampler=sampler,
+            label_dtype=label_dtype,
+            label_transform=partial(remap_labels, name="puma"),
+            raw_transform=raw_transform,
+            download=True,
+        )
 
-    puma_val_ds = get_puma_dataset(
-        path=os.path.join(data_path, "puma"),
-        patch_shape=patch_shape,
-        split="val",
-        label_choice="semantic",
-        sampler=sampler,
-        label_dtype=label_dtype,
-        label_transform=remap_puma,
-        raw_transform=raw_transform,
-        download=True,
-    )
-
+    # CONIC dataset
+    # TODO: Need to decide if we use this at all.
     conic_ds = get_conic_dataset(
         path=os.path.join(data_path, "conic"),
         patch_shape=patch_shape,
@@ -72,41 +66,40 @@ def get_dataloaders(patch_shape, data_path):
         label_choice="semantic",
         sampler=sampler,
         label_dtype=label_dtype,
-        label_transform=remap_conic,
+        label_transform=partial(remap_labels, name="conic"),
         raw_transform=raw_transform,
         download=True
     )
 
-    # Create custom splits.
-    generator = torch.Generator().manual_seed(42)
-    pannuke_train_ds, pannuke_val_ds = data_util.random_split(pannuke_ds, [0.8, 0.2], generator=generator)
-    conic_train_ds, conic_val_ds = data_util.random_split(conic_ds, [0.8, 0.2], generator=generator)
-    _train_datasets = [pannuke_train_ds, puma_train_ds, conic_train_ds]
-    _val_datasets = [pannuke_val_ds, puma_val_ds, conic_val_ds]
+    # Create custom splits for PanNuke and CONIC.
+    pannuke_train_ds, pannuke_val_ds = get_train_val_split(ds=pannuke_ds)
+    conic_train_ds, conic_val_ds = get_train_val_split(ds=conic_ds)
 
-    generalist_train_ds = ConcatDataset(*_train_datasets)
-    generalist_val_ds = ConcatDataset(*_val_datasets)
+    # Create a concatenation of all datasets.
+    _train_datasets = [pannuke_train_ds, _get_puma_ds("train"), conic_train_ds]
+    train_ds = ConcatDataset(*_train_datasets)
+
+    _val_datasets = [pannuke_val_ds, _get_puma_ds("val"), conic_val_ds]
+    val_ds = ConcatDataset(*_val_datasets)
 
     # Get the dataloaders.
-    train_loader = torch_em.get_data_loader(generalist_train_ds, batch_size=8, shuffle=True, num_workers=16)
-    val_loader = torch_em.get_data_loader(generalist_val_ds, batch_size=1, shuffle=True, num_workers=16)
+    train_loader = torch_em.get_data_loader(train_ds, batch_size=8, shuffle=True, num_workers=16)
+    val_loader = torch_em.get_data_loader(val_ds, batch_size=1, shuffle=True, num_workers=16)
 
     return train_loader, val_loader
 
 
-def train_pannuke_semantic_segmentation(args):
-    """Code for semantic instance segmentation for PanNuke data.
+def train_semantic_segmentation_generalist(args):
+    """Code for semantic segmentation for multiple histopathology datasets.
     """
     # Hyperparameters for training
     model_type = args.model_type
-    num_classes = 6  # available classes are [0, 1, 2, 3, 4, 5]
+    num_classes = 6  # available classes are [0, 1, 2, 3, 4, 5]  # TODO: revisit this?
     checkpoint_path = args.checkpoint_path
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    checkpoint_name = f"{model_type}/pannuke_semantic"
+    checkpoint_name = f"{model_type}/generalist_semantic"
 
-    train_loader, val_loader = get_dataloaders(
-        patch_shape=(1, 512, 512), data_path=args.input_path
-    )
+    train_loader, val_loader = get_dataloaders(patch_shape=(1, 512, 512), data_path=args.input_path)
 
     # Whether we opt for finetuning decoder only or finetune the entire backbone.
     if args.decoder_only:
@@ -129,7 +122,6 @@ def train_pannuke_semantic_segmentation(args):
             [(k, v) for k, v in state["decoder_state"].items() if not k.startswith("out_conv.")]
         )
         checkpoint_name += "-from_pretrained"
-
     else:
         decoder_state = None
         checkpoint_name += "-from_scratch"
@@ -171,7 +163,7 @@ def train_pannuke_semantic_segmentation(args):
 
 
 def main(args):
-    train_pannuke_semantic_segmentation(args)
+    train_semantic_segmentation_generalist(args)
 
 
 if __name__ == "__main__":

@@ -8,7 +8,8 @@ import imageio.v3 as imageio
 from torch_em.data.datasets import histopathology
 from patho_sam.training import remap_conic, remap_puma
 
-def get_dataset_paths(data_path, dataset) -> list:
+
+def get_dataset_paths(data_path, dataset):
     cached_images = os.path.join(data_path, "loaded_images")
     cached_labels = os.path.join(data_path, "loaded_labels")
     os.makedirs(cached_images, exist_ok=True)
@@ -24,6 +25,7 @@ def get_dataset_paths(data_path, dataset) -> list:
             labels = file['labels/semantic']
             images = images[:]
             labels = labels[:]
+
             # CONIC is provided in an array of shape (C, B, H, W)
             images = images.transpose(1, 2, 3, 0)  # --> (B, H, W, C)
             counter = 1
@@ -31,6 +33,7 @@ def get_dataset_paths(data_path, dataset) -> list:
                 image_path = os.path.join(cached_images, f"{counter:04}.tiff")
                 label_path = os.path.join(cached_labels, f"{counter:04}.tiff")
                 label = remap_conic(label)
+
                 assert image.shape == (256, 256, 3)
                 imageio.imwrite(image_path, image)
                 imageio.imwrite(label_path, label)
