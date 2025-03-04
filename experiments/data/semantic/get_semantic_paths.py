@@ -6,7 +6,7 @@ import h5py
 import imageio.v3 as imageio
 
 from torch_em.data.datasets import histopathology
-
+from patho_sam.training import remap_conic, remap_puma
 
 def get_dataset_paths(data_path, dataset) -> list:
     cached_images = os.path.join(data_path, "loaded_images")
@@ -26,12 +26,11 @@ def get_dataset_paths(data_path, dataset) -> list:
             labels = labels[:]
             # CONIC is provided in an array of shape (C, B, H, W)
             images = images.transpose(1, 2, 3, 0)  # --> (B, H, W, C)
-            print(images.shape, labels.shape)
             counter = 1
             for image, label in zip(images, labels):
                 image_path = os.path.join(cached_images, f"{counter:04}.tiff")
                 label_path = os.path.join(cached_labels, f"{counter:04}.tiff")
-
+                label = remap_conic(label)
                 assert image.shape == (256, 256, 3)
                 imageio.imwrite(image_path, image)
                 imageio.imwrite(label_path, label)
@@ -46,7 +45,7 @@ def get_dataset_paths(data_path, dataset) -> list:
         for h5_path in data_paths:
             with h5py.File(h5_path, 'r') as file:
                 images = file['images']
-                labels = file['labels/instances']
+                labels = file['labels/semantic']
                 images = images[:]
                 labels = labels[:]
 
@@ -72,11 +71,11 @@ def get_dataset_paths(data_path, dataset) -> list:
         for h5_path in data_paths:
             with h5py.File(h5_path, 'r') as file:
                 img = file['raw']
-                label = file['labels/nuclei/semantic']
+                label = file['labels/semantic/nuclei']
                 img = img[:]
                 label = label[:]
                 image = img.transpose(1, 2, 0)
-
+                label = remap_puma(label)
                 img_path = os.path.join(
                     cached_images, os.path.basename(h5_path).replace(".h5", ".tiff"))
                 label_path = os.path.join(
