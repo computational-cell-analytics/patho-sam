@@ -21,7 +21,7 @@ def get_dataloaders(patch_shape, data_path):
     It will automatically download all the histopathology datasets used here.
 
     NOTE: To replace this with another data loader, you need to return a torch data loader
-    that returns `x, y` tensors, where `x` is the image adta and `y` are corresponding labels.
+    that returns `x, y` tensors, where `x` is the image data and `y` are corresponding labels.
     The labels have to be in a label mask semantic segmentation format.
     i.e. a tensor of the same spatial shape as `x`, with semantic labels for objects.
     Important: the ID 0 is reserved for background and ensure you have all semantic classes.
