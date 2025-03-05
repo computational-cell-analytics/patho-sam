@@ -5,14 +5,14 @@ from collections import OrderedDict
 import torch
 
 import torch_em
+from torch_em.data import datasets
 from torch_em.data import MinTwoInstanceSampler, ConcatDataset
-from torch_em.data.datasets import get_pannuke_dataset, get_puma_dataset, get_conic_dataset
 
 import micro_sam.training as sam_training
 from micro_sam.instance_segmentation import get_unetr
 
-from patho_sam.training.util import remap_labels
 from patho_sam.training import SemanticInstanceTrainer, get_train_val_split
+from patho_sam.training.util import remap_labels, calculate_class_weights_for_loss_weighting
 
 
 def get_dataloaders(patch_shape, data_path):
@@ -31,7 +31,7 @@ def get_dataloaders(patch_shape, data_path):
     label_dtype = torch.float32
 
     # PanNuke dataset
-    pannuke_ds = get_pannuke_dataset(
+    pannuke_ds = datasets.get_pannuke_dataset(
         path=os.path.join(data_path, "pannuke"),
         patch_shape=(1, *patch_shape),
         ndim=2,
@@ -45,10 +45,10 @@ def get_dataloaders(patch_shape, data_path):
 
     # PUMA dataset.
     def _get_puma_ds(split):
-        return get_puma_dataset(
+        return datasets.get_puma_dataset(
             path=os.path.join(data_path, "puma"),
             patch_shape=patch_shape,
-            split="train",
+            split=split,
             label_choice="semantic",
             sampler=sampler,
             label_dtype=label_dtype,
@@ -57,29 +57,14 @@ def get_dataloaders(patch_shape, data_path):
             download=True,
         )
 
-    # CONIC dataset
-    # TODO: Need to decide if we use this at all.
-    conic_ds = get_conic_dataset(
-        path=os.path.join(data_path, "conic"),
-        patch_shape=(1, *patch_shape),
-        split="train",
-        label_choice="semantic",
-        sampler=sampler,
-        label_dtype=label_dtype,
-        label_transform=partial(remap_labels, name="conic"),
-        raw_transform=raw_transform,
-        download=True,
-    )
-
-    # Create custom splits for PanNuke and CONIC.
+    # Create custom splits for PanNuke.
     pannuke_train_ds, pannuke_val_ds = get_train_val_split(ds=pannuke_ds)
-    conic_train_ds, conic_val_ds = get_train_val_split(ds=conic_ds)
 
     # Create a concatenation of all datasets.
-    _train_datasets = [_get_puma_ds("train"), pannuke_train_ds, conic_train_ds]
+    _train_datasets = [_get_puma_ds("train"), pannuke_train_ds]
     train_ds = ConcatDataset(*_train_datasets)
 
-    _val_datasets = [_get_puma_ds("val"), pannuke_val_ds, conic_val_ds]
+    _val_datasets = [_get_puma_ds("val"), pannuke_val_ds]
     val_ds = ConcatDataset(*_val_datasets)
 
     # Get the dataloaders.
@@ -94,7 +79,7 @@ def train_semantic_segmentation_generalist(args):
     """
     # Hyperparameters for training
     model_type = args.model_type
-    num_classes = 6  # available classes are [0, 1, 2, 3, 4, 5]  # TODO: revisit this?
+    num_classes = 6  # available classes are [0, 1, 2, 3, 4, 5]
     checkpoint_path = args.checkpoint_path
     device = "cuda" if torch.cuda.is_available() else "cpu"
     checkpoint_name = f"{model_type}/generalist_semantic"
@@ -158,6 +143,7 @@ def train_semantic_segmentation_generalist(args):
         convert_inputs=convert_inputs,
         num_classes=num_classes,
         dice_weight=0,
+        class_weights=calculate_class_weights_for_loss_weighting(),
     )
     trainer.fit(iterations=int(args.iterations), overwrite_training=False)
 
