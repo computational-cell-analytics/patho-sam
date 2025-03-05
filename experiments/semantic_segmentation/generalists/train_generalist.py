@@ -33,7 +33,7 @@ def get_dataloaders(patch_shape, data_path):
     # PanNuke dataset
     pannuke_ds = get_pannuke_dataset(
         path=os.path.join(data_path, "pannuke"),
-        patch_shape=patch_shape,
+        patch_shape=(1, *patch_shape),
         ndim=2,
         folds=["fold_1", "fold_2"],
         custom_label_choice="semantic",
@@ -61,14 +61,14 @@ def get_dataloaders(patch_shape, data_path):
     # TODO: Need to decide if we use this at all.
     conic_ds = get_conic_dataset(
         path=os.path.join(data_path, "conic"),
-        patch_shape=patch_shape,
+        patch_shape=(1, *patch_shape),
         split="train",
         label_choice="semantic",
         sampler=sampler,
         label_dtype=label_dtype,
         label_transform=partial(remap_labels, name="conic"),
         raw_transform=raw_transform,
-        download=True
+        download=True,
     )
 
     # Create custom splits for PanNuke and CONIC.
@@ -76,10 +76,10 @@ def get_dataloaders(patch_shape, data_path):
     conic_train_ds, conic_val_ds = get_train_val_split(ds=conic_ds)
 
     # Create a concatenation of all datasets.
-    _train_datasets = [pannuke_train_ds, _get_puma_ds("train"), conic_train_ds]
+    _train_datasets = [_get_puma_ds("train"), pannuke_train_ds, conic_train_ds]
     train_ds = ConcatDataset(*_train_datasets)
 
-    _val_datasets = [pannuke_val_ds, _get_puma_ds("val"), conic_val_ds]
+    _val_datasets = [_get_puma_ds("val"), pannuke_val_ds, conic_val_ds]
     val_ds = ConcatDataset(*_val_datasets)
 
     # Get the dataloaders.
@@ -99,7 +99,7 @@ def train_semantic_segmentation_generalist(args):
     device = "cuda" if torch.cuda.is_available() else "cpu"
     checkpoint_name = f"{model_type}/generalist_semantic"
 
-    train_loader, val_loader = get_dataloaders(patch_shape=(1, 512, 512), data_path=args.input_path)
+    train_loader, val_loader = get_dataloaders(patch_shape=(512, 512), data_path=args.input_path)
 
     # Whether we opt for finetuning decoder only or finetune the entire backbone.
     if args.decoder_only:
