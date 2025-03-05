@@ -101,8 +101,7 @@ def remap_labels(y: np.ndarray, name: str) -> np.ndarray:
     mapping = CLASS_MAP[name]
 
     # Remap the labels.
-    y_remapped = y.copy()
-    for k, v in mapping.items():
-        y_remapped[y_remapped == k] = v
-
-    return y
+    # NOTE: We go with this remapping to make sure that each ids are mapped to the exact values.
+    per_id_lookup_array = np.array([mapping.get(i, 0) for i in range(max(mapping) + 1)], dtype=np.int32)
+    y_remapped = per_id_lookup_array[y]
+    return y_remapped
