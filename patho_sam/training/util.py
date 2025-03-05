@@ -6,6 +6,7 @@ import torch.utils.data as data_util
 
 from torch_em.data.datasets.light_microscopy.neurips_cell_seg import to_rgb
 
+
 CLASS_MAP = {
     'puma': {
         2: 1,
@@ -14,11 +15,6 @@ CLASS_MAP = {
         10: 4,
         9: 5,
     },
-    'conic': {
-        1: 2, 3: 2, 4: 2, 5: 2,
-        6: 3,
-        2: 5,  # this is somewhat controversial; in colon cancer, many (often most) epithelial cells are neoplastic
-    }
 }
 
 CLASS_DICT = {
@@ -41,14 +37,6 @@ CLASS_DICT = {
         "dead cells": 4,
         "epithelial": 5,
     },
-    'conic': {
-        "neutrophil": 1,
-        "epithelial": 2,
-        "lymphocyte": 3,
-        "plasma": 4,
-        "eosinophil": 5,
-        "connective": 6,
-    }
 }
 
 

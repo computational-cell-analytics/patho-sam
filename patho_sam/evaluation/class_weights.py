@@ -14,7 +14,6 @@ from ..training.util import CLASS_DICT
 LABEL_KEYS = {
     'pannuke': {'semantic': 'labels/semantic', 'instance': 'labels/instances'},
     'puma': {'semantic': 'labels/semantic/nuclei', 'instance': 'labels/instance/nuclei'},
-    'conic': {'semantic': 'labels/semantic', 'instance': 'labels/instance'},
 }
 
 
@@ -37,7 +36,6 @@ def extract_class_weights(
     # Get the input filepaths
     _get_dataset = {
         "puma": lambda: histopathology.puma.get_puma_paths(path=path, split="train", download=True),
-        "conic": lambda: histopathology.conic.get_conic_paths(path=path, split="train"),
         "pannuke": lambda: histopathology.pannuke.get_pannuke_paths(
             path=path, folds=["fold_1", "fold_2"], download=True,
         )
