@@ -212,7 +212,7 @@ def main():
     parser = argparse.ArgumentParser(description="Run automatic segmentation for a whole-slide image (WSI).")
     parser.add_argument(
         "-i", "--input_path", required=True,
-        help="The filepath to the image data. Supports all data types that can be read by imageio (eg. 'tif', 'png', ...) "
+        help="The filepath to image data. Supports all data types that can be read by imageio (eg. 'tif', 'png', ...) "
         "or slideio (eg. 'svs', 'scn', 'czi', 'zvi', 'ndpi', 'vsi', 'qptiff' and other 'gdal' formats)."
     )
     parser.add_argument(
@@ -288,11 +288,10 @@ def main():
     # Get the times in hour:min:sec format.
     hours = int(elapsed_time // 3600)
     minutes = int((elapsed_time % 3600) // 60)
-    seconds = elapsed_time % 60
+    seconds = int(elapsed_time % 60)
 
     print(
-        f"The automatic segmentation for '{(os.path.abspathargs.input_path)}' "
-        f"took: {hours:02d}:{minutes:02d}:{seconds:06.3f}"
+        f"The automatic segmentation took: {hours:02d}:{minutes:02d}:{seconds:02d} hours."
     )
 
 
