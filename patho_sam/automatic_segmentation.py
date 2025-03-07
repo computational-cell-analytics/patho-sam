@@ -1,4 +1,5 @@
 import os
+import time
 from pathlib import Path
 from typing import Optional, Union, Literal, Tuple
 
@@ -211,8 +212,8 @@ def main():
     parser = argparse.ArgumentParser(description="Run automatic segmentation for a whole-slide image (WSI).")
     parser.add_argument(
         "-i", "--input_path", required=True,
-        help="The filepath to the image data. Supports all data types that can be read by imageio (eg. tif, png, ...) "
-        "or slideio (eg. svs, scn, czi, zvi, ndpi, vsi, qptiff and other gdal formats)."
+        help="The filepath to the image data. Supports all data types that can be read by imageio (eg. 'tif', 'png', ...) "
+        "or slideio (eg. 'svs', 'scn', 'czi', 'zvi', 'ndpi', 'vsi', 'qptiff' and other 'gdal' formats)."
     )
     parser.add_argument(
         "--roi", nargs="+", type=int, default=None,
@@ -261,6 +262,9 @@ def main():
 
     args = parser.parse_args()
 
+    # Start timing the automatic segmentation process.
+    start_time = time.time()
+
     automatic_segmentation_wsi(
         input_image=args.input_path,
         model_type=args.model_type,
@@ -274,6 +278,21 @@ def main():
         output_choice=args.output_choice,
         verbose=args.verbose,
         view=args.view,
+    )
+
+    # Calculate the end time of the process.
+    end_time = time.time()
+
+    elapsed_time = end_time - start_time
+
+    # Get the times in hour:min:sec format.
+    hours = int(elapsed_time // 3600)
+    minutes = int((elapsed_time % 3600) // 60)
+    seconds = elapsed_time % 60
+
+    print(
+        f"The automatic segmentation for '{(os.path.abspathargs.input_path)}' "
+        f"took: {hours:02d}:{minutes:02d}:{seconds:06.3f}"
     )
 
 
