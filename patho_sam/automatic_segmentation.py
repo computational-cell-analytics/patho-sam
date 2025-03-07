@@ -242,7 +242,7 @@ def main():
     )
     parser.add_argument(
         "--halo", nargs="+", type=int, default=(64, 64),
-        help="The halo for using tiled prediction. You can provide the halo shape as: '--halo 64 64'.",
+        help="The overlap shape for using tiled prediction. You can provide the overlap shape as: '--halo 64 64'.",
     )
     parser.add_argument(
         "--output_choice", type=str, default="instances",
