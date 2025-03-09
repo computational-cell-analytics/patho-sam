@@ -16,15 +16,13 @@ How to install `patho_sam` python library from source:
 
 We recommend to first setup an environment with the necessary requirements:
 
-- `environment.yaml`: to set up an environment on Linux or Mac OS.
-- `environment_cpu_win.yaml`: to set up an environment on Windows with CPU support.
-- `environment_gpu_win.yaml`: to set up an environment on Windows with GPU support.
+- `environment.yaml`: to set up an environment on any platform.
 
 To create one of these environments and install `patho_sam` into it follow these steps:
 
 1. Clone the repository: `git clone https://github.com/computational-cell-analytics/patho-sam`
 2. Enter it: `cd patho-sam`
-3. Create the respective environment: `conda env create -f <ENV_FILE>.yaml`
+3. Create the respective environment: `conda env create -f environment.yaml`
 4. Activate the environment: `conda activate patho-sam`
 5. Install `patho_sam`: `pip install -e .`
 
