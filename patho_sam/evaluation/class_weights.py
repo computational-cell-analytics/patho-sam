@@ -18,9 +18,7 @@ LABEL_KEYS = {
 
 
 def extract_class_weights(
-    path: Union[os.PathLike, str],
-    dataset: Optional[str] = None,
-    output_path: Optional[Union[os.PathLike, str]] = None,
+    path: Union[os.PathLike, str], dataset: Optional[str] = None, output_path: Optional[Union[os.PathLike, str]] = None,
 ) -> List:
     """Extract class weights per semantic class.
 

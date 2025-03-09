@@ -22,7 +22,7 @@ def export_semantic_segmentation_decoder(
 
     Args:
         checkpoint_path: Filepath to the trained semantic segmentation checkpoint.
-        save_path: Filepath where the decoder weights will be stored.    
+        save_path: Filepath where the decoder weights will be stored.
     """
     # Load the model state from finetuned checkpoint.
     model_state = torch.load(checkpoint_path, map_location="cpu")["model_state"]
