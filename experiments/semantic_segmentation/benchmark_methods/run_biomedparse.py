@@ -5,6 +5,7 @@ from natsort import natsorted
 
 import numpy as np
 import pandas as pd
+import imageio.v3 as imageio
 
 from tukra.io import read_image
 from tukra.inference import get_biomedparse
@@ -23,7 +24,8 @@ MAPPING = {
 }
 
 
-def evaluate_biomedparse_for_pannuke():
+def evaluate_biomedparse_for_histopathology(dataset):
+
     # Other stuff for biomedparse
     modality = "Pathology"  # choice of modality to determine the semantic targets.
     model = get_biomedparse.get_biomedparse_model()  # get the biomedparse model.
@@ -34,8 +36,14 @@ def evaluate_biomedparse_for_pannuke():
     per_class_weights = extract_class_weights_for_pannuke(fpath=fpath)
 
     # Get the inputs and corresponding labels.
-    image_paths = natsorted(glob(os.path.join(ROOT, "semantic_split", "test_images", "*.tiff")))
-    gt_paths = natsorted(glob(os.path.join(ROOT, "semantic_split", "test_labels", "*.tiff")))
+    image_paths = natsorted(glob(os.path.join(ROOT, dataset, "test_images", "*.tiff")))
+    gt_paths = natsorted(glob(os.path.join(ROOT, dataset, "test_labels", "*.tiff")))
+
+    assert image_paths and len(image_paths) == len(gt_paths)
+
+    # Get results directory
+    result_dir = os.path.join(ROOT, "biomedparse", dataset)
+    os.makedirs(result_dir, exist_ok=True)
 
     sq_per_image = []
     for image_path, gt_path in tqdm(zip(image_paths, gt_paths), total=len(image_paths)):
@@ -67,6 +75,9 @@ def evaluate_biomedparse_for_pannuke():
         )
         sq_per_image.append(sq_score)
 
+        # Store the semantic segmentation results to avoid running them all the time.
+        imageio.imwrite(os.path.join(result_dir, os.path.basename(image_path)), semantic_seg, compression="zlib")
+
     def _get_average_results(sq_per_image, fname):
         msq_neoplastic_cells = np.nanmean([sq[0] for sq in sq_per_image])
         msq_inflammatory = np.nanmean([sq[1] for sq in sq_per_image])
@@ -96,7 +107,8 @@ def evaluate_biomedparse_for_pannuke():
 
 def main():
     # Run automatic (semantic) segmentation inference using biomedparse
-    evaluate_biomedparse_for_pannuke()
+    evaluate_biomedparse_for_histopathology("pannuke")
+    evaluate_biomedparse_for_histopathology("puma")
 
 
 if __name__ == "__main__":
