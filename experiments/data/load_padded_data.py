@@ -2,11 +2,12 @@ import os
 import shutil
 import argparse
 from tqdm import tqdm
-import imageio.v3 as imageio
-import numpy as np
 
-from get_paths import get_dataset_paths
+import numpy as np
+import imageio.v3 as imageio
+
 from util import DATASETS, PADDING_DS
+from get_paths import get_dataset_paths
 
 
 def load_datasets(path, datasets=DATASETS):

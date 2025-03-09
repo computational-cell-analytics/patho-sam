@@ -12,21 +12,7 @@ import imageio.v3 as imageio
 from micro_sam.util import get_sam_model
 
 
-ROOT = "/scratch/projects/nim00007/sam/data/"
-EXPERIMENT_ROOT = "/scratch/projects/nim00007/sam/experiments/new_models"
-
-VANILLA_MODELS = {
-    "vit_t": "/scratch-grete/projects/nim00007/sam/models/vanilla/vit_t_mobile_sam.pth",
-    "vit_b": "/scratch-grete/projects/nim00007/sam/models/vanilla/sam_vit_b_01ec64.pth",
-    "vit_l": "/scratch-grete/projects/nim00007/sam/models/vanilla/sam_vit_l_0b3195.pth",
-    "vit_h": "/scratch-grete/projects/nim00007/sam/models/vanilla/sam_vit_h_4b8939.pth",
-}
-
-PADDING_DS = [
-    "pannuke",
-    "srsanet",
-    "nuclick",
-]
+PADDING_DS = ["pannuke", "srsanet", "nuclick"]
 
 DATASETS = [
     "consep",
@@ -146,9 +132,6 @@ def create_val_split(
 
 
 def get_model(model_type, ckpt):
-    if ckpt is None:
-        ckpt = VANILLA_MODELS[model_type]
-
     predictor = get_sam_model(model_type=model_type, checkpoint_path=ckpt)
     return predictor
 
