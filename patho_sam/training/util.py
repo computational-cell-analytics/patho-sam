@@ -1,6 +1,7 @@
 from typing import Tuple, List
 
 import numpy as np
+
 import torch
 import torch.utils.data as data_util
 
@@ -62,6 +63,7 @@ def get_train_val_split(
     Args:
         dataset: The segmentation dataset.
         val_fraction: The fraction of split to decide for validation, and remanining for test.
+        seed: Setting a seed for your storage device for reproducibility.
 
     Returns:
         Tuple of train and val datasets.
@@ -110,8 +112,6 @@ def calculate_class_weights_for_loss_weighting(
 
     Args:
         foreground_class_weight: The ratio / frequency of foreground class weights.
-        include_background_weights: Computes equal weighting for background as the class
-            with maximum weight.
 
     Returns:
         The integer weighting for each class, including the background class.

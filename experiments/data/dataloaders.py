@@ -1,7 +1,7 @@
 import micro_sam.training as sam_training
 
-from torch_em.data import MinInstanceSampler
 from torch_em.data import datasets
+from torch_em.data import MinInstanceSampler
 
 
 def get_dataloaders(patch_shape, data_path, dataset):

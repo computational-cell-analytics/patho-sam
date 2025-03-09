@@ -1,12 +1,16 @@
 import os
 import argparse
-import torch
-import torch_em
 from glob import glob
 from natsort import natsorted
+
+import torch
+
+import torch_em
+
 import micro_sam.training as sam_training
 from micro_sam.util import export_custom_sam_model
-from torch_em.data import MinInstanceSampler, datasets
+
+from torch_em.data import MinInstanceSampler
 from torch_em.transform.label import PerObjectDistanceTransform
 
 from patho_sam.training import histopathology_identity

@@ -1,7 +1,7 @@
 import os
 import shutil
-import subprocess
 import argparse
+import subprocess
 
 
 def run_inference(input_dir, output_dir, model_type, dataset, model_name, checkpoint_path, use_masks):

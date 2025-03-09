@@ -2,10 +2,11 @@ import os
 import shutil
 import argparse
 from tqdm import tqdm
+
 import imageio.v3 as imageio
 
-from get_paths import get_dataset_paths
 from util import DATASETS
+from get_paths import get_dataset_paths
 
 
 def load_datasets(path, datasets=DATASETS):

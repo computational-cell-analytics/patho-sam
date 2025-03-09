@@ -2,6 +2,7 @@ import os
 
 import torch
 import torch.utils.data as data_util
+
 import torch_em
 from torch_em.data import ConcatDataset, MinInstanceSampler, datasets
 from torch_em.transform.label import PerObjectDistanceTransform

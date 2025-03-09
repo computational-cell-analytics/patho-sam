@@ -1,7 +1,7 @@
 import os
 import shutil
-import subprocess
 import argparse
+import subprocess
 
 from util import TILING_WINDOW_DS, PADDING_DS
 
