@@ -33,6 +33,7 @@ def automatic_segmentation_wsi(
     embedding_path: Optional[Union[str, os.PathLike]] = None,
     device: Optional[Union[str, torch.device]] = None,
     output_choice: Literal["instances", "semantic", "all"] = "instances",
+    batch_size: int = 1,
     verbose: bool = False,
     view: bool = False,
 ) -> np.ndarray:
@@ -48,6 +49,7 @@ def automatic_segmentation_wsi(
         embedding_path: The filepath where the precomputed embeddings are cached.
         device: The device to run automatic segmentation on.
         output_choice: The choice of outputs. Either 'instances' / 'semantic' / 'all'.
+        batch_size: The batch size to compute image embeddings over tiles.
         verbose: Whether to allow verbosity of all processes.
         view: Whether to visualize the segmentations in napari.
 
@@ -120,6 +122,7 @@ def automatic_segmentation_wsi(
                 verbose=verbose,
                 output_mode=None,  # Skips some post-processing under `generate` method after automatic seg.
                 return_embeddings=True,  # Returns image embeddings, can be used in the task below, i.e. semantic seg.
+                batch_size=batch_size,
             )
             print("The instance segmentation results have been computed.")
 
@@ -146,6 +149,7 @@ def automatic_segmentation_wsi(
                     tile_shape=tile_shape,
                     halo=halo,
                     verbose=verbose,
+                    batch_size=batch_size,
                 )
 
             segmenter.initialize(
@@ -259,6 +263,10 @@ def main():
         help="The device to use for the predictor. Can be one of 'cuda', 'cpu' or 'mps' (only MAC)."
         "By default the most performant available device will be selected."
     )
+    parser.add_argument(
+        "--batch_size", type=int, default=1,
+        help="The batch size for computing image embeddings with tiling. By default, set to 1."
+    )
 
     args = parser.parse_args()
 
@@ -278,6 +286,7 @@ def main():
         output_choice=args.output_choice,
         verbose=args.verbose,
         view=args.view,
+        batch_size=args.batch_size,
     )
 
     # Calculate the end time of the process.
@@ -290,9 +299,7 @@ def main():
     minutes = int((elapsed_time % 3600) // 60)
     seconds = int(elapsed_time % 60)
 
-    print(
-        f"The automatic segmentation took: {hours:02d}:{minutes:02d}:{seconds:02d} hours."
-    )
+    print(f"The automatic segmentation took: {hours:02d}:{minutes:02d}:{seconds:02d} hours.")
 
 
 if __name__ == "__main__":
