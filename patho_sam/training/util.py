@@ -6,7 +6,7 @@ import torch
 import torch.utils.data as data_util
 
 from torch_em.data.datasets.light_microscopy.neurips_cell_seg import to_rgb
-
+from torch_em import get_data_loader
 
 CLASS_MAP = {
     'puma': {
@@ -137,3 +137,42 @@ def calculate_class_weights_for_loss_weighting(
     final_weights_with_bg = [background_weight, *final_weights]
 
     return final_weights_with_bg
+
+
+def get_sampling_weights(dataset, gamma):
+    """ This class balancing approach is modified from CellViT (Hörst et al. 2024)
+    """
+    # The no. of patches containing the respective nuclei types over the whole dataset
+    binary_weight_factors = np.array([4191, 4132, 6140, 232, 1528])
+    k = np.sum(binary_weight_factors)
+
+    # This creates a list for each patch with 1 for nucleus type present, 0 for absent for all types
+    cell_counts = []
+    loader = get_data_loader(dataset, batch_size=1)
+    for _, label in loader:
+        label = label.numpy()
+        unique_classes = np.unique(label)
+        cell_counts.append([int(cell_type in unique_classes) for cell_type in range(1, 6)])
+
+    cell_counts_imgs = np.array(cell_counts)
+
+    weight_vector = k / (gamma * binary_weight_factors + (1 - gamma) * k)  # this computes the weight per class
+    img_weight = (1 - gamma) * np.max(cell_counts_imgs, axis=-1) + gamma * np.sum(
+        cell_counts_imgs * weight_vector, axis=-1
+    )
+    img_weight[np.where(img_weight == 0)] = np.min(
+        img_weight[np.nonzero(img_weight)]
+    )
+    return torch.Tensor(img_weight)
+
+
+def get_sampler(dataset, gamma: float = 1):
+    sampling_generator = torch.Generator().manual_seed(42)
+    pannuke_weights = get_sampling_weights(dataset, gamma)
+    sampler = data_util.WeightedRandomSampler(
+        weights=pannuke_weights,
+        replacement=True,
+        generator=sampling_generator,
+        num_samples=len(dataset),
+    )
+    return sampler
