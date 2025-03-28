@@ -12,9 +12,9 @@ Based on these components, `patho_sam` enables fast interactive and automatic an
 
 ## Installation
 
-How to install `patho_sam` python library from source:
+How to install `patho_sam` python library from source?
 
-To create one of these environments and install `patho_sam` into it follow these steps:
+To create the environment and install `patho_sam` into it follow these steps:
 
 1. Clone the repository: `git clone https://github.com/computational-cell-analytics/patho-sam`
 2. Enter it: `cd patho-sam`
