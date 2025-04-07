@@ -11,7 +11,7 @@ from torch_em.data.datasets import get_pannuke_dataset
 import micro_sam.training as sam_training
 from micro_sam.instance_segmentation import get_unetr
 
-from patho_sam.training import SemanticInstanceTrainer
+from patho_sam.training import SemanticInstanceTrainer, get_sampler
 
 
 def get_dataloaders(patch_shape, data_path):
@@ -40,14 +40,17 @@ def get_dataloaders(patch_shape, data_path):
         raw_transform=raw_transform,
         download=True,
     )
-
     # Create custom splits.
     generator = torch.Generator().manual_seed(42)
     train_dataset, val_dataset = data_util.random_split(dataset, [0.8, 0.2], generator=generator)
 
+    # Get the weighted samplers
+    train_sampler = get_sampler(train_dataset, gamma=1)
+    val_sampler = get_sampler(val_dataset, gamma=1)
+
     # Get the dataloaders.
-    train_loader = torch_em.get_data_loader(train_dataset, batch_size=8, shuffle=True, num_workers=16)
-    val_loader = torch_em.get_data_loader(val_dataset, batch_size=1, shuffle=True, num_workers=16)
+    train_loader = torch_em.get_data_loader(train_dataset, batch_size=8, num_workers=16, sampler=train_sampler)
+    val_loader = torch_em.get_data_loader(val_dataset, batch_size=1, num_workers=16, sampler=val_sampler)
 
     return train_loader, val_loader
 
