@@ -156,17 +156,22 @@ def get_sampling_weights(dataset, gamma):
 
     cell_counts_imgs = np.array(cell_counts)
 
-    weight_vector = k / (gamma * binary_weight_factors + (1 - gamma) * k)  # this computes the weight per class
+    # This creates a vector with the respective weight factor for each nucleus type
+    weight_vector = k / (gamma * binary_weight_factors + (1 - gamma) * k)
+
     img_weight = (1 - gamma) * np.max(cell_counts_imgs, axis=-1) + gamma * np.sum(
         cell_counts_imgs * weight_vector, axis=-1
     )
+
+    # This assigns the minimal non-zero sample weight to samples whose weight is 0
     img_weight[np.where(img_weight == 0)] = np.min(
         img_weight[np.nonzero(img_weight)]
     )
+
     return torch.Tensor(img_weight)
 
 
-def get_sampler(dataset, gamma: float = 1):
+def get_sampler(dataset, gamma: float = 1) -> data_util.Sampler:
     sampling_generator = torch.Generator().manual_seed(42)
     pannuke_weights = get_sampling_weights(dataset, gamma)
     sampler = data_util.WeightedRandomSampler(
