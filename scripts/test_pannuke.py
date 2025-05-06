@@ -49,6 +49,8 @@ def run_interactive_segmentation(input_path, experiment_folder, model_type, star
             if len(np.unique(label)) == 1:
                 continue
 
+            # NOTE: I am padding the image below to match the shape of inputs on which it is trained,
+            # for proper reproducibility (otherwise the results are slightly worse)
             image = _pad_image(image)
             label = _pad_image(label)
 
