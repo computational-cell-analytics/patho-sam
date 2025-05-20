@@ -103,7 +103,8 @@ def automatic_segmentation_wsi(
         # Run instance segmentation only if it is not saved already.
         if instances_save_path and os.path.exists(instances_save_path):
             instance_masks = imageio.imread(instances_save_path)
-            print(f"The instance segmentation results are already stored at '{instances_save_path}'.")
+            if verbose:
+                print(f"The instance segmentation results are already stored at '{instances_save_path}'.")
         else:
             # Get the predictor and segmenter for automatic instance segmentation.
             predictor, segmenter = get_predictor_and_segmenter(
@@ -128,7 +129,8 @@ def automatic_segmentation_wsi(
                 return_embeddings=True,  # Returns image embeddings, can be used in the task below, i.e. semantic seg.
                 batch_size=batch_size,
             )
-            print("The instance segmentation results have been computed.")
+            if verbose:
+                print("The instance segmentation results have been computed.")
 
     # 2. Run semantic segmentation.
     if output_choice != "instances":  # do semantic segmentation always besides "instances"-only as 'output_choice'.
@@ -140,7 +142,8 @@ def automatic_segmentation_wsi(
         # Run semantic segmentation only if it is not saved already.
         if semantic_save_path and os.path.exists(semantic_save_path):
             semantic_masks = imageio.imread(semantic_save_path)
-            print(f"The semantic segmentation results are already stored at '{semantic_save_path}'.")
+            if verbose:
+                print(f"The semantic segmentation results are already stored at '{semantic_save_path}'.")
         else:
             # Get the predictor and segmenter for automatic semantic segmentation.
             predictor, segmenter = get_semantic_predictor_and_segmenter(
@@ -171,7 +174,8 @@ def automatic_segmentation_wsi(
             # Store the results.
             if semantic_save_path:
                 imageio.imwrite(semantic_save_path, semantic_masks, compression="zlib")
-            print("The semantic segmentation results have been computed.")
+            if verbose:
+                print("The semantic segmentation results have been computed.")
 
     # Store all possible segmentations in the desired output filepath.
     segmentations = []
