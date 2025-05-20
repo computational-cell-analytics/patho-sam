@@ -95,11 +95,16 @@ def automatic_segmentation_wsi(
 
     # 1. Run automatic instance segmentation.
     if output_choice != "semantic":  # do instance segmentation always besides "semantic"-only as 'output_choice'.
-        instances_save_path = _add_suffix_to_output_path(output_path, roi_suffix + "_instances")
+        if output_path is None:
+            instances_save_path = None
+        else:
+            instances_save_path = _add_suffix_to_output_path(output_path, roi_suffix + "_instances")
+
         # Run instance segmentation only if it is not saved already.
-        if os.path.exists(instances_save_path):
+        if instances_save_path and os.path.exists(instances_save_path):
             instance_masks = imageio.imread(instances_save_path)
-            print(f"The instance segmentation results are already stored at '{instances_save_path}'.")
+            if verbose:
+                print(f"The instance segmentation results are already stored at '{instances_save_path}'.")
         else:
             # Get the predictor and segmenter for automatic instance segmentation.
             predictor, segmenter = get_predictor_and_segmenter(
@@ -107,7 +112,7 @@ def automatic_segmentation_wsi(
                 checkpoint=checkpoint_path,
                 device=device,
                 amg=False,  # i.e. run AIS.
-                is_tiled=True,  # i.e. run tiling-window based segmentation.
+                is_tiled=isinstance(tile_shape, Tuple),  # i.e. run tiling-window based segmentation.
             )
 
             instance_masks, image_embeddings = automatic_instance_segmentation(
@@ -124,19 +129,28 @@ def automatic_segmentation_wsi(
                 return_embeddings=True,  # Returns image embeddings, can be used in the task below, i.e. semantic seg.
                 batch_size=batch_size,
             )
-            print("The instance segmentation results have been computed.")
+            if verbose:
+                print("The instance segmentation results have been computed.")
 
     # 2. Run semantic segmentation.
     if output_choice != "instances":  # do semantic segmentation always besides "instances"-only as 'output_choice'.
-        semantic_save_path = _add_suffix_to_output_path(output_path, roi_suffix + "_semantic")
+        if output_path is None:
+            semantic_save_path = None
+        else:
+            semantic_save_path = _add_suffix_to_output_path(output_path, roi_suffix + "_semantic")
+
         # Run semantic segmentation only if it is not saved already.
-        if os.path.exists(semantic_save_path):
+        if semantic_save_path and os.path.exists(semantic_save_path):
             semantic_masks = imageio.imread(semantic_save_path)
-            print(f"The semantic segmentation results are already stored at '{semantic_save_path}'.")
+            if verbose:
+                print(f"The semantic segmentation results are already stored at '{semantic_save_path}'.")
         else:
             # Get the predictor and segmenter for automatic semantic segmentation.
             predictor, segmenter = get_semantic_predictor_and_segmenter(
-                model_type=model_type, checkpoint=checkpoint_path, device=device, is_tiled=True,
+                model_type=model_type,
+                checkpoint=checkpoint_path,
+                device=device,
+                is_tiled=isinstance(tile_shape, Tuple),    # i.e. run tiling-window based segmentation.
             )
 
             if image_embeddings is None:
@@ -158,8 +172,10 @@ def automatic_segmentation_wsi(
             semantic_masks = segmenter.generate()
 
             # Store the results.
-            imageio.imwrite(semantic_save_path, semantic_masks, compression="zlib")
-            print("The semantic segmentation results have been computed.")
+            if semantic_save_path:
+                imageio.imwrite(semantic_save_path, semantic_masks, compression="zlib")
+            if verbose:
+                print("The semantic segmentation results have been computed.")
 
     # Store all possible segmentations in the desired output filepath.
     segmentations = []
@@ -169,7 +185,8 @@ def automatic_segmentation_wsi(
         segmentations.append(semantic_masks)
 
     segmentations = np.stack(segmentations, axis=0).squeeze()
-    imageio.imwrite(_add_suffix_to_output_path(output_path, roi_suffix), segmentations, compression="zlib")
+    if output_path:
+        imageio.imwrite(_add_suffix_to_output_path(output_path, roi_suffix), segmentations, compression="zlib")
 
     if view:
         # Get multi-scales for the input image.
