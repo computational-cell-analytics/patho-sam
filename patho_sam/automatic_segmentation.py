@@ -150,7 +150,7 @@ def automatic_segmentation_wsi(
                 model_type=model_type,
                 checkpoint=checkpoint_path,
                 device=device,
-                is_tiled=isinstance(tile_shape, Tuple),    # i.e. run tiling-window based segmentation.
+                is_tiled=isinstance(tile_shape, Tuple),  # i.e. run tiling-window based segmentation.
             )
 
             if image_embeddings is None:
@@ -167,7 +167,12 @@ def automatic_segmentation_wsi(
                 )
 
             segmenter.initialize(
-                image=image, image_embeddings=image_embeddings, tile_shape=tile_shape, halo=halo, verbose=verbose,
+                image=image,
+                image_embeddings=image_embeddings,
+                tile_shape=tile_shape,
+                halo=halo,
+                verbose=verbose,
+                batch_size=batch_size,
             )
             semantic_masks = segmenter.generate()
 
@@ -332,7 +337,7 @@ def main():
 
     # NOTE:
     # 1) instances
-    #    encoder: 36:41, decoder: 8:46, post-processing: 46:32
+    #    encoder: 36:41, decoder: 8:46, post-processing: 01:05, total: 46:32
     # 2) semantic
     #    ...
     # 3) both

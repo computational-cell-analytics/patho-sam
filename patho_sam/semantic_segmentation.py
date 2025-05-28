@@ -173,6 +173,18 @@ class TiledSemanticSegmentationWithDecoder(SemanticSegmentationWithDecoder):
     """Same as `SemanticSegmentationWithDecoder` but for tiled image embeddings.
     """
 
+    # Apply the decoder in a batched fashion, and then perform the resizing independently per output.
+    # This is necessary, because the individual tiles may have different tile shapes due to border tiles.
+    def _predict_decoder(self, batched_embeddings, input_shapes, original_shapes):
+        batched_embeddings = torch.cat(batched_embeddings)
+        output = self._decoder._forward_impl(batched_embeddings)
+
+        batched_output = []
+        for x, input_shape, original_shape in zip(output, input_shapes, original_shapes):
+            x = self._decoder.postprocess_masks(x.unsqueeze(0), input_shape, original_shape).squeeze(0)
+            batched_output.append(x.cpu().numpy())
+        return batched_output
+
     @torch.no_grad()
     def initialize(
         self,
@@ -185,6 +197,7 @@ class TiledSemanticSegmentationWithDecoder(SemanticSegmentationWithDecoder):
         verbose: bool = False,
         pbar_init: Optional[callable] = None,
         pbar_update: Optional[callable] = None,
+        batch_size: int = 1,
     ) -> None:
         """Initialize image embeddings and decoder predictions for an image.
 
@@ -201,10 +214,11 @@ class TiledSemanticSegmentationWithDecoder(SemanticSegmentationWithDecoder):
                 Can be used together with pbar_update to handle napari progress bar in other thread.
                 To enables using this function within a threadworker.
             pbar_update: Callback to update an external progress bar.
+            batch_size: The batch size for image embedding computation and segmentation decoder prediction.
         """
         original_size = image.shape[:2]
         image_embeddings, tile_shape, halo = _process_tiled_embeddings(
-            self._predictor, image, image_embeddings, tile_shape, halo, verbose=verbose,
+            self._predictor, image, image_embeddings, tile_shape, halo, verbose=verbose, batch_size=batch_size,
         )
         tiling = blocking([0, 0], original_size, tile_shape)
 
@@ -213,32 +227,41 @@ class TiledSemanticSegmentationWithDecoder(SemanticSegmentationWithDecoder):
 
         semantic_segmentation = np.zeros(original_size, dtype="uint8")
 
-        for tile_id in range(tiling.numberOfBlocks):
+        n_tiles = tiling.numberOfBlocks
+        n_batches = int(np.ceil(n_tiles / batch_size))
 
-            # Get the image embeddings from the predictor for this tile.
-            self._predictor = util.set_precomputed(self._predictor, image_embeddings, i=i, tile_id=tile_id)
-            embeddings = self._predictor.features
-            input_shape = tuple(self._predictor.input_size)
-            original_shape = tuple(self._predictor.original_size)
+        for batch_id in range(n_batches):
+            tile_start = batch_id * batch_size
+            tile_stop = min(tile_start + batch_size, n_tiles)
 
-            # Run prediction with the UNETR decoder.
-            output = self._decoder(embeddings, input_shape, original_shape)
+            batched_embeddings, input_shapes, original_shapes = [], [], []
+            for tile_id in range(tile_start, tile_stop):
+                # Get the image embeddings from the predictor for this tile.
+                self._predictor = util.set_precomputed(self._predictor, image_embeddings, i=i, tile_id=tile_id)
 
-            assert output.shape[1] == num_classes, f"{output.shape}"
+                batched_embeddings.append(self._predictor.features)
+                input_shapes.append(tuple(self._predictor.input_size))
+                original_shapes.append(tuple(self._predictor.original_size))
 
-            # Get the per-class outputs into one valid mask.
-            output = torch.argmax(output, dim=1)
-            output = output.detach().cpu().numpy().squeeze()
+            batched_output = self._predict_decoder(batched_embeddings, input_shapes, original_shapes)
 
-            # Set the predictions in the output for this tile.
-            block = tiling.getBlockWithHalo(tile_id, halo=list(halo))
-            local_bb = tuple(
-                slice(beg, end) for beg, end in zip(block.innerBlockLocal.begin, block.innerBlockLocal.end)
-            )
-            inner_bb = tuple(slice(beg, end) for beg, end in zip(block.innerBlock.begin, block.innerBlock.end))
+            for output_id, tile_id in enumerate(range(tile_start, tile_stop)):
+                output = batched_output[output_id]
+                assert output.shape[0] == num_classes, f"{output.shape}"
 
-            semantic_segmentation[inner_bb] = output[local_bb]
-            pbar_update(1)
+                # Get the per-class outputs into one valid mask.
+                output = np.argmax(output, axis=0)
+                print(output.shape)
+
+                # Set the predictions in the output for this tile.
+                block = tiling.getBlockWithHalo(tile_id, halo=list(halo))
+                local_bb = tuple(
+                    slice(beg, end) for beg, end in zip(block.innerBlockLocal.begin, block.innerBlockLocal.end)
+                )
+                inner_bb = tuple(slice(beg, end) for beg, end in zip(block.innerBlock.begin, block.innerBlock.end))
+
+                semantic_segmentation[inner_bb] = output[local_bb]
+                pbar_update(1)
 
         pbar_close()
 
