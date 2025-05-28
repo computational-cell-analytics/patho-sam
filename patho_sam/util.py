@@ -92,16 +92,19 @@ def get_example_wsi_data():
     # Download the example WSI.
     example_data = fetch_wholeslide_histopathology_example_data(save_dir)
 
+    # Check the ROI and convert it to tuple, if provided by user.
+    roi = None if args.roi is None else tuple(args.roi)
+
     if args.view:
         # Load the WSI image.
-        image = read_wsi(example_data, image_size=args.roi)
+        image = read_wsi(example_data, image_size=roi)
 
         # Get multi-scales for the input image.
         multiscale_images = [
             image,
-            read_wsi(example_data, image_size=args.roi, scale=(int(image.shape[0] / 2), 0)),
-            read_wsi(example_data, image_size=args.roi, scale=(int(image.shape[0] / 4), 0)),
-            read_wsi(example_data, image_size=args.roi, scale=(int(image.shape[0] / 8), 0)),
+            read_wsi(example_data, image_size=roi, scale=(int(image.shape[0] / 2), 0)),
+            read_wsi(example_data, image_size=roi, scale=(int(image.shape[0] / 4), 0)),
+            read_wsi(example_data, image_size=roi, scale=(int(image.shape[0] / 8), 0)),
         ]
 
         import napari

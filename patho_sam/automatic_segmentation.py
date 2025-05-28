@@ -150,7 +150,7 @@ def automatic_segmentation_wsi(
                 model_type=model_type,
                 checkpoint=checkpoint_path,
                 device=device,
-                is_tiled=isinstance(tile_shape, Tuple),    # i.e. run tiling-window based segmentation.
+                is_tiled=isinstance(tile_shape, Tuple),  # i.e. run tiling-window based segmentation.
             )
 
             if image_embeddings is None:
@@ -167,7 +167,12 @@ def automatic_segmentation_wsi(
                 )
 
             segmenter.initialize(
-                image=image, image_embeddings=image_embeddings, tile_shape=tile_shape, halo=halo, verbose=verbose,
+                image=image,
+                image_embeddings=image_embeddings,
+                tile_shape=tile_shape,
+                halo=halo,
+                verbose=verbose,
+                batch_size=batch_size,
             )
             semantic_masks = segmenter.generate()
 
@@ -221,6 +226,29 @@ def automatic_segmentation_wsi(
         napari.run()
 
     return segmentations
+
+
+def _find_best_batch_size():
+    if torch.cuda.is_available():
+
+        # Check how much memory we have and select the best matching batch size for the available VRAM size.
+        _, vram = torch.cuda.mem_get_info()
+        vram = vram / 1e9  # in GB
+
+        # Maybe we can get more configurations in the future.
+        if vram > 80:  # More than 80 GB
+            return 30
+        elif vram > 30:  # More than 30 GB
+            return 10
+        elif vram > 14:  # More than 14 GB
+            return 5
+        elif vram > 8:  # More than 8 GB
+            return 3
+        else:  # Otherwise, not enough memory to parallelize tilewise prediction on GPU. Do it sequentially.
+            return 1
+
+    else:  # On any other device, we cannot find this automatically. Hence, do this sequentially.
+        return 1
 
 
 def main():
@@ -281,8 +309,9 @@ def main():
         "By default the most performant available device will be selected."
     )
     parser.add_argument(
-        "--batch_size", type=int, default=1,
-        help="The batch size for computing image embeddings with tiling. By default, set to 1."
+        "--batch_size", type=int, default=_find_best_batch_size(),
+        help="The batch size for computing image embeddings with tiling. "
+        "By default, sets to the most compatible combination as per VRAM, otherwise 1."
     )
 
     args = parser.parse_args()
