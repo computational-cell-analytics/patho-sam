@@ -251,7 +251,6 @@ class TiledSemanticSegmentationWithDecoder(SemanticSegmentationWithDecoder):
 
                 # Get the per-class outputs into one valid mask.
                 output = np.argmax(output, axis=0)
-                print(output.shape)
 
                 # Set the predictions in the output for this tile.
                 block = tiling.getBlockWithHalo(tile_id, halo=list(halo))

@@ -335,14 +335,6 @@ def main():
         batch_size=args.batch_size,
     )
 
-    # NOTE:
-    # 1) instances
-    #    encoder: 36:41, decoder: 8:46, post-processing: 01:05, total: 46:32
-    # 2) semantic
-    #    ...
-    # 3) both
-    #    ...
-
     # Calculate the end time of the process.
     end_time = time.time()
 
