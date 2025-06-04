@@ -3,7 +3,7 @@ import os
 import torch
 
 import torch_em
-from torch_em.data import MinTwoInstanceSampler
+from torch_em.data import MinInstanceSampler
 from torch_em.data.datasets import get_nuclick_dataset
 from torch_em.transform.label import PerObjectDistanceTransform
 
@@ -34,7 +34,7 @@ def get_dataloaders(batch_size, patch_shape, train_instance_segmentation):
 
     # All relevant stuff for the dataset.
     raw_transform = histopathology_identity  # Avoids normalizing the inputs, i.e. keeps the intensities b/w [0, 255].
-    sampler = MinTwoInstanceSampler()  # Ensures that atleast one foreground class is obtained.
+    sampler = MinInstanceSampler(min_num_instances=2, min_size=10)  # Ensures at least 2 foreground objects per sample.
     label_dtype = torch.float32  # Converts labels to expected dtype.
 
     if train_instance_segmentation:
