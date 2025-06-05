@@ -106,6 +106,7 @@ def get_generalist_hp_loaders(patch_shape, data_path):
     # Get the datasets
     generalist_train_dataset = get_concat_hp_datasets(path=data_path, patch_shape=patch_shape, split_choice="train")
     generalist_val_dataset = get_concat_hp_datasets(path=data_path, patch_shape=patch_shape, split_choice="val")
+
     # Get the dataloaders
     train_loader = torch_em.get_data_loader(generalist_train_dataset, batch_size=2, shuffle=True, num_workers=16)
     val_loader = torch_em.get_data_loader(generalist_val_dataset, batch_size=1, shuffle=True, num_workers=16)
