@@ -5,11 +5,10 @@ from natsort import natsorted
 
 import torch
 
-import torch_em
-
 import micro_sam.training as sam_training
 from micro_sam.util import export_custom_sam_model
 
+import torch_em
 from torch_em.data import MinInstanceSampler
 from torch_em.transform.label import PerObjectDistanceTransform
 
@@ -17,7 +16,6 @@ from patho_sam.training import histopathology_identity
 
 
 def get_dataloaders(patch_shape, data_path):
-
     label_dtype = torch.float32
     sampler = MinInstanceSampler(min_num_instances=4, min_size=10)
 
@@ -38,7 +36,7 @@ def get_dataloaders(patch_shape, data_path):
     val_images = natsorted(glob(os.path.join(data_path, "val", "images", "*.tiff")))
     val_labels = natsorted(glob(os.path.join(data_path, "val", "labels", "*.tiff")))
 
-    train_ds = torch_em.default_segmentation_dataset(
+    train_loader = torch_em.default_segmentation_loader(
         raw_paths=train_images,
         raw_key=None,
         label_paths=train_labels,
@@ -51,25 +49,29 @@ def get_dataloaders(patch_shape, data_path):
         label_dtype=label_dtype,
         label_transform=label_transform,
         raw_transform=raw_transform,
+        batch_size=1,
+        shuffle=True,
+        num_workers=16,
 
     )
-    val_ds = torch_em.default_segmentation_dataset(
-            raw_paths=val_images,
-            raw_key=None,
-            label_paths=val_labels,
-            label_key=None,
-            patch_shape=patch_shape,
-            ndim=2,
-            with_channels=True,
-            is_seg_dataset=False,
-            sampler=sampler,
-            label_dtype=label_dtype,
-            label_transform=label_transform,
-            raw_transform=raw_transform,
+    val_loader = torch_em.default_segmentation_dataset(
+        raw_paths=val_images,
+        raw_key=None,
+        label_paths=val_labels,
+        label_key=None,
+        patch_shape=patch_shape,
+        ndim=2,
+        with_channels=True,
+        is_seg_dataset=False,
+        sampler=sampler,
+        label_dtype=label_dtype,
+        label_transform=label_transform,
+        raw_transform=raw_transform,
+        batch_size=1,
+        shuffle=True,
+        num_workers=16,
     )
 
-    train_loader = torch_em.get_data_loader(train_ds, batch_size=1, shuffle=True, num_workers=16)
-    val_loader = torch_em.get_data_loader(val_ds, batch_size=1, shuffle=True, num_workers=16)
     return train_loader, val_loader
 
 
@@ -87,7 +89,7 @@ def finetune_specialist(args):
 
     # all the stuff we need for training
     train_loader, val_loader = get_dataloaders(patch_shape=patch_shape, data_path=args.input_path)
-    scheduler_kwargs = {"mode": "min", "factor": 0.9, "patience": 10, "verbose": True}
+    scheduler_kwargs = {"mode": "min", "factor": 0.9, "patience": 10}
 
     # Run training.
     sam_training.train_sam(

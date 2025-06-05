@@ -25,7 +25,7 @@ def finetune_specialist(args):
     train_loader, val_loader = get_specialist_loaders(
         patch_shape=patch_shape, data_path=args.input_path, dataset=args.dataset
     )
-    scheduler_kwargs = {"mode": "min", "factor": 0.9, "patience": 10, "verbose": True}
+    scheduler_kwargs = {"mode": "min", "factor": 0.9, "patience": 10}
 
     # Run training.
     sam_training.train_sam(
