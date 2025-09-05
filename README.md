@@ -44,6 +44,6 @@ See the [examples](./examples/) folder for more details.
 ## Citation
 
 If you are using this repository in your research please cite:
-- [Our preprint](https://doi.org/10.48550/arXiv.2502.00408).
+- [our paper](https://doi.org/10.48550/arXiv.2502.00408) (now published in MIDL 2025).
 - the [Segment Anything for Microscopy](https://www.nature.com/articles/s41592-024-02580-4) publication.
 - And the original [Segment Anything](https://arxiv.org/abs/2304.02643) publication.
