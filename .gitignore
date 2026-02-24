@@ -175,4 +175,4 @@ inference_utils/
 *.svg
 *.csv
 *.tiff
-data/
+
