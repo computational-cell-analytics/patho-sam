@@ -16,7 +16,7 @@ def submit_batch_script(script_name, decoder_only, decoder_from_pretrained, save
 #SBATCH --job-name=patho-sam
 
 source ~/.bashrc
-micromamba activate super
+mamba activate sam2
 """
     # Prepare the python scripts
     python_script = "python train_pannuke.py "

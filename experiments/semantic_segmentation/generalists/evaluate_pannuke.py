@@ -15,8 +15,8 @@ from micro_sam.instance_segmentation import get_unetr
 
 from patho_sam.evaluation.evaluation import semantic_segmentation_quality, extract_class_weights_for_pannuke
 
-
-ROOT = "/mnt/vast-nhr/projects/cidas/cca/experiments/patho_sam/semantic/external"
+WORK = os.environ.get("WORK")
+ROOT = os.path.join(WORK, "data", "eval_pannuke", "semantic_split")
 
 
 def evaluate_pannuke_semantic_segmentation(args):
@@ -27,7 +27,7 @@ def evaluate_pannuke_semantic_segmentation(args):
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
     # Get per class weights.
-    fpath = os.path.join(*ROOT.rsplit("/")[:-2], "data", "pannuke", "pannuke_fold_3.h5")
+    fpath = os.path.join(WORK, "data", "eval_pannuke", "pannuke_fold_3.h5")
     fpath = "/" + fpath
     per_class_weights = extract_class_weights_for_pannuke(fpath=fpath)
 
@@ -46,7 +46,7 @@ def evaluate_pannuke_semantic_segmentation(args):
     )
 
     # Load the model weights
-    model_state = torch.load(checkpoint_path, map_location="cpu")["model_state"]
+    model_state = torch.load(checkpoint_path, map_location="cpu", weights_only=False)["model_state"]
     unetr.load_state_dict(model_state)
     unetr.to(device)
     unetr.eval()
@@ -107,7 +107,7 @@ def evaluate_pannuke_semantic_segmentation(args):
         print(results)
 
     # Get average results per method.
-    fname = checkpoint_path.rsplit("/")[-2]  # Fetches the name of the style of training for semantic segmentation.
+    fname = checkpoint_path.rsplit("/")[-3]  # Fetches the name of the style of training for semantic segmentation.
     _get_average_results(sq_per_image, f"pathosam_{fname}.csv")
 
 
