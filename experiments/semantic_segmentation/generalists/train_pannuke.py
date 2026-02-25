@@ -99,6 +99,7 @@ def train_pannuke_semantic_segmentation(args):
         device=device,
         out_channels=num_classes,
         flexible_load_checkpoint=True,
+        final_activation=None,
     )
 
     # All other stuff we need for training
