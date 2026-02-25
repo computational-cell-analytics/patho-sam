@@ -1,5 +1,6 @@
 import os
 from collections import OrderedDict
+from functools import partial
 
 import torch
 import torch.utils.data as data_util
@@ -11,10 +12,12 @@ from torch_em.data.datasets import get_pannuke_dataset
 import micro_sam.training as sam_training
 from micro_sam.instance_segmentation import get_unetr
 
-from patho_sam.training import SemanticInstanceTrainer
+from patho_sam.training import SemanticInstanceTrainer, get_sampler
+from patho_sam.training.util import (calculate_class_weights_for_loss_weighting, geometric_transforms,
+                                     photometric_transforms, build_transforms)
 
 
-def get_dataloaders(patch_shape, data_path):
+def get_dataloaders(patch_shape, data_path, weighted_sampling: bool, transforms: bool):
     """This returns the PanNuke data loaders implemented in `torch-em`.
     https://github.com/constantinpape/torch-em/blob/main/torch_em/data/datasets/histopathology/pannuke.py
     It will automatically download the PanNuke data.
@@ -25,11 +28,18 @@ def get_dataloaders(patch_shape, data_path):
     i.e. a tensor of the same spatial shape as `x`, with semantic labels for objects.
     Important: the ID 0 is reserved for background and ensure you have all semantic classes.
     """
-    raw_transform = sam_training.identity
-    sampler = MinTwoInstanceSampler()
+    sampler = None if weighted_sampling else MinTwoInstanceSampler()
     label_dtype = torch.float32
 
-    dataset = get_pannuke_dataset(
+    if transforms:
+        geometric_seq, photometric_seq = build_transforms(patch_shape)
+        transform = partial(geometric_transforms, seq=geometric_seq)
+        raw_transform = partial(photometric_transforms, seq=photometric_seq)
+    else:
+        transform = None
+        raw_transform = sam_training.identity
+
+    sem_dataset = get_pannuke_dataset(
         path=data_path,
         patch_shape=patch_shape,
         ndim=2,
@@ -39,15 +49,44 @@ def get_dataloaders(patch_shape, data_path):
         label_dtype=label_dtype,
         raw_transform=raw_transform,
         download=True,
+        deterministic_indices=True,
+        transform=transform,
+    )
+
+    inst_dataset = get_pannuke_dataset(
+        path=data_path,
+        patch_shape=patch_shape,
+        ndim=2,
+        folds=["fold_1", "fold_2"],
+        custom_label_choice="instances",
+        sampler=sampler,
+        label_dtype=label_dtype,
+        raw_transform=raw_transform,
+        download=True,
+        deterministic_indices=True,
+        transform=transform,
     )
 
     # Create custom splits.
     generator = torch.Generator().manual_seed(42)
-    train_dataset, val_dataset = data_util.random_split(dataset, [0.8, 0.2], generator=generator)
+    inst_train_dataset, inst_val_dataset = data_util.random_split(inst_dataset, [0.8, 0.2], generator=generator)
+    sem_train_dataset, sem_val_dataset = data_util.random_split(sem_dataset, [0.8, 0.2], generator=generator)
+
+    # Get the weighted samplers
+    if weighted_sampling:
+        train_sampler = get_sampler(inst_train_dataset, sem_train_dataset, gamma=1, path=data_path, split="train")
+        val_sampler = get_sampler(inst_val_dataset, sem_val_dataset, gamma=1, path=data_path, split="val")
+        shuffle = False
+
+    else:
+        train_sampler = None
+        shuffle = True
 
     # Get the dataloaders.
-    train_loader = torch_em.get_data_loader(train_dataset, batch_size=8, shuffle=True, num_workers=16)
-    val_loader = torch_em.get_data_loader(val_dataset, batch_size=1, shuffle=True, num_workers=16)
+    train_loader = torch_em.get_data_loader(sem_train_dataset, batch_size=8, num_workers=1, sampler=train_sampler,
+                                            shuffle=shuffle)
+    val_loader = torch_em.get_data_loader(sem_val_dataset, batch_size=1, num_workers=1, sampler=None,
+                                          shuffle=True)
 
     return train_loader, val_loader
 
@@ -60,12 +99,18 @@ def train_pannuke_semantic_segmentation(args):
     num_classes = 6  # available classes are [0, 1, 2, 3, 4, 5]
     checkpoint_path = args.checkpoint_path
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    checkpoint_name = f"{model_type}/pannuke_semantic"
+    checkpoint_name = f"{model_type}/pannuke_semantic"\
 
     train_loader, val_loader = get_dataloaders(
-        patch_shape=(1, 512, 512), data_path=os.path.join(args.input_path, "pannuke")
+        patch_shape=(1, 256, 256), data_path=os.path.join(args.input_path, "pannuke"),
+        weighted_sampling=args.weighted_sampling, transforms=args.transforms
     )
 
+    # Sampling and weighted loss
+    class_weights = calculate_class_weights_for_loss_weighting() if args.weighted_loss else None
+    checkpoint_name += "-weighted_loss" if args.weighted_loss else ""
+    checkpoint_name += "-weighted_sampling" if args.weighted_sampling else ""
+    checkpoint_name += "-transforms" if args.transforms else ""
     # Whether we opt for finetuning decoder only or finetune the entire backbone.
     if args.decoder_only:
         freeze = ["image_encoder", "prompt_encoder", "mask_decoder"]
@@ -124,6 +169,7 @@ def train_pannuke_semantic_segmentation(args):
         convert_inputs=convert_inputs,
         num_classes=num_classes,
         dice_weight=0,
+        class_weights=class_weights,
     )
     trainer.fit(iterations=int(args.iterations), overwrite_training=False)
 
@@ -162,6 +208,18 @@ if __name__ == "__main__":
     parser.add_argument(
         "--decoder_from_pretrained", action="store_true",
         help="Whether to train the decoder from scratch, or train the pretrained decoder (i.e. used for AIS)."
+    )
+    parser.add_argument(
+        "--weighted_sampling", action="store_true",
+        help="Whether to use weighted sampling for class balancing"
+    )
+    parser.add_argument(
+        "--weighted_loss", action="store_true",
+        help="Whether to use weighted loss for class balancing in the computation of the loss"
+    )
+    parser.add_argument(
+        "--transforms", action='store_true',
+        help="Whether to use cellvit-like data augmentations"
     )
     args = parser.parse_args()
     main(args)

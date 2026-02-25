@@ -1,11 +1,14 @@
-from typing import Tuple, List
-
+from typing import Tuple, List, Callable
+import os
+from tqdm import tqdm
 import numpy as np
+import pandas as pd
 
 import torch
 import torch.utils.data as data_util
 
 from torch_em.data.datasets.light_microscopy.neurips_cell_seg import to_rgb
+import kornia.augmentation as K
 
 
 CLASS_MAP = {
@@ -98,7 +101,7 @@ def remap_labels(y: np.ndarray, name: str) -> np.ndarray:
 
 
 def calculate_class_weights_for_loss_weighting(
-    foreground_class_weights: List[float] = [0.4702, 0.1797, 0.2229, 0.0159, 0.1113],
+    foreground_class_weights: List[float] = [0.507, 0.1082, 0.2284, 0.0038, 0.1526],
 ) -> List[float]:
     """Calculates the class weights for weighting the cross entropy loss.
 
@@ -119,7 +122,7 @@ def calculate_class_weights_for_loss_weighting(
     foreground_class_weights = np.array(foreground_class_weights)
 
     # Define the range for integer weighting.
-    background_weight, max_weight = 1, 10
+    background_weight, max_weight = 1, 3
 
     # Normalize the class weights.
     min_val, max_val = np.min(foreground_class_weights), np.max(foreground_class_weights)
@@ -137,3 +140,284 @@ def calculate_class_weights_for_loss_weighting(
     final_weights_with_bg = [background_weight, *final_weights]
 
     return final_weights_with_bg
+
+
+def get_sampling_weights(instance_dataset, semantic_dataset, gamma: float, input_path, split):
+
+    # If weights for the split have already been extracted and saved, they are loaded
+    weights_csv_path = os.path.join(input_path, f"{split}_instance_sampling_weights.csv")
+
+    if os.path.exists(weights_csv_path):
+        print(f"Sampling weights for the {split} set have already been extracted.")
+        df = pd.read_csv(weights_csv_path)
+        cell_type_presence = df.to_numpy()
+
+    # This creates an array where each line represents a training sample and each column corresponds to the binary
+    # presence of each nucleus type (1, 2, 3, 4, 5)
+
+    # Class-Pixel-level
+    # else:
+    #     cell_type_presence = np.array(
+    #         [[torch.sum(label == cell_type).item() for cell_type in range(1, 6)]
+    #             for _, label in tqdm(dataset, desc="Extracting sampling weights")])
+
+    #     df = pd.DataFrame(cell_type_presence)
+    #     df.to_csv(weights_csv_path, index=False)
+
+    # Class-Instance-level
+    else:
+        cell_type_presence = np.array(
+            [[len(np.unique(instance_label[semantic_label == cell_type]))
+              for cell_type in range(1, 6)]for (_, instance_label), (_, semantic_label) in
+                tqdm(zip(instance_dataset, semantic_dataset), total=len(instance_dataset))]
+            )
+
+        df = pd.DataFrame(cell_type_presence)
+        df.to_csv(weights_csv_path, index=False)
+
+    binary_weight_factors = np.sum(cell_type_presence, axis=0)
+
+    k = np.sum(binary_weight_factors)
+
+    # This creates an array with the respective weight factor for each nucleus type
+    weight_vector = k / (gamma * binary_weight_factors + (1 - gamma) * k)
+
+    # This applies the weight factor to all the training samples with respect to the set gamma value
+    img_weight = (1 - gamma) * np.max(cell_type_presence, axis=-1) + gamma * np.sum(
+        (cell_type_presence * weight_vector), axis=1)
+
+    # This assigns the minimal non-zero sample weight to samples whose weight is 0
+    img_weight[np.where(img_weight == 0)] = np.min(
+        img_weight[np.nonzero(img_weight)]
+    )
+
+    return torch.Tensor(img_weight)
+
+
+def get_sampler(instance_dataset, semantic_dataset, gamma, path, split) -> data_util.Sampler:
+    pannuke_weights = get_sampling_weights(instance_dataset, semantic_dataset, gamma, path, split)
+
+    sampler = data_util.WeightedRandomSampler(
+        weights=pannuke_weights,
+        replacement=True,
+        num_samples=len(instance_dataset),
+    )
+
+    return sampler
+
+
+def geometric_transforms(x, y, seq):
+    x = torch.from_numpy(x.astype(np.float32) / 255.0).unsqueeze(0)
+    y = torch.from_numpy(y).float().unsqueeze(0).unsqueeze(0)
+    x, y = seq(x, y)
+    x = (x.squeeze(0).numpy() * 255).clip(0, 255).astype(np.uint8)
+    return x, y.squeeze(0).numpy()
+
+
+def photometric_transforms(x, seq):
+    x = torch.from_numpy(x.astype(np.float32) / 255.0).unsqueeze(0)
+    x = seq(x)
+    x = (x.squeeze(0).numpy() * 255).clip(0, 255).astype(np.uint8)
+    return x
+
+
+def build_transforms(patch_shape) -> Tuple[Callable, Callable]:
+    geometric_transforms_list = [
+        K.RandomRotation90(p=0.5, times=(1, 2)),
+        K.RandomHorizontalFlip(p=0.5),
+        K.RandomVerticalFlip(p=0.5),
+        K.RandomResizedCrop(size=(patch_shape[1], patch_shape[2]),
+                            scale=(0.5, 0.5), p=0.15),
+    ]
+    photometric_transforms_list = [
+        K.RandomGaussianBlur(kernel_size=(11, 11), sigma=(0.5, 2.0), p=0.2),
+        K.RandomGaussianNoise(mean=0.0, std=0.05, p=0.25),
+        K.ColorJitter(brightness=0.25, contrast=0.25,
+                      saturation=0.1, hue=0.05, p=0.2),
+    ]
+
+    geometric_seq = K.AugmentationSequential(*geometric_transforms_list, data_keys=["input", "mask"])
+    photometric_seq = K.AugmentationSequential(*photometric_transforms_list, data_keys=["input"])
+
+    return geometric_seq, photometric_seq
+
+# def get_transforms(patch_shape) -> Tuple[Callable, Callable]:
+#     import kornia.augmentation as K
+#     transform_settings = {
+#         "randomrotate90": {"p": 0.5},
+#         "horizontalflip": {"p": 0.5},
+#         "verticalflip": {"p": 0.5},
+#         "downscale": {"p": 0.15, "scale": 0.5},  # scale as fraction of original size
+#         "blur": {"p": 0.2, "kernel_size": 11},  # kernel_size must be odd
+#         "gaussnoise": {"p": 0.25, "std": 0.05},
+#         "colorjitter": {
+#             "p": 0.2,
+#             "brightness": 0.25,
+#             "contrast": 0.25,
+#             "saturation": 0.1,
+#             "hue": 0.05
+#         },
+#         # "normalize": {
+#         #     "mean": [0.5, 0.5, 0.5],
+#         #     "std": [0.5, 0.5, 0.5]
+#         # }
+#     }
+
+#     geometric_transforms_list = []
+
+#     photometric_transforms_list = []
+
+#     # Random 90° rotation
+#     geometric_transforms_list.append(K.RandomRotation90(p=transform_settings["randomrotate90"]["p"], times=(1, 2)))
+
+#     # Horizontal flip
+#     geometric_transforms_list.append(K.RandomHorizontalFlip(p=transform_settings["horizontalflip"]["p"]))
+
+#     # Vertical flip
+#     geometric_transforms_list.append(K.RandomVerticalFlip(p=transform_settings["verticalflip"]["p"]))
+
+#     # Downscale (simulated via RandomResizedCrop)
+#     geometric_transforms_list.append(
+#         K.RandomResizedCrop(
+#             size=(patch_shape[1], patch_shape[2]),
+#             scale=(transform_settings["downscale"]["scale"], transform_settings["downscale"]["scale"]),
+#             p=transform_settings["downscale"]["p"]
+#         )
+#     )
+
+#     # Blur
+#     photometric_transforms_list.append(
+#         K.RandomGaussianBlur(
+#             kernel_size=(transform_settings["blur"]["kernel_size"], transform_settings["blur"]["kernel_size"]),
+#             sigma=(0.1, 2.0),
+#             p=transform_settings["blur"]["p"]
+#         )
+#     )
+
+#     # Gaussian noise
+#     photometric_transforms_list.append(
+#         K.RandomGaussianNoise(
+#             mean=0.0,
+#             std=transform_settings["gaussnoise"]["std"],
+#             p=transform_settings["gaussnoise"]["p"]
+#             )
+#     )
+
+#     # Color jitter
+#     photometric_transforms_list.append(
+#         K.ColorJitter(
+#             brightness=transform_settings["colorjitter"]["brightness"],
+#             contrast=transform_settings["colorjitter"]["contrast"],
+#             saturation=transform_settings["colorjitter"]["saturation"],
+#             hue=transform_settings["colorjitter"]["hue"],
+#             p=transform_settings["colorjitter"]["p"]
+#         )
+#     )
+#     # Normalize
+#     # mean = torch.tensor(transform_settings.get("normalize", {}).get("mean", [0.5, 0.5, 0.5]))
+#     # std = torch.tensor(transform_settings.get("normalize", {}).get("std", [0.5, 0.5, 0.5]))
+#     # transform_list.append(K.Normalize(mean=mean, std=std))
+
+#     # Compose
+#     def geometric_transforms(x, y):
+#         x = torch.from_numpy(x.astype(np.float32) / 255.0).unsqueeze(0)
+#         y = torch.from_numpy(y).float().unsqueeze(0).unsqueeze(0)
+#         x, y = K.AugmentationSequential(*geometric_transforms_list, data_keys=["input", "mask"])(x, y)
+#         x = (x.squeeze(0).numpy() * 255).clip(0, 255).astype(np.uint8)  # back to original type
+#         return x, y.squeeze(0).numpy()
+
+#     def photometric_transforms(x):
+#         x = torch.from_numpy(x.astype(np.float32) / 255.0).unsqueeze(0)
+#         x = K.AugmentationSequential(*photometric_transforms_list, data_keys=["input"])(x)
+#         x = x.squeeze(0).numpy()
+#         x = (x * 255).clip(0, 255).astype(np.uint8)  # back to original type
+#         return x
+
+#     return geometric_transforms, photometric_transforms
+
+
+def get_sampling_weights_cellvit(dataset, gamma: float):
+    """ This class balancing approach is modified from CellViT (Hörst et al. 2024)
+    """
+
+    # This creates an array where each line represents a training sample and each column corresponds to the binary
+    # presence of each nucleus type (1, 2, 3, 4, 5)
+    cell_type_presence = np.array(
+        [[int(cell_type in np.unique(label)) for cell_type in range(1, 6)] for _, label in dataset])
+
+    # We create an array of the number of samples that each nucleus type is represented in
+    binary_weight_factors = np.sum(cell_type_presence, axis=0)
+
+    k = np.sum(binary_weight_factors)
+
+    # This creates an array with the respective weight factor for each nucleus type
+    weight_vector = k / (gamma * binary_weight_factors + (1 - gamma) * k)
+
+    # This applies the weight factor to all the training samples with respect to the set gamma value
+    img_weight = (1 - gamma) * np.max(cell_type_presence, axis=-1) + gamma * np.sum(
+        cell_type_presence * weight_vector, axis=-1
+    )
+
+    # This assigns the minimal non-zero sample weight to samples whose weight is 0
+    img_weight[np.where(img_weight == 0)] = np.min(
+        img_weight[np.nonzero(img_weight)]
+    )
+
+    return torch.Tensor(img_weight)
+
+# class DeterministicDataset(torch.utils.data.Dataset):
+#     def __init__(self, base_dataset):
+#         self.base_dataset = base_dataset
+
+#     def __len__(self):
+#         return len(self.base_dataset)
+
+#     def __getitem__(self, idx):
+#         # Access original dataset item without applying augmentations
+#         # Assumes your base dataset has `get_raw_item(idx)` or similar
+#         # If not, you can temporarily disable transforms
+#         item = self.base_dataset.get_raw_item(idx)  
+#         return item
+    
+class DeterministicSubset(torch.utils.data.Dataset):
+    def __init__(self, subset):
+        self.subset = subset
+        self.base_dataset = subset.dataset
+        self.indices = subset.indices
+
+    def __len__(self):
+        return len(self.subset)
+
+    def __getitem__(self, idx):
+        real_idx = self.indices[idx]
+        orig_transform = self.base_dataset.transform
+        self.base_dataset.transform = None
+        item = self.base_dataset[real_idx]
+        self.base_dataset.transform = orig_transform
+        return item
+
+class DeterministicDataset(torch.utils.data.Dataset):
+    def __init__(self, dataset):
+        self.dataset = dataset
+
+    def __len__(self):
+        return len(self.dataset)
+
+    def __getitem__(self, idx):
+        # Resolve Subset / ConcatDataset
+        ds = self.dataset
+        while hasattr(ds, 'dataset'):
+            if isinstance(ds, torch.utils.data.Subset):
+                idx = ds.indices[idx]
+            ds = ds.dataset
+
+        if hasattr(ds, 'transform'):
+            orig_transform = ds.transform
+            ds.transform = None
+
+        item = ds[idx]
+
+        if hasattr(ds, 'transform'):
+            ds.transform = orig_transform
+
+        return item
