@@ -1,92 +1,90 @@
-import imageio.v3 as imageio
 import os
-from magicgui import magicgui
+from magicgui import magicfactory
 import napari
+import numpy as np
 from glob import glob
 from natsort import natsorted
-import pandas as pd
 import argparse
+import h5py
 from micro_sam.sam_annotator import annotator_2d
 
 
-def start_interactive_annotator(args):
-    split = args.split + "_models"
-    annotation_dir = os.path.join(args.root_dir, split, "rois_" + args.type, "annotations")
-    os.makedirs(annotation_dir, exist_ok=True)
-    embedding_paths = os.path.join(args.root_dir, split, "rois_" + args.type, "embeddings")
-    image_paths = natsorted(glob(os.path.join(args.root_dir, split, "rois_" + args.type, "images", "*.tiff")))
-    pred_dir = os.path.join(args.root_dir, split, "rois_" + args.type, "segmentations")
-    correction_version = args.correction
+DATA_DIR = "/mnt/ceph-hdd/cold/nim00020/hannibal_data/train_models/new_tumor_data"
 
-    for image_path in image_paths:
-        img_name = os.path.basename(image_path).strip(".tiff")[4:]
-        short_img_name = img_name.split("-")[1] + "-" + "-".join(img_name.split("-")[-2:])
-        annotation_path = os.path.join(annotation_dir, img_name + f"_label_{correction_version}.tiff")
-        previous_version = annotation_path.replace(f"{correction_version}.tiff", f"{correction_version-1}.tiff")
 
-        # In case the annotation for the current annotation version already exists, skip annotation process.
-        if os.path.exists(annotation_path):
-            print(f"Correction version {correction_version} already exists for {img_name}")
-            continue
-        else:
-            # Check if lower version label exists
-            if os.path.exists(previous_version):
-                segmentation_result = imageio.imread(previous_version)
-                grid_label = f"{short_img_name}-version_{correction_version - 1}"
-                print(f"Successfully loaded annotation version {correction_version-1}")
-            else:
-                prelim_annotations = natsorted(glob(os.path.join(annotation_dir, f"*{img_name}*")))
-                if len(prelim_annotations) > 0:
-                    grid_label = short_img_name + "-" + "".join(prelim_annotations[0].strip("_prelim.tiff").split("_")[-1])
-                    segmentation_result = imageio.imread(prelim_annotations[0])
-                    print("Successfully loaded preliminary annotation")
-                else:
-                    pred_path = os.path.join(pred_dir, os.path.basename(image_path)[4:])
-                    segmentation_result = imageio.imread(pred_path)
-                    print("Loaded untouched PathoSAM pred")
-                    grid_label = short_img_name + "-fresh"
+class AnnotatorState:
+    def __init__(self):
+        self.inst_label_version = None
 
-        embedding_path = os.path.join(embedding_paths, os.path.basename(image_path.strip(".tiff"))[4:])
 
-        image = imageio.imread(image_path)
+def get_grid(img_shape, cell_width=512) -> np.ndarray:
+    """Add Grid for better overview in annotated regions"""
+    return [
+        np.array([
+            [0, cell_width * i],
+            [img_shape[0], cell_width * i]
+        ])
+        for i in range(0, img_shape[1] // cell_width + 1)
+        ] + [
+        np.array([
+            [cell_width * i, 0],
+            [cell_width * i, img_shape[1]]
+        ])
+        for i in range(0, img_shape[0] // cell_width + 1)
+    ]
+
+
+def save_to_h5(h5_path, save_key, data) -> None:
+    with h5py.File(h5_path, 'a') as f:
+        if save_key in f:
+            del f[save_key]
+        f.create_dataset(save_key, data, compression="zlib")
+
+
+def get_available_seg_versions(h5_path) -> list:
+    with h5py.File(h5_path, 'a') as f:
+        return list(f["inst_labels"].keys())
+
+
+def start_interactive_annotator(h5_dir, embedding_dir):
+    embedding_paths = natsorted(glob(os.path.join(embedding_dir, "*")))
+    h5_paths = natsorted(glob(os.path.join(h5_dir, "*.h5")))
+
+    for h5_path, embedding_path in zip(h5_paths, embedding_paths):
+        img_name = os.path.basename(embedding_path)
+        state = AnnotatorState()
+        with h5py.File(h5_path, 'r') as f:
+            image = f["img"][:]
 
         viewer = annotator_2d(
             image=image,
             embedding_path=embedding_path,
-            segmentation_result=segmentation_result,
             model_type="vit_b_histopathology",
             tile_shape=(384, 384),
             halo=(64, 64),
             return_viewer=True,
         )
 
-        if args.grid_path is not None:
-            df = pd.read_csv(args.grid_path)
-            shapes = []
-            for shape_id, group in df.groupby("index"):
-                coords = group[["axis-0", "axis-1"]].values
-                shapes.append(coords)
+        viewer.add_shapes(get_grid(image.shape), shape_type="polygon", name=f"{img_name}_{state.inst_label_version}", edge_width=3)
 
-            viewer.add_shapes(shapes, shape_type="polygon", name=grid_label, edge_width=3)
-
-        @magicgui(call_button="Save preliminary annotation", note={"label": "Specification", "widget_type": "LineEdit"})
-        def save_prelim_annotation(viewer: "napari.Viewer", note: str = ""):
-            layer_name = "committed_objects"
-
-            if layer_name not in viewer.layers:
-                print("layer not found")
+        @magicfactory(call_button="Load previous instance label",
+                      version={"choices": lambda: get_available_seg_versions(h5_path)})
+        def load_previous_annotation(viewer: "napari.Viewer", version: str = None):
+            committed_objects = viewer.layers['committed_objects']
+            if version is None:
+                print("No version selected")
                 return
+            with h5py.File(h5_path, 'r') as f:
+                previous_inst_label = f[f'inst_labels/{version}'][:]
+            committed_objects.data = previous_inst_label
+            print(f"Instance label {version} loaded.")
+            grid_layer = viewer.layers[f"{img_name}_{state.inst_label_version}"]
+            state.inst_label_version = version
+            grid_layer.name = f"{img_name}_{state.inst_label_version}"
 
-            ann = viewer.layers[layer_name].data
-            prelim_path = annotation_path.replace(f"_label_{correction_version}.tiff", f"_{note}_prelim_{correction_version}.tiff")
-            imageio.imwrite(annotation_path.replace(f"_label_{correction_version}.tiff", f"_{note}_prelim_{correction_version}.tiff"), ann,  plugin="tifffile", compression="zlib")
-            prelim_annotations = glob(os.path.join(annotation_dir, f"*{img_name}_*_prelim*"))
-            for prelim_annotation in prelim_annotations:
-                if not prelim_annotation == prelim_path:
-                    os.remove(prelim_annotation)
-
-        @magicgui(call_button="Save definite annotation")
-        def save_annotation(viewer: "napari.Viewer"):
+        @magicfactory(call_button="Save preliminary annotation", save_to_version={"label": "Save to current version"},
+                      note={"label": "Specification", "widget_type": "LineEdit"})
+        def save_prelim_annotation(viewer: "napari.Viewer", note: str = None, save_to_version: bool = False):
             layer_name = "committed_objects"
 
             if layer_name not in viewer.layers:
@@ -94,26 +92,49 @@ def start_interactive_annotator(args):
                 return
 
             prelim_ann = viewer.layers[layer_name].data
-            imageio.imwrite(annotation_path, prelim_ann, plugin="tifffile", compression="zlib")
-            prelim_annotations = glob(os.path.join(annotation_dir, f"*{img_name}_*_prelim*"))
-            for prelim_annotation in prelim_annotations:
-                os.remove(prelim_annotation)
 
-        viewer.window.add_dock_widget(save_prelim_annotation, area="right")
-        viewer.window.add_dock_widget(save_annotation, area="right")
+            if save_to_version:
+                save_key = "inst_labels/" + f"{state.inst_label_version[:2]}_prelim"
+            else:
+                save_key = "inst_labels/" + f"v{str(int(state.inst_label_version[2])+1)}_prelim"
+
+            if note:
+                save_key += f"_{note}"
+
+            save_to_h5(h5_path, save_key, data=prelim_ann)
+
+        @magicfactory(call_button="Save definite annotation", save_to_version={"label": "Save to current version"})
+        def save_annotation(viewer: "napari.Viewer", save_to_version: bool = False):
+            layer_name = "committed_objects"
+
+            if layer_name not in viewer.layers:
+                print("layer not found")
+                return
+
+            ann = viewer.layers[layer_name].data
+
+            if save_to_version:
+                save_key = "inst_labels/" + f"{state.inst_label_version[:2]}"
+            else:
+                save_key = "inst_labels/" + f"v{str(int(state.inst_label_version[2])+1)}"
+
+            save_to_h5(h5_path, save_key, data=ann)
+
+        viewer.window.add_dock_widget(save_prelim_annotation(), area="right")
+        viewer.window.add_dock_widget(save_annotation(), area="right")
+        viewer.window.add_dock_widget(load_previous_annotation(), area="right")
         napari.run()
-    print(f"Annotation round {correction_version} for {args.type} in {split} split completed!")
 
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--root_dir", default="/mnt/ceph-hdd/cold/nim00020/hannibal_data/")
-    parser.add_argument("--grid_path", default="/mnt/ceph-hdd/cold/nim00020/hannibal_data/train_models/rois_new_tumor/grid.csv")
+    parser.add_argument("--data_dir", default=DATA_DIR)
     parser.add_argument("--correction", default=0, type=int)
-    parser.add_argument("--type", default="new_tumor")
-    parser.add_argument("--split", default="train")
     args = parser.parse_args()
-    start_interactive_annotator(args)
+    start_interactive_annotator(
+        h5_dir=os.path.join(args.data_dir, "h5_files"),
+        embedding_dir=os.path.join(args.data_dir, "embeddings")
+    )
 
 
 if __name__ == "__main__":
