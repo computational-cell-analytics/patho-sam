@@ -118,6 +118,7 @@ def train_semantic_segmentation_generalist(args):
         device=device,
         out_channels=num_classes,
         flexible_load_checkpoint=True,
+        final_activation=None,
     )
 
     # All other stuff we need for training

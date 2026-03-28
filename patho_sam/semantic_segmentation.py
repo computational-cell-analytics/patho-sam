@@ -3,6 +3,7 @@ import os
 from typing import Optional, Union, Tuple
 
 import numpy as np
+from numpy.typing import ArrayLike
 
 from nifty.tools import blocking
 
@@ -50,11 +51,23 @@ def get_semantic_predictor_and_segmenter(
     if checkpoint is None and not model_type.endswith("_histopathology"):
         raise RuntimeError("Please choose the PathoSAM generalist models.")
 
-    # Get the predictor for PathoSAM models.
-    predictor = util.get_sam_model(model_type=model_type, device=device, checkpoint_path=checkpoint)
+    try:  # Try to load this as a regular SAM model.
+        # Get the predictor for PathoSAM models.
+        predictor = util.get_sam_model(
+            model_type=model_type, device=device, checkpoint_path=checkpoint,
+        )
+        # Downloads the decoder state automatically and allows loading it.
+        decoder_state = get_semantic_segmentation_decoder_weights()
+    except Exception:  # If this fails, try to load the weights from a UNETR checkpoint.
+        assert os.path.exists(checkpoint)
+        state = torch.load(checkpoint, map_location=device, weights_only=False)
+        if "model_state" in state:
+            state = state["model_state"]
+        encoder_state = {k[len("encoder."):]: v for k, v in state.items() if k.startswith("encoder.")}
+        decoder_state = {k: v for k, v in state.items() if not k.startswith("encoder.")}
 
-    # Downloads the decoder state automatically and allows loading it.
-    decoder_state = get_semantic_segmentation_decoder_weights()
+        predictor = util.get_sam_model(model_type=model_type, device=device)
+        predictor.model.image_encoder.load_state_dict(encoder_state)
 
     # Get the decoder for semantic segmentation.
     decoder = DecoderAdapter(
@@ -198,6 +211,8 @@ class TiledSemanticSegmentationWithDecoder(SemanticSegmentationWithDecoder):
         pbar_init: Optional[callable] = None,
         pbar_update: Optional[callable] = None,
         batch_size: int = 1,
+        semantic_segmentation: Optional[ArrayLike] = None,
+        mask: Optional[ArrayLike] = None,
     ) -> None:
         """Initialize image embeddings and decoder predictions for an image.
 
@@ -215,27 +230,41 @@ class TiledSemanticSegmentationWithDecoder(SemanticSegmentationWithDecoder):
                 To enables using this function within a threadworker.
             pbar_update: Callback to update an external progress bar.
             batch_size: The batch size for image embedding computation and segmentation decoder prediction.
+            semantic_segmentation: Optional initialized segmentation array for writing the result.
+            mask: An optional mask to define areas that are ignored in the segmentation.
         """
         original_size = image.shape[:2]
-        image_embeddings, tile_shape, halo = _process_tiled_embeddings(
-            self._predictor, image, image_embeddings, tile_shape, halo, verbose=verbose, batch_size=batch_size,
+        image_embeddings, tile_shape, halo, tiles_in_mask = _process_tiled_embeddings(
+            self._predictor, image, image_embeddings, tile_shape, halo,
+            verbose=verbose, batch_size=batch_size, mask=mask, i=i,
         )
         tiling = blocking([0, 0], original_size, tile_shape)
 
-        _, pbar_init, pbar_update, pbar_close = util.handle_pbar(verbose, pbar_init, pbar_update)
-        pbar_init(tiling.numberOfBlocks, "Initialize tiled semantic segmentation with decoder")
+        if semantic_segmentation is None:
+            semantic_segmentation = np.zeros(original_size, dtype="uint8")
+        elif semantic_segmentation.shape != original_size:
+            raise ValueError(
+                "Pre-initialized segmentation was passed with a wrong shape: "
+                f"{semantic_segmentation.shape} != {original_size}."
+            )
 
-        semantic_segmentation = np.zeros(original_size, dtype="uint8")
+        msg = "Initialize tiled semantic segmentation with decoder"
+        if tiles_in_mask is None:
+            n_tiles = tiling.numberOfBlocks
+            all_tile_ids = list(range(n_tiles))
+        else:
+            n_tiles = len(tiles_in_mask)
+            all_tile_ids = tiles_in_mask
+            msg += " and mask"
 
-        n_tiles = tiling.numberOfBlocks
         n_batches = int(np.ceil(n_tiles / batch_size))
+        _, pbar_init, pbar_update, pbar_close = util.handle_pbar(verbose, pbar_init, pbar_update)
+        pbar_init(n_tiles, msg)
+        tile_ids_for_batches = np.array_split(all_tile_ids, n_batches)
 
-        for batch_id in range(n_batches):
-            tile_start = batch_id * batch_size
-            tile_stop = min(tile_start + batch_size, n_tiles)
-
+        for tile_ids in tile_ids_for_batches:
             batched_embeddings, input_shapes, original_shapes = [], [], []
-            for tile_id in range(tile_start, tile_stop):
+            for tile_id in tile_ids:
                 # Get the image embeddings from the predictor for this tile.
                 self._predictor = util.set_precomputed(self._predictor, image_embeddings, i=i, tile_id=tile_id)
 
@@ -245,7 +274,7 @@ class TiledSemanticSegmentationWithDecoder(SemanticSegmentationWithDecoder):
 
             batched_output = self._predict_decoder(batched_embeddings, input_shapes, original_shapes)
 
-            for output_id, tile_id in enumerate(range(tile_start, tile_stop)):
+            for output_id, tile_id in enumerate(tile_ids):
                 output = batched_output[output_id]
                 assert output.shape[0] == num_classes, f"{output.shape}"
 
@@ -258,7 +287,6 @@ class TiledSemanticSegmentationWithDecoder(SemanticSegmentationWithDecoder):
                     slice(beg, end) for beg, end in zip(block.innerBlockLocal.begin, block.innerBlockLocal.end)
                 )
                 inner_bb = tuple(slice(beg, end) for beg, end in zip(block.innerBlock.begin, block.innerBlock.end))
-
                 semantic_segmentation[inner_bb] = output[local_bb]
                 pbar_update(1)
 
