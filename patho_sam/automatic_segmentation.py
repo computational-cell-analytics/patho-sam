@@ -111,7 +111,7 @@ def automatic_segmentation_wsi(
                 model_type=model_type,
                 checkpoint=checkpoint_path,
                 device=device,
-                amg=False,  # i.e. run AIS.
+                segmentation_mode="ais",  # i.e. run AIS.
                 is_tiled=isinstance(tile_shape, Tuple),  # i.e. run tiling-window based segmentation.
             )
 
@@ -125,7 +125,7 @@ def automatic_segmentation_wsi(
                 tile_shape=tile_shape,
                 halo=halo,
                 verbose=verbose,
-                output_mode=None,  # Skips some post-processing under `generate` method after automatic seg.
+                output_mode="instance_segmentation",  # Returns the raw instance segmentation array directly.
                 return_embeddings=True,  # Returns image embeddings, can be used in the task below, i.e. semantic seg.
                 batch_size=batch_size,
             )
