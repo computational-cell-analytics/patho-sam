@@ -11,8 +11,9 @@ from scipy.ndimage import label as cc_label
 NIJMEGEN_ROOT = "/mnt/ceph-hdd/cold/nim00020/hannibal_data/ignite_nijmegen"
 
 
-def remove_disconnected_components(mask, solidity_threshold, area_threshold):
-    """Filter out disconnected components and those below area and solidity thresholds"""
+def remove_disconnected_components(mask, solidity_threshold, area_threshold) -> np.ndarray:
+    """Filter out disconnected components and those below area and solidity thresholds. For disconnected components,
+    the component with the largest area is retained while all smaller components are removed."""
     structure = np.ones((3, 3), dtype=int)
     labeled_cc, num_components = cc_label(mask, structure=structure)
     filtered_mask = np.zeros_like(mask, dtype=bool)
@@ -36,13 +37,14 @@ def remove_disconnected_components(mask, solidity_threshold, area_threshold):
     return filtered_mask
 
 
-def remove_disconnected_components_and_fill_holes(label_img, solidity_threshold, area_threshold):
-    cleaned = np.zeros_like(label_img, dtype=np.uint32)
+def remove_disconnected_components_and_fill_holes(segmentation: np.ndarray, solidity_threshold: float = 0.5,
+                                                  area_threshold: int = 35) -> np.ndarray:
+    cleaned = np.zeros_like(segmentation, dtype=np.uint32)
 
-    for prop in tqdm(regionprops(label_img)):
+    for prop in tqdm(regionprops(segmentation)):
         label_id = prop.label
         minr, minc, maxr, maxc = prop.bbox
-        roi = label_img[minr:maxr, minc:maxc]
+        roi = segmentation[minr:maxr, minc:maxc]
         mask = (roi == label_id)
         mask = remove_disconnected_components(mask, solidity_threshold, area_threshold)
         filled = binary_fill_holes(mask)

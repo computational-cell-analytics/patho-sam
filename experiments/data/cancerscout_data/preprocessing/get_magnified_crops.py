@@ -18,7 +18,6 @@ output_dir = "/mnt/ceph-hdd/cold/nim00020/hannibal_data/train_models/visualizati
 with_labels = False
 img_names = [os.path.basename(path) for path in glob(os.path.join(annotation_dir, "*_label.tiff"))]
 
-breakpoint()
 
 
 for img_name in tqdm(img_names):

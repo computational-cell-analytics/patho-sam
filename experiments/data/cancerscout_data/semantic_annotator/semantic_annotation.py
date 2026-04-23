@@ -9,9 +9,10 @@ from magicgui import magicgui
 import numpy as np
 import threading
 from micro_sam.sam_annotator.object_classifier import object_classifier, AnnotatorState
-from micro_sam.object_classification import compute_object_features
+from micro_sam import util
+from patho_sam.annotation import compute_object_features_parallel
 
-H5_DIR = "/mnt/ceph-hdd/cold/nim00020/hannibal_data/train_models/new_tumor_data"
+H5_DIR = "/mnt/ceph-hdd/cold/nim00020/hannibal_data/train_models/new_tumor_data/new_h5_files"
 EMB_DIR = "/mnt/ceph-hdd/cold/nim00020/hannibal_data/train_models/new_tumor_data/embeddings"
 RF_DIR = "/mnt/ceph-hdd/cold/nim00020/hannibal_data/train_models/new_tumor_data/rf_output"
 
@@ -48,11 +49,11 @@ def get_object_classifier_viewer(image, segmentation, embedding_path):
     return viewer
 
 
-def start_object_feature_computation(seg):
-    print("Starting computation of object features in the background.")
+def start_object_feature_computation(seg, embeddings):
+    print("Starting computation of object features in the background.", flush=True)
     state = AnnotatorState()
     start = time.time()
-    seg_ids, features = compute_object_features(state.image_embeddings, seg)
+    seg_ids, features = compute_object_features_parallel(seg, embeddings, n_workers=os.cpu_count()-3)
     state.seg_ids = seg_ids
     state.object_features = features
     end = time.time()
@@ -70,26 +71,32 @@ def semantic_annotation(input_dir, embedding_dir, rf_dir):
         raise ValueError(
             f"Inconsistent input: {len(input_paths)} imgs, {len(embedding_paths)} embs")
 
-    needed_keys = ["img", "inst_label"]
+    needed_keys = ["img", "inst_labels"]
+
+    predictor, _ = util.get_sam_model(
+                    device="cpu", model_type="vit_b_histopathology",
+                    checkpoint_path=None, decoder_path=None, return_state=True,
+                    progress_bar_factory=None,
+                )
 
     for input_path, embedding_path in zip(input_paths, embedding_paths):
-        img_name = os.path.basename(embedding_path)
+        img_name = "_".join(os.path.basename(embedding_path).split("_")[:2])
         state = AnnotatorState()
+        state.img_name = img_name
         with h5py.File(input_path, "r") as f:
 
             if not all(key in f.keys() for key in needed_keys):
                 print(f"Missing keys: {[key for key in needed_keys if key not in f.keys()]}")
                 continue
             img = f["img"][:]
-            seg = f["inst_label"][:]
+            embeddings = util.precompute_image_embeddings(predictor, img, embedding_path, ndim=2,
+                                                          tile_shape=(384, 384), halo=(64, 64))
 
-            if "object_features" and "seg_ids" in f.keys():
-                state.seg_ids = f["object_features"][:]
-                state.object_features = f["seg_ids"][:]
-            else:
-                threading.Thread(target=start_object_feature_computation, args=(seg,))
-
-            ign_pred = f["ignite_pred"] if "ignite_pred" in f.keys() else None
+            latest_seg = natsorted([key for key in f["inst_labels"].keys() if "prelim" not in key])[-1]
+            seg = f[f"inst_labels/{latest_seg}"][:]
+            t = threading.Thread(target=start_object_feature_computation, args=(seg, embeddings,))
+            t.start()
+            ign_pred = f["ignite_pred"][:] if "ignite_pred" in f.keys() else None
 
         viewer = get_object_classifier_viewer(
             image=img,
@@ -101,7 +108,6 @@ def semantic_annotation(input_dir, embedding_dir, rf_dir):
             viewer.add_labels(ign_pred, name="Ignite prediction", opacity=0.6)
 
         viewer.add_shapes(get_grid(seg.shape), shape_type="line", name=img_name, edge_width=3)
-        state = AnnotatorState()
 
         @magicgui(call_button="Save definite annotation")
         def save_annotation(viewer: "napari.Viewer"):
@@ -116,27 +122,27 @@ def semantic_annotation(input_dir, embedding_dir, rf_dir):
                 f.create_dataset("sem_label", definite_ann)
         viewer.window.add_dock_widget(save_annotation, area="right")
 
-        state.features_output = os.path.join(rf_dir, f"{img_name.split('-')[0]}_features.npy")
-        state.labels_output = os.path.join(rf_dir, f"{img_name.split('-')[0]}_labels.npy")
+        state.train_data_path = os.path.join(rf_dir, "train_data.h5")
 
         os.makedirs(rf_dir, exist_ok=True)
         state.rf_dir = rf_dir
-
-        # TODO: Add versioning for rf models and cached training data, so they can be
-        # selected for training and model loading
+        state.train_data_path = os.path.join(rf_dir, "rf_training_data.h5")
         napari.run()
 
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--input_dir", "-i", type=str, default=H5_DIR)
-    parser.add_argument("--embedding_dir", "-e", type=str, default=EMB_DIR)
+    # parser.add_argument("--input_dir", "-i", type=str, default=H5_DIR)
+    parser.add_argument("--healthy", action="store_true")
+    # parser.add_argument("--embedding_dir", "-e", type=str, default=EMB_DIR)
     parser.add_argument("--rf_dir", type=str, default=RF_DIR)
-
     args = parser.parse_args()
+    entity = "tumor" if not args.healthy else "non_tumor"
+    H5_DIR = f"/mnt/ceph-hdd/cold/nim00020/hannibal_data/train_models/new_{entity}_data/new_h5_files"
+    EMB_DIR = f"/mnt/ceph-hdd/cold/nim00020/hannibal_data/train_models/new_{entity}_data/embeddings"
     semantic_annotation(
-        input_dir=args.input_dir,
-        embedding_dir=args.embedding_dir,
+        input_dir=H5_DIR,
+        embedding_dir=EMB_DIR,
         rf_dir=args.rf_dir,
     )
 

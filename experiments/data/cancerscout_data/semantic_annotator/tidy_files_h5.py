@@ -4,9 +4,11 @@ import imageio.v3 as imageio
 import os
 from natsort import natsorted
 import numpy as np
+from pathlib import Path
+from tqdm import tqdm
 
 
-ROOT = "/mnt/ceph-hdd/cold/nim00020/hannibal_data"
+ROOT = "/mnt/ceph-hdd/cold/nim00020/hannibal_data/train_models/new_tumor_data"
 
 arr = np.zeros((100, 100))
 
@@ -32,29 +34,18 @@ def load_data(paths):
         return imageio.imread(path)
 
 
-for roi_dir in glob(os.path.join(ROOT, "*_models", "rois_*")):
-    if roi_dir.endswith(".gz"):
-        continue
-    print(roi_dir)
-    h5_dir = os.path.join(roi_dir, "h5_files")
-    os.makedirs(h5_dir, exist_ok=True)
-    for filename in [os.path.basename(path) for path in glob(os.path.join(roi_dir, "embeddings", "*"))]:
+def tidy_h5_files(path):
+    h5_dir = Path(path) / "new_h5_files"
+    for filename in tqdm(list(h5_dir.glob("*.h5"))):
+        with h5py.File(filename, 'a') as f:
+            for data in ["object_features", "seg_ids"]:
+                if data in f:
+                    del f[data]
+                    print(f"{data} deleted!")
+            # v1_label = f['inst_labels/v1'][:]
+            # f.create_dataset("inst_labels/v_1", data=v1_label, compression="gzip")
+            # del f['inst_labels/v1']
 
-        with h5py.File(os.path.join(h5_dir, f"{filename}.h5"), 'a') as f:
-            for data_type in ["sem_label", "inst_label", "img", "inst_pred", "object_features", "seg_ids", "ignite_pred"]:
-                if data_type not in f.keys() or data_type == "inst_label":
-                    if data_type == "inst_label" and "inst_label" in f.keys():
-                        inst_label = f["inst_label"][:]
-                        del f["inst_label"]
-                        f.require_group("inst_labels")
-                        if "inst_labels/v1" in f:
-                            del f["inst_labels/v1"]
 
-                        f.create_dataset("inst_labels/v1", data=inst_label)
-                        print(f["inst_labels"]["v1"])
-                    else:
-                        data = load_data(natsorted(glob(os.path.join(roi_dir, data_dict[data_type], f"*{filename}*"))))
-                        if data is not None:
-                            f.create_dataset(data_type, data=data)
-    
-            # print(f.keys())
+
+tidy_h5_files(ROOT)
