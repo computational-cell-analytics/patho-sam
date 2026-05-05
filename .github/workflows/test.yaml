@@ -1,0 +1,46 @@
+name: test
+
+on:
+  push:
+    branches:
+      - master
+      - dev
+    tags:
+      - "v*"
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: ${{ matrix.os }} ${{ matrix.python-version }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        python-version: ["3.11", "3.12"]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup micromamba
+        uses: mamba-org/setup-micromamba@v2
+        with:
+          environment-file: environment.yaml
+          create-args: >-
+            python=${{ matrix.python-version }}
+            pytest
+
+      - name: Install slideio
+        shell: bash -el {0}
+        run: pip install slideio
+
+      - name: Install patho-sam
+        shell: bash -el {0}
+        run: pip install --no-deps -e .
+
+      - name: Run tests
+        shell: bash -el {0}
+        run: pytest test/ -v
