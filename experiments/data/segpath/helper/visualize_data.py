@@ -34,6 +34,6 @@ for cell_type in CELL_NAMES.values():
 
         viewer = napari.Viewer()
         viewer.add_image(img, name=path.stem)
-        viewer.add_labels(pred, name="prediction")
+        viewer.add_labels(pred, name="segpath_prediction")
         viewer.add_labels(bin_mask, name="binary label")
         napari.run()

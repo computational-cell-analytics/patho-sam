@@ -1,24 +1,19 @@
-import numpy as np
 from multiprocessing import Pool, cpu_count
-from tqdm import tqdm
 from typing import Tuple
+
+import numpy as np
 from micro_sam.object_classification import _compute_object_features_impl, _create_seg_and_embed_generator
+from tqdm import tqdm
 
 
 def _worker(args):
     seg, embeds, resize_embedding_shape = args
-    seg_ids, features = _compute_object_features_impl(
-        embeds, seg, resize_embedding_shape
-    )
+    seg_ids, features = _compute_object_features_impl(embeds, seg, resize_embedding_shape)
     return seg_ids, features
 
 
 def compute_object_features_parallel(
-    segmentation,
-    image_embeddings,
-    resize_embedding_shape: Tuple[int, int] = (256, 256),
-    n_workers=None,
-    verbose=True,
+    segmentation, image_embeddings, resize_embedding_shape: Tuple[int, int] = (256, 256), n_workers=None, verbose=True
 ):
 
     is_tiled = image_embeddings["input_size"] is None
@@ -34,15 +29,12 @@ def compute_object_features_parallel(
 
     # generator for segmentation + embeddings
     seg_embed_generator, n_gen = _create_seg_and_embed_generator(
-        segmentation,
-        image_embeddings,
-        is_tiled=is_tiled,
-        is_3d=is_3d,
+        segmentation, image_embeddings, is_tiled=is_tiled, is_3d=is_3d
     )
 
     # aggregation containers
-    feature_sums = {}   # seg_id -> sum(weighted features)
-    size_sums = {}      # seg_id -> total size
+    feature_sums = {}  # seg_id -> sum(weighted features)
+    size_sums = {}  # seg_id -> total size
 
     def task_iter():
         for seg, embeds in seg_embed_generator():
@@ -50,10 +42,7 @@ def compute_object_features_parallel(
 
     with Pool(n_workers) as pool:
         for seg_ids, feats in tqdm(
-            pool.imap(_worker, task_iter()),
-            total=n_gen,
-            disable=not verbose,
-            desc="Compute object features",
+            pool.imap(_worker, task_iter()), total=n_gen, disable=not verbose, desc="Compute object features"
         ):
             seg_ids = seg_ids.tolist()
 

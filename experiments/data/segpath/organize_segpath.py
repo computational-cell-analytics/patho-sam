@@ -68,7 +68,6 @@ def get_statistics(path, cell_type):
     paths = get_segpath_paths(
         path=path,
         cell_types=cell_type,
-        split="train",
         download=True
     )
 
