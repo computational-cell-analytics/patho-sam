@@ -13,8 +13,7 @@ from micro_sam.automatic_segmentation import get_predictor_and_segmenter, automa
 
 ROOT = "/mnt/ceph-hdd/cold/nim00020/hannibal_data/"
 
-SQUARE_LENGTH = 5120
-
+SQUARE_LENGTH = 2048
 
 def get_instance_segmentation_model(checkpoint_path, device=get_device()):
     state = torch.load(checkpoint_path, map_location=device, weights_only=False)["model_state"]
@@ -82,13 +81,15 @@ def process_selected_rois(predictor, segmenter, embedding_dir, img_path, output_
 
         if "img" in f.keys():
             img = f["img"][:]
+            return
         else:
             image = pyvips.Image.new_from_file(img_path, access='sequential')
             patch = image.crop(roi_position[0], roi_position[1], roi_width, roi_height)
             img = np.ndarray(buffer=patch.write_to_memory(),
                              dtype=np.uint8,
                              shape=[patch.height, patch.width, patch.bands])
-            f.create_dataset(name="img", data=img, compression="zlib")
+            f.create_dataset(name="img", data=img, compression="gzip")
+            return
 
         if os.path.exists(embedding_dir):
             if len(os.listdir(embedding_dir)) > 0:
@@ -103,7 +104,7 @@ def process_selected_rois(predictor, segmenter, embedding_dir, img_path, output_
                                        )
 
             inst_pred = get_segmentation(predictor, segmenter, img, tile_shape, halo, embedding_path=embedding_dir)
-        f.create_dataset(name="inst_pred", data=inst_pred, compression="zlib")
+        f.create_dataset(name="inst_pred", data=inst_pred, compression="gzip")
 
 
 def get_rois(img_path, embedding_dir, checkpoint_path, output_dir, rois):
@@ -123,7 +124,6 @@ def main():
     parser.add_argument("--embedding_dir", type=str)
     parser.add_argument("--checkpoint_path", "-c", type=str, default=None)
     parser.add_argument("--output_dir", type=str, default=None)
-    parser.add_argument("--rois", type=int, nargs=2)
 
     args = parser.parse_args()
 

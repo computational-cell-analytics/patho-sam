@@ -1,39 +1,51 @@
-import napari
+import json
 from pathlib import Path
-import pandas as pd 
-import h5py
 
+import h5py
+import napari
+import numpy as np
+import pandas as pd
+
+CELL_NAMES = {
+    "lymphocytes": "CD3CD20_Lymphocyte",
+    "epithelium": "panCK_Epithelium",
+    "plasma_cells": "MIST1_PlasmaCell",
+    "leukocytes": "CD45RB_Leukocyte",
+    "smooth_muscle": "aSMA_SmoothMuscle",
+    "endothelium": "ERG_Endothelium",
+}
 
 ROOT = Path("/mnt/ceph-hdd/cold/nim00020/hannibal_data/segpath")
 
-CELL_NAMES = {
-    # "smooth_muscle": "aSMA_SmoothMuscle",
-              "endothelium": "ERG_Endothelium",
-            #   "lymphocytes": "CD3CD20_Lymphocyte",
-            #   "epithelium": "panCK_Epithelium"
-              }
 
-for cell_type in CELL_NAMES.values():
-    data_dir = ROOT / cell_type / "data"
-    csv_path = ROOT / cell_type / f"{cell_type}_summary.csv"
-    df = pd.read_csv(csv_path)
-    df = df[df["training_objects"] > 0]
-    df = df.set_index("filename")
-    predicted_samples = df.index.tolist()
+def visualize_filtered_objects(n_images):
+    for cell_type in CELL_NAMES.keys():
+        csv_path = ROOT / CELL_NAMES[cell_type] / f"{CELL_NAMES[cell_type]}_summary.csv"
+        h5_dir = ROOT / CELL_NAMES[cell_type] / "data"
+        df = pd.read_csv(csv_path, index_col="filename")
+        df = df[df["n_filtered_indices"] > 0]
+        df["filtered_indices"] = df["filtered_indices"].apply(lambda x: json.loads(x) if isinstance(x, str) else x)
+        i = 1
+        for filename in df.index.tolist():
+            if i == n_images:
+                break
+            h5_path = h5_dir / filename
+            filtered_indices = df.loc[filename, "filtered_indices"]
+            filtered_indices = [idx for idx in filtered_indices]
+            with h5py.File(h5_path, "r") as f:
+                img = f["images/best_crop"][:]
+                pred = f["labels/postprocessed_pred"][:]
+            filtered_instances = [np.unique(pred)[1:].tolist()[idx] for idx in filtered_indices]
+            mask = np.isin(pred, filtered_instances)
+            filtered_pred = np.where(mask, pred, 0)
+            viewer = napari.Viewer()
 
-    paths = [data_dir / pred_sample for pred_sample in predicted_samples]
+            viewer.add_image(img, name=Path(filename).stem)
+            viewer.add_labels(filtered_pred, name="filtered_indices_pred")
+            viewer.add_labels(pred, name="original_pred")
 
-    i = 0
+            i += 1
+            napari.run()
 
-    for path in paths:
-        with h5py.File(path, 'r') as f:
-            pred = f["labels/postprocessed_pred"][:]
-            bin_mask = f["labels/best_crop"][:]
-            img = f["images/best_crop"][:]
-            features = f["object_features"][:]
 
-        viewer = napari.Viewer()
-        viewer.add_image(img, name=path.stem)
-        viewer.add_labels(pred, name="segpath_prediction")
-        viewer.add_labels(bin_mask, name="binary label")
-        napari.run()
+visualize_filtered_objects(n_images=10)

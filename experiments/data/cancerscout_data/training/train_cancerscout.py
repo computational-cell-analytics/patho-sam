@@ -54,6 +54,7 @@ def get_dataloaders(path, patch_shape) -> torch.utils.data.DataLoader:
 def train_cancerscout(data_path, save_root, iterations, model_type):
 
     train_loader, val_loader = get_dataloaders(data_path, patch_shape=(512, 512))
+    scheduler_kwargs = {"mode": "min", "factor": 0.9, "patience": 10}
 
     train_sam(
         name="pathosam-cancerscout-instance",
@@ -63,6 +64,8 @@ def train_cancerscout(data_path, save_root, iterations, model_type):
         n_iterations=iterations,
         save_root=save_root,
         early_stopping=None,
+        scheduler_kwargs=scheduler_kwargs,
+        verify_n_labels_in_loader=None,
     )
 
 

@@ -116,8 +116,18 @@ def process_sample(file_path, cell_type):
     with h5py.File(file_path, "r") as f:
         pred = f["labels/postprocessed_pred"][:]
         bin_label = f["labels/best_crop"][:]
+
+    if cell_type == "CD3CD20_Lymphocyte":
+        require_centroid_in_mask = False
+        overlap_thresh = 0.3
+    else:
+        require_centroid_in_mask = True
+        overlap_thresh = 0.75
+
+    overlap_thresh = 0.9 if cell_type == "panCK_Epithelium" else overlap_thresh
+
     keep_id_indices = high_precision_instance_filter(
-        pred, bin_label, overlap_thresh=0.5 if cell_type == "CD3CD20_Lymphocyte" else 0.7
+        pred, bin_label, overlap_thresh=overlap_thresh, require_centroid_in_mask=require_centroid_in_mask
     )
     return file_path.name, keep_id_indices, len(keep_id_indices)
 
@@ -144,16 +154,6 @@ def reset_files(cell_type):
     print(df["n_filtered_indices"].sum(), cell_type, "\n")
 
     df.to_csv(csv_path)
-
-
-# import json
-
-# df["my_list"] = df["my_list"].apply(json.dumps)
-# df.to_csv("file.csv", index=False)
-
-# # Load:
-# def test():
-#     df["my_list"] = df["my_list"].apply(lambda x: json.loads(x) if pd.notna(x) else [])
 
 
 def main():

@@ -32,12 +32,19 @@ def _remove_disconnected_components(mask, solidity_threshold, area_threshold) ->
 
 
 def postprocess_instance_mask(
-    segmentation: np.ndarray, solidity_threshold: None | float = 0.5, area_threshold: None | int = 50, verbose=False
+    segmentation: np.ndarray,
+    image: np.ndarray = None,
+    intensity_threshold: int = None,
+    solidity_threshold: None | float = 0.5,
+    area_threshold: None | int = 160,
+    verbose: bool = False,
 ) -> np.ndarray:
     """This function is for postprocessing of patho-sam predictions, especially using APG. It removes
     artifacts like instance pixels disconnected from their main instance or smaller instances entirely enclosed
-    by other instances. Additionally, it"""
+    by other instances."""
+
     cleaned = np.zeros_like(segmentation, dtype=np.uint32)
+    intensity_removed_instances = 0
 
     for prop in tqdm(regionprops(segmentation), disable=not verbose):
         label_id = prop.label
@@ -45,9 +52,21 @@ def postprocess_instance_mask(
         roi = segmentation[minr:maxr, minc:maxc]
         mask = roi == label_id
 
+        if intensity_threshold:
+            if image is None:
+                raise ValueError("Passing intensity threshold only works with an image.")
+            else:
+                img_roi = image[minr:maxr, minc:maxc, :]
+                if np.all(img_roi[mask] > intensity_threshold):
+                    intensity_removed_instances += 1
+                    continue
+
         mask = _remove_disconnected_components(mask, solidity_threshold, area_threshold)
         mask = binary_fill_holes(mask)
 
         cleaned[minr:maxr, minc:maxc] = np.where(mask, label_id, cleaned[minr:maxr, minc:maxc])
+
+    if intensity_threshold:
+        print(f"Instances removed due to intensity threshold: {intensity_removed_instances}")
 
     return cleaned

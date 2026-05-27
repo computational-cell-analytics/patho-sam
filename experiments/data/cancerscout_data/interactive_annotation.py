@@ -10,7 +10,7 @@ from natsort import natsorted
 
 from patho_sam.annotation import postprocess_instance_mask
 
-DATA_DIR = "/mnt/ceph-hdd/cold/nim00020/hannibal_data/eval_models/new_tumor_data"
+DATA_DIR = "/mnt/ceph-hdd/cold/nim00020/hannibal_data/eval_models/new_non_tumor_data"
 
 
 class AnnotatorState:
@@ -53,16 +53,18 @@ def start_interactive_annotator(h5_dir, embedding_dir, correction_version=None):
         embedding_path = embedding_dir / img_name
         if not embedding_path.exists():
             raise ValueError("Embeddings are not precomputed!")
-        state = AnnotatorState()
         with h5py.File(h5_path, "a") as f:
             image = f["img"][:].transpose(1, 2, 0)
-            segmentation_result = None if "inst_labels" in f.keys() else f["inst_pred"][:]
+            segmentation_result = postprocess_instance_mask(f["inst_pred"][:])
+            # segmentation_result = None if "inst_labels" in f.keys() else postprocess_instance_mask(f["inst_pred"][:])
             if f"inst_labels/v_{correction_version}" in f or f"inst_labels/v_{int(correction_version) + 1}" in f:
                 print(f"version {correction_version} already exists for {h5_path.name}")
                 for prelim_version in [key for key in f["inst_labels"].keys() if "prelim" in key]:
                     print(f"Deleting inst_labels/{prelim_version}")
                     del f[f"inst_labels/{prelim_version}"]
                 continue
+
+        state = AnnotatorState()
 
         viewer = annotator_2d(
             image=image,
@@ -72,11 +74,14 @@ def start_interactive_annotator(h5_dir, embedding_dir, correction_version=None):
             tile_shape=(384, 384),
             halo=(64, 64),
             return_viewer=True,
+            interpolation2d="linear",
+            contrast_limits=(0, 255),
+            rendering="mip",
         )
         if segmentation_result is not None:
             print("Loaded PathoSAM prediction.")
-        viewer.layers["prompts"].edge_width = 1
-        viewer.layers["prompts"].refresh()
+            state.inst_label_version = "v_0"
+
         viewer.add_shapes(
             get_grid(image.shape), shape_type="polygon", name=f"{img_name}_{state.inst_label_version}", edge_width=3
         )
@@ -92,11 +97,36 @@ def start_interactive_annotator(h5_dir, embedding_dir, correction_version=None):
                 return
             with h5py.File(h5_path, "r") as f:
                 previous_inst_label = f[f"inst_labels/{version}"][:]
-            committed_objects.data = previous_inst_label
+            committed_objects.data = postprocess_instance_mask(previous_inst_label, area_threshold=160)
             print(f"Instance label {version} loaded.")
             grid_layer = viewer.layers[f"{img_name}_{state.inst_label_version}"]
             state.inst_label_version = version
             grid_layer.name = f"{img_name}_{state.inst_label_version}"
+
+        @magic_factory(
+            call_button="Apply postprocessing",
+            overwrite_current={"label": "Overwrite commited objects"},
+            min_area={"label": "Minimum object area"},
+            intensity_threshold={"label": "Max. intensity threshold"},
+        )
+        def apply_postproc(
+            viewer: "napari.Viewer",
+            overwrite_current: bool = False,
+            intensity_threshold: int = None,
+            min_area: int = None,
+        ):
+            layer_name = "committed_objects"
+            img_name = "image"
+            img = viewer.layers[img_name].data
+            current_seg = viewer.layers[layer_name].data
+
+            postprocessed_seg = postprocess_instance_mask(
+                segmentation=current_seg, image=img, intensity_threshold=intensity_threshold, area_threshold=min_area
+            )
+            if overwrite_current:
+                viewer.layers[layer_name].data = postprocessed_seg
+            else:
+                viewer.add_labels(postprocessed_seg, name="Postprocessed")
 
         @magic_factory(
             call_button="Save preliminary annotation",
@@ -150,22 +180,10 @@ def start_interactive_annotator(h5_dir, embedding_dir, correction_version=None):
             save_to_h5(h5_path, save_key, data=ann)
             print(f"Saved to {h5_path} under {save_key}")
 
-        @magic_factory(
-            call_button="Delete instance label",
-            version={"choices": lambda w: get_available_seg_versions(h5_path, prelim=True)},
-        )
-        def delete_previous_annotation(viewer: "napari.Viewer", version=None):
-            if version is None:
-                print("No version selected")
-                return
-            with h5py.File(h5_path, "a") as f:
-                del f[f"inst_labels/{version}"]
-            print(f"Instance label {version} deleted.")
-
         viewer.window.add_dock_widget(save_prelim_annotation(), area="right")
         viewer.window.add_dock_widget(save_annotation(), area="right")
         viewer.window.add_dock_widget(load_previous_annotation(), area="right")
-        viewer.window.add_dock_widget(delete_previous_annotation(), area="right")
+        viewer.window.add_dock_widget(apply_postproc(), area="right")
 
         napari.run()
 

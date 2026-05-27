@@ -1,0 +1,44 @@
+from pathlib import Path
+from typing import List, Tuple
+
+import h5py
+import numpy as np
+import pandas as pd
+
+LABELS = {"tumor_cells": 1, "stromal_cells": 2, "lymphocytes": 3, "others": 4, "neutrophils": 5, "epithelial_cells": 6}
+
+LABEL_MAP = {v: k for k, v in LABELS.items()}
+
+
+def get_rf_data_cancerscout(
+    csv_path: Path, data_path: Path, split: str, healthy: bool, cell_types: List
+) -> Tuple[np.ndarray, np.ndarray]:
+    df = pd.read_csv(csv_path, index_col="filename")
+    df = df[df["train_eval_split"] == split]
+    if not healthy:
+        df = df[df["inst_dataset"] == "new_tumor"]
+    cell_types = [LABEL_MAP[key] for key in cell_types]
+    num_training_objects = df[cell_types].sum(axis=1).sum()
+    chosen_samples = df.index.tolist()
+
+    all_h5_paths = list(data_path.glob(f"{split}_models/*data/fixed_h5_files/*.h5"))
+
+    chosen_h5_paths = [p for p in all_h5_paths if p.stem in chosen_samples]
+    offset = 0
+    with h5py.File(chosen_h5_paths[0], "r") as f:
+        feature_dim = f["train_features"].shape[1]
+        feature_dtype = f["train_features"].dtype
+
+    features_out = np.empty((num_training_objects, feature_dim), dtype=feature_dtype)
+    labels_out = np.empty((num_training_objects), dtype=np.uint8)
+
+    for volume_path in chosen_h5_paths:
+        with h5py.File(volume_path, "r") as f:
+            features = f["train_features"]
+            labels = f["train_labels"]
+            n = features.shape[0]
+            features_out[offset : offset + n] = features
+            labels_out[offset : offset + n] = labels
+            offset += n
+
+    return features_out, labels_out

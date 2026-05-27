@@ -4,10 +4,18 @@ from pathlib import Path
 import pandas as pd
 from util import CELL_NAMES, ROOT
 
+FRACTIONS = {"train": 0.6, "calibration": 0.15, "thresholding": 0.1, "test": 0.15}
+
 
 def create_data_splits(
-    path, cell_type, min_instances=2, overwrite_split: bool = False, n_samples: int = None, test_fraction: float = 0.2
+    path,
+    cell_type,
+    min_instances=2,
+    overwrite_split: bool = False,
+    n_samples: int = None,
+    test_fractions: dict = FRACTIONS,
 ) -> pd.DataFrame:
+
     path = Path(path)
     csv_path = path / CELL_NAMES[cell_type] / f"{CELL_NAMES[cell_type]}_summary.csv"
     df = pd.read_csv(csv_path, index_col="filename").astype({"randomly_sampled": "boolean"})
@@ -16,34 +24,28 @@ def create_data_splits(
         print(f"Split for {cell_type} already exists.")
         return
 
-    filtered_df = df[(df["n_filtered_indices"] >= min_instances) & (df["randomly_sampled"])]
+    filtered_df = df[df["n_filtered_indices"] >= min_instances]
 
+    filtered_df = filtered_df.sample(frac=1, random_state=42)
     if n_samples is not None:
-        filtered_df = (filtered_df.sample(len(filtered_df), random_state=42)).iloc[:n_samples]
+        filtered_df = filtered_df.iloc[:n_samples]
 
     unique_wsis = filtered_df["WSI_number"].dropna().drop_duplicates().sample(frac=1, random_state=42)
 
     df["split"] = pd.Series(pd.NA, index=df.index, dtype="string")
 
-    n_test_samples = int(len(unique_wsis) * test_fraction)
+    start = 0
 
-    train_wsis = unique_wsis[n_test_samples:]
-
-    test_wsis = unique_wsis[:n_test_samples]
-
-    train_split = filtered_df[filtered_df["WSI_number"].isin(train_wsis)].index.tolist()
-    test_split = filtered_df[filtered_df["WSI_number"].isin(test_wsis)].index.tolist()
+    for split, fraction in test_fractions.items():
+        end = start + int(len(unique_wsis) * fraction)
+        fraction_wsis = unique_wsis[start:end]
+        fraction_split = filtered_df[filtered_df["WSI_number"].isin(fraction_wsis)].index.tolist()
+        df.loc[fraction_split, "split"] = split
+        start = end
 
     print("-" * 50)
 
-    print(f"Split composition for {cell_type}: \n train: {len(train_split)} \n test: {len(test_split)}")
-
-    df.loc[train_split, "split"] = "train"
-
-    df.loc[test_split, "split"] = "test"
-
     print(df.groupby("split").agg(num_objects=("n_filtered_indices", "sum")))
-    return
     df.to_csv(csv_path)
 
     return df
