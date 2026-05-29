@@ -1,25 +1,37 @@
-from typing import Tuple, List
+from typing import List, Tuple
 
 import numpy as np
-
 import torch
 import torch.utils.data as data_util
-
 from torch_em.data.datasets.light_microscopy.neurips_cell_seg import to_rgb
 
+BACKGROUND, FOREGROUND = 0, 1
 
 CLASS_MAP = {
-    'puma': {
-        2: 1,
-        3: 2, 4: 2, 5: 2, 6: 2, 7: 2,
-        1: 3, 8: 3,
-        10: 4,
-        9: 5,
+    "puma": {2: 1, 3: 2, 4: 2, 5: 2, 6: 2, 7: 2, 1: 3, 8: 3, 10: 4, 9: 5},
+    "ignite": {
+        255: BACKGROUND,  # Background
+        254: FOREGROUND,  # Tumor cells
+        253: FOREGROUND,  # Reactive epithelium
+        252: FOREGROUND,  # Stroma
+        251: FOREGROUND,  # Inflammation
+        250: FOREGROUND,  # Alveolar tissue
+        249: BACKGROUND,  # Fatty tissue
+        248: FOREGROUND,  # Necrotic tissue
+        247: BACKGROUND,  # Erythrocytes
+        246: FOREGROUND,  # Bronchial epithelium
+        245: BACKGROUND,  # Mucus/Plasma/Fluids
+        244: BACKGROUND,  # Cartilage/Bone
+        243: FOREGROUND,  # Macrophages
+        242: BACKGROUND,  # Muscle
+        241: FOREGROUND,  # Liver
+        240: FOREGROUND,  # Keratinization
+        0: FOREGROUND,  # Unlabeled (arbitrary unlabeled regions)
     },
 }
 
 CLASS_DICT = {
-    'puma': {
+    "puma": {
         "nuclei_stroma": 1,
         "nuclei_tumor": 2,
         "nuclei_plasma_cell": 3,
@@ -29,14 +41,27 @@ CLASS_DICT = {
         "nuclei_neutrophil": 7,
         "nuclei_endothelium": 8,
         "nuclei_epithelium": 9,
-        "nuclei_apoptosis": 10
+        "nuclei_apoptosis": 10,
     },
-    'pannuke': {
-        "neoplastic": 1,
-        "inflammatory": 2,
-        "connective / soft tissue": 3,
-        "dead cells": 4,
-        "epithelial": 5,
+    "pannuke": {"neoplastic": 1, "inflammatory": 2, "connective / soft tissue": 3, "dead cells": 4, "epithelial": 5},
+    "ignite": {
+        "Unannotated": 0,
+        "Background": 1,
+        "Tumor cells": 2,
+        "Reactive epithelium": 3,
+        "Stroma": 4,
+        "Inflammation": 5,
+        "Alveolar tissue": 6,
+        "Fatty tissue": 7,
+        "Necrotic tissue": 8,
+        "Erythrocytes": 9,
+        "Bronchial epithelium": 10,
+        "Mucus/Plasma/Fluids": 11,
+        "Cartilage/Bone": 12,
+        "Macrophages": 13,
+        "Muscle": 14,
+        "Liver": 15,
+        "Keratinization": 16,
     },
 }
 
@@ -56,7 +81,7 @@ def histopathology_identity(x, ensure_rgb=True):
 
 
 def get_train_val_split(
-    ds: torch.utils.data.Dataset, val_fraction: float = 0.2, seed: int = 42,
+    ds: torch.utils.data.Dataset, val_fraction: float = 0.2, seed: int = 42
 ) -> Tuple[torch.utils.data.Dataset, torch.utils.data.Dataset]:
     """Creates split for a dataset for a decided fraction.
 
@@ -92,9 +117,18 @@ def remap_labels(y: np.ndarray, name: str) -> np.ndarray:
 
     # Remap the labels.
     # NOTE: We go with this remapping to make sure that each ids are mapped to the exact values.
+
     per_id_lookup_array = np.array([mapping.get(i, 0) for i in range(max(mapping) + 1)], dtype=np.int32)
     y_remapped = per_id_lookup_array[y]
     return y_remapped
+
+
+def remove_pad_label(x: np.ndarray, y: np.ndarray):
+    mask = np.all(x == 0, axis=0)
+    y = y.copy()
+    y[mask] = 0
+
+    return x, y
 
 
 def calculate_class_weights_for_loss_weighting(
