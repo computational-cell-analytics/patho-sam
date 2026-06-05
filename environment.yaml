@@ -2,7 +2,7 @@ name: patho-sam
 channels:
     - conda-forge
 dependencies:
-    - micro_sam
+    - micro_sam >=1.8.1
     # Note: installing the pytorch package from conda-forge will generally
     # give you the most optmized version for your system, if you have a modern
     # enough OS and CUDA version (CUDA >= 12). For older versions, you can
