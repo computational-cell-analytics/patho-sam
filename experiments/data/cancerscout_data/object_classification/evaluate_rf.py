@@ -3,7 +3,7 @@ from pathlib import Path
 
 import joblib
 import numpy as np
-from rf_experiments import CSV_PATH, ROOT
+from rf_grid_search import CSV_PATH, ROOT
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import classification_report
 from util import CELL_ID_NAME, CELL_NAME_ID, SUBTYPE_ID_NAME, get_rf_data_cancerscout
@@ -17,9 +17,7 @@ def evaluate_rf(data_path: Path, csv_path: Path, cell_types: dict, rf_dir: Path)
     threshold_json = rf_dir / "all_thresholds.json"
     with open(threshold_json, "r") as f:
         thresholds = json.load(f)
-    #     thresholds = {k.strip("_"): v for k, v in thresholds.items()}
-    # with open(threshold_json, "w") as f:
-    #     json.dump(thresholds, f, indent=4)
+
     eval_features, eval_labels, eval_subtypes = get_rf_data_cancerscout(
         csv_path=csv_path,
         data_path=data_path,
@@ -36,8 +34,6 @@ def evaluate_rf(data_path: Path, csv_path: Path, cell_types: dict, rf_dir: Path)
         rf: RandomForestClassifier = joblib.load(rf_path)
         probs = rf.predict_proba(eval_features)
 
-        classes = rf.classes_
-        # class_names = [CELL_ID_NAME[cls_id] for cls_id in classes]
         n_samples, n_classes = probs.shape
         pred = np.argmax(probs, axis=1)
         class_to_idx = {cls_id: i for i, cls_id in enumerate(rf.classes_)}

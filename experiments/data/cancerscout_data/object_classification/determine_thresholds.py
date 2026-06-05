@@ -21,8 +21,7 @@ def determine_model_thresholds(target_precision):
 
         substring = include_healthy + collapse_others + method
         substring = substring.replace("__", "_")
-        # print(substring)
-        # breakpoint()
+
         class_paths = [p for p in all_result_csvs if substring in p.name]
         for class_csv in class_paths:
             cell_type = class_csv.stem.strip("results__")

@@ -52,7 +52,7 @@ def visualize_loader(loader):
 
 
 def train_foreground_segmentation_model(args):
-    train_loader, val_loader = get_dataloaders(args.input_path, patch_shape=(1000, 1000))
+    train_loader, val_loader = get_dataloaders(args.input_path, patch_shape=(512, 512))
 
     visualize_loader(train_loader)
 
