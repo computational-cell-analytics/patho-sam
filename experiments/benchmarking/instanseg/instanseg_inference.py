@@ -7,7 +7,7 @@ from natsort import natsorted
 import numpy as np
 import pandas as pd
 import imageio.v3 as imageio
-from skimage.measure import label
+from bioimage_cpp.segmentation import label
 
 from tukra.io import read_image
 from tukra.inference import segment_using_instanseg
