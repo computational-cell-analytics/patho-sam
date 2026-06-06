@@ -16,6 +16,7 @@ setup(
     url='https://github.com/computational-cell-analytics/patho-sam',
     packages=find_packages(include=['patho_sam', 'patho_sam.*']),
     license="MIT",
+    install_requires=["micro_sam>=1.8.1"],
     entry_points={
         "console_scripts": [
             "patho_sam.example_data=patho_sam.util:get_example_wsi_data",

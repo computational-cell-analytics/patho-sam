@@ -5,7 +5,7 @@ from typing import Optional, Union, Tuple
 import numpy as np
 from numpy.typing import ArrayLike
 
-from nifty.tools import blocking
+from bioimage_cpp.utils import Blocking
 
 import torch
 
@@ -238,7 +238,7 @@ class TiledSemanticSegmentationWithDecoder(SemanticSegmentationWithDecoder):
             self._predictor, image, image_embeddings, tile_shape, halo,
             verbose=verbose, batch_size=batch_size, mask=mask, i=i,
         )
-        tiling = blocking([0, 0], original_size, tile_shape)
+        tiling = Blocking([0, 0], original_size, tile_shape)
 
         if semantic_segmentation is None:
             semantic_segmentation = np.zeros(original_size, dtype="uint8")
@@ -250,7 +250,7 @@ class TiledSemanticSegmentationWithDecoder(SemanticSegmentationWithDecoder):
 
         msg = "Initialize tiled semantic segmentation with decoder"
         if tiles_in_mask is None:
-            n_tiles = tiling.numberOfBlocks
+            n_tiles = tiling.number_of_blocks
             all_tile_ids = list(range(n_tiles))
         else:
             n_tiles = len(tiles_in_mask)
@@ -282,11 +282,11 @@ class TiledSemanticSegmentationWithDecoder(SemanticSegmentationWithDecoder):
                 output = np.argmax(output, axis=0)
 
                 # Set the predictions in the output for this tile.
-                block = tiling.getBlockWithHalo(tile_id, halo=list(halo))
+                block = tiling.get_block_with_halo(tile_id, halo=list(halo))
                 local_bb = tuple(
-                    slice(beg, end) for beg, end in zip(block.innerBlockLocal.begin, block.innerBlockLocal.end)
+                    slice(beg, end) for beg, end in zip(block.inner_block_local.begin, block.inner_block_local.end)
                 )
-                inner_bb = tuple(slice(beg, end) for beg, end in zip(block.innerBlock.begin, block.innerBlock.end))
+                inner_bb = tuple(slice(beg, end) for beg, end in zip(block.inner_block.begin, block.inner_block.end))
                 semantic_segmentation[inner_bb] = output[local_bb]
                 pbar_update(1)
 

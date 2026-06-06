@@ -6,7 +6,7 @@ from natsort import natsorted
 import h5py
 import numpy as np
 import imageio.v3 as imageio
-from skimage.segmentation import relabel_sequential
+from bioimage_cpp.segmentation import relabel_sequential
 
 from torch_em.data.datasets.histopathology import pannuke, monuseg
 
